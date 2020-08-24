@@ -7,3 +7,4 @@ edition = "2018"
 [dependencies]
 bevy = { path = "/home/boris/work/rust/forks/bevy" }
 rand = "0.7.3"
+ncollide2d = "*"
