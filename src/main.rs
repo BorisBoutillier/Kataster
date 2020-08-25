@@ -18,12 +18,18 @@ use rand::prelude::*;
 const WINDOW_WIDTH: u32 = 1280;
 const WINDOW_HEIGHT: u32 = 800;
 
+#[derive(Default)]
+struct MouseState {
+    cursor_moved_events: EventReader<CursorMoved>,
+    position: Vec2,
+}
 struct Velocity {
     vx: f32,
     vy: f32,
 }
 fn main() {
     App::build()
+        .init_resource::<MouseState>()
         .add_resource(WindowDescriptor {
             title: "NCollide2D Bevy showcase".to_string(),
             width: WINDOW_WIDTH,
@@ -33,6 +39,7 @@ fn main() {
         .add_resource(ClearColor(Color::rgb(0.01, 0.01, 0.03)))
         .add_default_plugins()
         .add_startup_system(setup.system())
+        .add_system(mouse_position_system.system())
         .add_system(spawn_sphere_system.system())
         .add_system(position_system.system())
         .add_system(collision_system.system())
@@ -105,6 +112,14 @@ fn collision_system(
         }
     }
 }
+fn mouse_position_system(
+    cursor_moved_events: Res<Events<CursorMoved>>,
+    mut event_readers: ResMut<MouseState>,
+) {
+    for event in event_readers.cursor_moved_events.iter(&cursor_moved_events) {
+        event_readers.position = event.position;
+    }
+}
 fn spawn_sphere_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -112,11 +127,12 @@ fn spawn_sphere_system(
     mouse_button_input: Res<Input<MouseButton>>,
     mut world: ResMut<CollisionWorld<f64, Entity>>,
     sphere_groups: Res<CollisionGroups>,
+    mouse_state: Res<MouseState>,
 ) {
     if mouse_button_input.just_pressed(MouseButton::Left) {
         let mut rng = thread_rng();
-        let x = rng.gen_range(0.0, WINDOW_WIDTH as f32);
-        let y = rng.gen_range(0.0, WINDOW_HEIGHT as f32);
+        let x = mouse_state.position.x();
+        let y = mouse_state.position.y();
         let z = rng.gen_range(0.0, 1.0);
         let vx = rng.gen_range(-(WINDOW_WIDTH as f32) / 4.0, (WINDOW_WIDTH as f32) / 4.0);
         let vy = rng.gen_range(-(WINDOW_HEIGHT as f32) / 4.0, (WINDOW_HEIGHT as f32) / 4.0);
