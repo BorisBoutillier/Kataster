@@ -1,1 +1,1 @@
-. Do sphere collision as bouncing
+. Update sphere positon on collision based on depth and contact point

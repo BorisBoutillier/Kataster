@@ -8,7 +8,6 @@ use bevy::{
 use ncollide2d::{
     nalgebra,
     nalgebra::{Isometry2, Vector2},
-    narrow_phase::ContactEvent,
     pipeline::{CollisionGroups, CollisionObjectSlabHandle, GeometricQueryType},
     shape::{Ball, ShapeHandle},
     world::CollisionWorld,
@@ -23,10 +22,7 @@ struct MouseState {
     cursor_moved_events: EventReader<CursorMoved>,
     position: Vec2,
 }
-struct Velocity {
-    vx: f32,
-    vy: f32,
-}
+struct Velocity(Vector2<f32>);
 fn main() {
     App::build()
         .init_resource::<MouseState>()
@@ -47,7 +43,7 @@ fn main() {
 }
 
 fn setup(mut commands: Commands) {
-    let world = CollisionWorld::<f64, Entity>::new(0.02);
+    let world = CollisionWorld::<f32, Entity>::new(0.02);
     let mut sphere_groups = CollisionGroups::new();
     sphere_groups.set_membership(&[1]);
     commands.spawn(Camera2dComponents {
@@ -63,52 +59,48 @@ fn setup(mut commands: Commands) {
 
 fn position_system(
     time: Res<Time>,
-    mut world: ResMut<CollisionWorld<f64, Entity>>,
+    mut world: ResMut<CollisionWorld<f32, Entity>>,
     mut query: Query<(Mut<Translation>, &CollisionObjectSlabHandle, &Velocity)>,
 ) {
     let elapsed = time.delta_seconds;
     for (mut translation, &handle, velocity) in &mut query.iter() {
-        *translation.x_mut() += velocity.vx * elapsed;
-        *translation.y_mut() += velocity.vy * elapsed;
+        *translation.x_mut() += velocity.0.x * elapsed;
+        *translation.y_mut() += velocity.0.y * elapsed;
         // Wrap around screen edges
-        if translation.x() < 0.0 && velocity.vx < 0.0 {
+        if translation.x() < 0.0 && velocity.0.x < 0.0 {
             *translation.x_mut() = WINDOW_WIDTH as f32
-        } else if translation.x() > WINDOW_HEIGHT as f32 && velocity.vx > 0.0 {
+        } else if translation.x() > WINDOW_HEIGHT as f32 && velocity.0.x > 0.0 {
             *translation.x_mut() = 0.0;
         }
-        if translation.y() < 0.0 && velocity.vy < 0.0 {
+        if translation.y() < 0.0 && velocity.0.y < 0.0 {
             *translation.y_mut() = WINDOW_HEIGHT as f32
-        } else if translation.y() > WINDOW_HEIGHT as f32 && velocity.vy > 0.0 {
+        } else if translation.y() > WINDOW_HEIGHT as f32 && velocity.0.y > 0.0 {
             *translation.y_mut() = 0.0;
         }
 
         let collision_object = world.get_mut(handle).unwrap();
         collision_object.set_position(Isometry2::new(
-            Vector2::new(translation.x() as f64, translation.y() as f64),
+            Vector2::new(translation.x() as f32, translation.y() as f32),
             nalgebra::zero(),
         ));
     }
 }
 
 fn collision_system(
-    mut world: ResMut<CollisionWorld<f64, Entity>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-    mut query: Query<(Entity, &Handle<ColorMaterial>)>,
+    mut world: ResMut<CollisionWorld<f32, Entity>>,
+    mut velocities: Query<(Entity, Mut<Velocity>)>,
 ) {
     world.update();
-    for event in world.contact_events() {
-        match event {
-            &ContactEvent::Started(collision_handle1, collision_handle2) => {
-                let entity1 = *world.collision_object(collision_handle1).unwrap().data();
-                let entity2 = *world.collision_object(collision_handle2).unwrap().data();
-                for (entity, color) in &mut query.iter() {
-                    if entity == entity1 || entity == entity2 {
-                        let mut color_mat = materials.get_mut(&*color).unwrap();
-                        color_mat.color = Color::rgb(1.0, 0.0, 0.0);
-                    }
+    for (h1, h2, _, manifold) in world.contact_pairs(true) {
+        if let Some(tracked_contact) = manifold.deepest_contact() {
+            let contact_normal = tracked_contact.contact.normal.into_inner();
+            let entity1 = *world.collision_object(h1).unwrap().data();
+            let entity2 = *world.collision_object(h2).unwrap().data();
+            for (entity, mut velocity) in &mut velocities.iter() {
+                if entity == entity1 || entity == entity2 {
+                    *velocity = Velocity(reflect(velocity.0, contact_normal));
                 }
             }
-            _ => (),
         }
     }
 }
@@ -125,7 +117,7 @@ fn spawn_sphere_system(
     asset_server: Res<AssetServer>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mouse_button_input: Res<Input<MouseButton>>,
-    mut world: ResMut<CollisionWorld<f64, Entity>>,
+    mut world: ResMut<CollisionWorld<f32, Entity>>,
     sphere_groups: Res<CollisionGroups>,
     mouse_state: Res<MouseState>,
 ) {
@@ -142,7 +134,7 @@ fn spawn_sphere_system(
         let shape = ShapeHandle::new(Ball::new(128.0 * 0.1));
         let entity = Entity::new();
         let (collision_object_handle, _) = world.add(
-            Isometry2::new(Vector2::new(x as f64, y as f64), nalgebra::zero()),
+            Isometry2::new(Vector2::new(x as f32, y as f32), nalgebra::zero()),
             shape,
             *sphere_groups,
             GeometricQueryType::Contacts(0.0, 0.0),
@@ -158,7 +150,11 @@ fn spawn_sphere_system(
                     ..Default::default()
                 },
             )
-            .with(Velocity { vx, vy })
+            .with(Velocity(Vector2::new(vx, vy)))
             .with(collision_object_handle);
     }
+}
+
+fn reflect(d: Vector2<f32>, n: Vector2<f32>) -> Vector2<f32> {
+    d - 2.0 * (d.dot(&n)) * n
 }
