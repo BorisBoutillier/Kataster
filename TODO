@@ -1,1 +1,8 @@
-. Update sphere positon on collision based on depth and contact point
+. Fire Laser
+    Spawn Laser
+    Laser contact detection
+    Asteroids split
+. player ship destruction
+. refactor damage handling
+. Asteroids timer spawning
+. Game name
