@@ -14,13 +14,17 @@ use super::components::*;
 pub const WINDOW_WIDTH: u32 = 1280;
 pub const WINDOW_HEIGHT: u32 = 800;
 const CAMERA_SCALE: f32 = 0.1;
-const ARENA_WIDTH: f32 = WINDOW_WIDTH as f32 * CAMERA_SCALE;
-const ARENA_HEIGHT: f32 = WINDOW_HEIGHT as f32 * CAMERA_SCALE;
+pub const ARENA_WIDTH: f32 = WINDOW_WIDTH as f32 * CAMERA_SCALE;
+pub const ARENA_HEIGHT: f32 = WINDOW_HEIGHT as f32 * CAMERA_SCALE;
 
 pub struct Arena {
     pub asteroid_spawn_timer: Timer,
 }
-pub fn setup(mut commands: Commands) {
+pub fn setup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
     commands.spawn(Camera2dComponents {
         orthographic_projection: OrthographicProjection {
             far: 1000.0 / CAMERA_SCALE,
@@ -32,41 +36,65 @@ pub fn setup(mut commands: Commands) {
     commands.insert_resource(Arena {
         asteroid_spawn_timer: Timer::from_seconds(5.0, false),
     });
-}
-pub fn spawn_asteroid(
-    mut commands: &mut Commands,
-    asset_server: Res<AssetServer>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-    size: AsteroidSize,
-    (x, y): (f32, f32),
-    (vx, vy): (f32, f32),
-    angvel: f32,
-) {
-    let texture_handle = asset_server.load("assets/meteorBrown_big1.png").unwrap();
-    let body = RigidBodyBuilder::new_dynamic()
-        .translation(x, y)
-        .linvel(vx, vy)
-        .angvel(angvel);
-    let collider = ColliderBuilder::ball(5.0).friction(-0.3);
-    commands
-        .spawn(SpriteComponents {
-            translation: Translation::new(x, y, 1.0),
-            material: materials.add(texture_handle.into()),
-            scale: Scale(1.0 / 10.0),
-            ..Default::default()
-        })
-        .with(Asteroid { size })
-        .with(Damage { value: 1 })
-        .with(body)
-        .with(collider);
+    let texture_handle = asset_server
+        .load("assets/pexels-francesco-ungaro-998641.png")
+        .unwrap();
+    commands.spawn(SpriteComponents {
+        translation: Translation::new(0.0, 0.0, 0.0),
+        material: materials.add(texture_handle.into()),
+        scale: Scale(CAMERA_SCALE),
+        ..Default::default()
+    });
 }
 
-pub fn spawn_random_asteroid(
+#[derive(Default)]
+pub struct SpawnAsteroidState {
+    event_reader: EventReader<AsteroidSpawnEvent>,
+}
+
+pub fn spawn_asteroid_system(
     mut commands: Commands,
-    time: Res<Time>,
-    mut arena: ResMut<Arena>,
+    mut state: Local<SpawnAsteroidState>,
     asset_server: Res<AssetServer>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    events: Res<Events<AsteroidSpawnEvent>>,
+) {
+    for event in state.event_reader.iter(&events) {
+        let texture_handle = asset_server
+            .load(match event.size {
+                AsteroidSize::Big => "assets/meteorBrown_big1.png",
+                AsteroidSize::Medium => "assets/meteorBrown_med1.png",
+                AsteroidSize::Small => "assets/meteorBrown_small1.png",
+            })
+            .unwrap();
+        let radius = match event.size {
+            AsteroidSize::Big => 10.1 / 2.0,
+            AsteroidSize::Medium => 4.3 / 2.0,
+            AsteroidSize::Small => 2.8 / 2.0,
+        };
+        let body = RigidBodyBuilder::new_dynamic()
+            .translation(event.x, event.y)
+            .linvel(event.vx, event.vy)
+            .angvel(event.angvel);
+        let collider = ColliderBuilder::ball(radius).friction(-0.3);
+        commands
+            .spawn(SpriteComponents {
+                translation: Translation::new(event.x, event.y, 1.0),
+                material: materials.add(texture_handle.into()),
+                scale: Scale(1.0 / 10.0),
+                ..Default::default()
+            })
+            .with(Asteroid { size: event.size })
+            .with(Damage { value: 1 })
+            .with(body)
+            .with(collider);
+    }
+}
+
+pub fn arena_spawn_system(
+    time: Res<Time>,
+    mut arena: ResMut<Arena>,
+    mut asteroid_spawn_events: ResMut<Events<AsteroidSpawnEvent>>,
     mut asteroids: Query<&Asteroid>,
 ) {
     arena.asteroid_spawn_timer.tick(time.delta_seconds);
@@ -92,15 +120,14 @@ pub fn spawn_random_asteroid(
             let vx = rng.gen_range(-ARENA_WIDTH / 4.0, ARENA_WIDTH / 4.0);
             let vy = rng.gen_range(-ARENA_HEIGHT / 4.0, ARENA_HEIGHT / 4.0);
             let angvel = rng.gen_range(-10.0, 10.0);
-            spawn_asteroid(
-                &mut commands,
-                asset_server,
-                materials,
-                AsteroidSize::Big,
-                (x, y),
-                (vx, vy),
+            asteroid_spawn_events.send(AsteroidSpawnEvent {
+                size: AsteroidSize::Big,
+                x,
+                y,
+                vx,
+                vy,
                 angvel,
-            );
+            });
         }
     }
 }

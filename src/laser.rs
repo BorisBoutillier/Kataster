@@ -16,7 +16,7 @@ pub fn spawn_laser(
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     let texture_handle = asset_server.load("assets/laserRed07.png").unwrap();
-    let v = parent_body.position.rotation * Vector2::y() * 30.0;
+    let v = parent_body.position.rotation * Vector2::y() * 50.0;
     let body = RigidBodyBuilder::new_dynamic()
         .position(parent_body.position)
         .rotation(parent_body.position.rotation.angle())

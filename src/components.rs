@@ -10,6 +10,25 @@ pub struct Ship {
     pub life: u32,
 }
 
+pub enum ExplosionKind {
+    Ship,
+    LaserOnAsteroid,
+}
+pub struct ExplosionSpawnEvent {
+    pub kind: ExplosionKind,
+    pub x: f32,
+    pub y: f32,
+}
+
+pub struct AsteroidSpawnEvent {
+    pub size: AsteroidSize,
+    pub x: f32,
+    pub y: f32,
+    pub vx: f32,
+    pub vy: f32,
+    pub angvel: f32,
+}
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum AsteroidSize {
     Big,
     Medium,

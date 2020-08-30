@@ -1,8 +1,6 @@
-. Fire Laser
-    Asteroids split
-. player ship destruction
+. Despawn from rapier pipeline : remove_rigid_body
+. UI : Life and Score
 . refactor damage handling
-. Asteroids timer spawning
 . Split Ship component in Motor and Protection, Gun
 . Add Input->Action Events
-. Add background
+. Audio on explosions

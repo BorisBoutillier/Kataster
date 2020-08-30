@@ -37,9 +37,9 @@ pub fn spawn_player(
             },
         )
         .with(Ship {
-            rotation_speed: 10.0,
+            rotation_speed: 20.0,
             thrust: 60.0,
-            life: 4,
+            life: 1,
         })
         .with(body)
         .with(collider);
@@ -73,11 +73,12 @@ pub fn player_dampening_system(
     mut bodies: ResMut<RigidBodySet>,
     query: Query<&RigidBodyHandleComponent>,
 ) {
-    let elapsed = time.delta_seconds;
-    let body_handle = query.get::<RigidBodyHandleComponent>(player.0).unwrap();
-    let mut body = bodies.get_mut(body_handle.handle()).unwrap();
-    body.angvel = body.angvel * 0.1f32.powf(elapsed);
-    body.linvel = body.linvel * 0.8f32.powf(elapsed);
+    if let Ok(body_handle) = query.get::<RigidBodyHandleComponent>(player.0) {
+        let elapsed = time.delta_seconds;
+        let mut body = bodies.get_mut(body_handle.handle()).unwrap();
+        body.angvel = body.angvel * 0.1f32.powf(elapsed);
+        body.linvel = body.linvel * 0.8f32.powf(elapsed);
+    }
 }
 
 pub fn user_input_system(
@@ -104,23 +105,25 @@ pub fn user_input_system(
         rotation -= 1
     }
     if rotation != 0 || thrust != 0 {
-        let body_handle = query.get::<RigidBodyHandleComponent>(player.0).unwrap();
-        let mut body = bodies.get_mut(body_handle.handle()).unwrap();
-        let ship = query.get::<Ship>(player.0).unwrap();
-        if rotation != 0 {
-            let rotation = rotation as f32 * ship.rotation_speed;
-            body.apply_torque(rotation);
-        }
-        if thrust != 0 {
-            let force = body.position.rotation.transform_vector(&Vector2::y())
-                * thrust as f32
-                * ship.thrust;
-            body.apply_force(force);
+        if let Ok(body_handle) = query.get::<RigidBodyHandleComponent>(player.0) {
+            let mut body = bodies.get_mut(body_handle.handle()).unwrap();
+            let ship = query.get::<Ship>(player.0).unwrap();
+            if rotation != 0 {
+                let rotation = rotation as f32 * ship.rotation_speed;
+                body.apply_torque(rotation);
+            }
+            if thrust != 0 {
+                let force = body.position.rotation.transform_vector(&Vector2::y())
+                    * thrust as f32
+                    * ship.thrust;
+                body.apply_force(force);
+            }
         }
     }
     if input.just_pressed(KeyCode::Space) {
-        let body_handle = query.get::<RigidBodyHandleComponent>(player.0).unwrap();
-        let body = bodies.get(body_handle.handle()).unwrap();
-        spawn_laser(commands, body, asset_server, materials);
+        if let Ok(body_handle) = query.get::<RigidBodyHandleComponent>(player.0) {
+            let body = bodies.get(body_handle.handle()).unwrap();
+            spawn_laser(commands, body, asset_server, materials);
+        }
     }
 }
