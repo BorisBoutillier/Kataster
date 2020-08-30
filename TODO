@@ -1,8 +1,8 @@
 . Fire Laser
-    Spawn Laser
-    Laser contact detection
     Asteroids split
 . player ship destruction
 . refactor damage handling
 . Asteroids timer spawning
-. Game name
+. Split Ship component in Motor and Protection, Gun
+. Add Input->Action Events
+. Add background

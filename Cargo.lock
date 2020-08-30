@@ -258,7 +258,7 @@ dependencies = [
  "bevy_utils",
  "crossbeam-channel",
  "downcast-rs",
- "fixedbitset 0.3.0",
+ "fixedbitset 0.3.1",
  "parking_lot 0.10.2",
  "rand",
 ]
@@ -635,9 +635,9 @@ checksum = "2e8c087f005730276d1096a652e92a8bacee2e2472bcc9715a74d2bec38b5820"
 
 [[package]]
 name = "bytemuck"
-version = "1.3.1"
+version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db7a1029718df60331e557c9e83a55523c955e5dd2a7bfeffad6bbd50b538ae9"
+checksum = "92046dbb6f9332943252123f53623e0a6d513651af14967e2991c371ec20201c"
 
 [[package]]
 name = "byteorder"
@@ -1090,9 +1090,9 @@ checksum = "37ab347416e802de484e4d03c7316c48f1ecb56574dfd4a46a80f173ce1de04d"
 
 [[package]]
 name = "fixedbitset"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2fc4fcacf5cd3681968f6524ea159383132937739c6c40dabab9e37ed515911b"
+checksum = "4e08c8bc7575d7e091fe0706963bd22e2a4be6a64da995f03b2a5a57d66ad015"
 
 [[package]]
 name = "foreign-types"
@@ -2861,9 +2861,9 @@ dependencies = [
 
 [[package]]
 name = "wgpu-core"
-version = "0.6.0"
+version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3a5558a9607100816a033b0d06a2d6d06e8bf6fb294803d1dea871e9a479eec0"
+checksum = "0087ab26d366d286f20193a801e10dfb5943c7aecd617944cf88731820a55453"
 dependencies = [
  "arrayvec",
  "bitflags",
