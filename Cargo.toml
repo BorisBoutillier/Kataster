@@ -1,5 +1,5 @@
 [package]
-name = "bevy-asteroids"
+name = "kataster"
 version = "0.1.0"
 authors = ["Boris Boutillier <boris.boutillier@gmail.com>"]
 edition = "2018"

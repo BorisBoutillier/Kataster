@@ -144,15 +144,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy-asteroids"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_rapier2d",
- "rand",
-]
-
-[[package]]
 name = "bevy-glsl-to-spirv"
 version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1610,6 +1601,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "85a7e2c92a4804dd459b86c339278d0fe87cf93757fae222c3fa3ae75458bc73"
 dependencies = [
  "wasm-bindgen",
+]
+
+[[package]]
+name = "kataster"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_rapier2d",
+ "rand",
 ]
 
 [[package]]
