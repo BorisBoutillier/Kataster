@@ -1,11 +1,9 @@
 ## Bugs
 
 ## Improvments
-. Despawn from rapier pipeline : remove_rigid_body
 . UI : Life and Score
 . refactor damage handling
 . Split Ship component in Motor and Protection, Gun
-. Add Input->Action Events
+. Add Input->Action Events -> use bevy_prototype_input_map ?
 . Audio on explosions
-
 

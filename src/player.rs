@@ -37,7 +37,7 @@ pub fn spawn_player(
             },
         )
         .with(Ship {
-            rotation_speed: 20.0,
+            rotation_speed: 0.3,
             thrust: 60.0,
             life: 1,
         })
@@ -95,9 +95,6 @@ pub fn user_input_system(
     if input.pressed(KeyCode::W) {
         thrust += 1
     }
-    if input.pressed(KeyCode::S) {
-        thrust -= 1
-    }
     if input.pressed(KeyCode::A) {
         rotation += 1
     }
@@ -111,7 +108,7 @@ pub fn user_input_system(
             if rotation != 0 {
                 let rotation = rotation as f32 * ship.rotation_speed;
                 body.wake_up();
-                body.apply_torque(rotation);
+                body.apply_torque_impulse(rotation);
             }
             if thrust != 0 {
                 let force = body.position.rotation.transform_vector(&Vector2::y())
