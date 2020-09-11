@@ -1,4 +1,4 @@
-use bevy::{prelude::*, render::pass::ClearColor};
+use bevy::prelude::*;
 use bevy_rapier2d::{
     na::Vector2,
     physics::{Gravity, RapierPhysicsPlugin},
@@ -31,7 +31,7 @@ fn main() {
             height: WINDOW_HEIGHT,
             ..Default::default()
         })
-        .add_resource(ClearColor(Color::rgb(0.02, 0.02, 0.04)))
+        .add_resource(ClearColor(Color::rgb_u8(5, 5, 10)))
         .add_resource(BodyHandleToEntity(HashMap::new()))
         .add_event::<AsteroidSpawnEvent>()
         .add_event::<ExplosionSpawnEvent>()
@@ -48,9 +48,9 @@ fn main() {
         .add_system(user_input_system.system())
         .add_system(player_dampening_system.system())
         .add_system(despawn_laser_system.system())
+        .add_system(handle_explosion.system())
         .add_system_to_stage(stage::POST_UPDATE, contact_system.system())
         .add_system_to_stage("HANDLE_CONTACT", spawn_asteroid_system.system())
         .add_system_to_stage("HANDLE_EXPLOSION", spawn_explosion.system())
-        .add_system_to_stage("HANDLE_EXPLOSION", handle_explosion.system())
         .run();
 }
