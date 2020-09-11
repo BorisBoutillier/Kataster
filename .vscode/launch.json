@@ -7,15 +7,15 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug executable 'bevy-asteroids'",
+            "name": "Debug executable 'kataster'",
             "cargo": {
                 "args": [
                     "build",
-                    "--bin=bevy-asteroids",
-                    "--package=bevy-asteroids"
+                    "--bin=kataster",
+                    "--package=kataster"
                 ],
                 "filter": {
-                    "name": "bevy-asteroids",
+                    "name": "kataster",
                     "kind": "bin"
                 }
             },
@@ -25,16 +25,16 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in executable 'bevy-asteroids'",
+            "name": "Debug unit tests in executable 'kataster'",
             "cargo": {
                 "args": [
                     "test",
                     "--no-run",
-                    "--bin=bevy-asteroids",
-                    "--package=bevy-asteroids"
+                    "--bin=kataster",
+                    "--package=kataster"
                 ],
                 "filter": {
-                    "name": "bevy-asteroids",
+                    "name": "kataster",
                     "kind": "bin"
                 }
             },

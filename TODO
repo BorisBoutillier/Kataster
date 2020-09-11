@@ -1,6 +1,12 @@
+## Bugs
+. Rotation/speed key not working if not pressed at beginning of game
+
+## Improvments
 . Despawn from rapier pipeline : remove_rigid_body
 . UI : Life and Score
 . refactor damage handling
 . Split Ship component in Motor and Protection, Gun
 . Add Input->Action Events
 . Audio on explosions
+
+
