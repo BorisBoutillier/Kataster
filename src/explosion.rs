@@ -16,12 +16,25 @@ pub fn spawn_explosion(
     mut state: Local<SpawnExplosionState>,
     asset_server: Res<AssetServer>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    audio_output: Res<AudioOutput>,
     events: Res<Events<ExplosionSpawnEvent>>,
 ) {
     for event in state.event_reader.iter(&events) {
-        let (texture_name, start_scale, end_scale, duration) = match event.kind {
-            ExplosionKind::Ship => ("assets/explosion01.png", 0.1 / 15.0, 0.5 / 15.0, 1.5),
-            ExplosionKind::LaserOnAsteroid => ("assets/flash00.png", 0.1 / 15.0, 0.15 / 15.0, 0.5),
+        let (texture_name, sound_name, start_scale, end_scale, duration) = match event.kind {
+            ExplosionKind::Ship => (
+                "assets/explosion01.png",
+                "assets/Explosion_ship.mp3",
+                0.1 / 15.0,
+                0.5 / 15.0,
+                1.5,
+            ),
+            ExplosionKind::LaserOnAsteroid => (
+                "assets/flash00.png",
+                "assets/Explosion.mp3",
+                0.1 / 15.0,
+                0.15 / 15.0,
+                0.5,
+            ),
         };
         let texture_handle = asset_server.load(texture_name).unwrap();
         commands
@@ -36,6 +49,8 @@ pub fn spawn_explosion(
                 start_scale,
                 end_scale,
             });
+        let sound = asset_server.load(sound_name).unwrap();
+        audio_output.play(sound);
     }
 }
 

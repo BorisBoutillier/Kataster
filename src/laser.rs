@@ -14,6 +14,7 @@ pub fn spawn_laser(
     parent_body: &RigidBody,
     asset_server: Res<AssetServer>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    audio_output: Res<AudioOutput>,
 ) {
     let texture_handle = asset_server.load("assets/laserRed07.png").unwrap();
     let v = parent_body.position.rotation * Vector2::y() * 50.0;
@@ -38,6 +39,8 @@ pub fn spawn_laser(
         })
         .with(body)
         .with(collider);
+    let sound = asset_server.load("assets/sfx_laser1.mp3").unwrap();
+    audio_output.play(sound);
 }
 
 pub fn despawn_laser_system(

@@ -85,6 +85,7 @@ pub fn user_input_system(
     commands: Commands,
     asset_server: Res<AssetServer>,
     materials: ResMut<Assets<ColorMaterial>>,
+    audio_output: Res<AudioOutput>,
     input: Res<Input<KeyCode>>,
     player: Res<Player>,
     mut bodies: ResMut<RigidBodySet>,
@@ -122,7 +123,7 @@ pub fn user_input_system(
     if input.just_pressed(KeyCode::Space) {
         if let Ok(body_handle) = query.get::<RigidBodyHandleComponent>(player.0) {
             let body = bodies.get(body_handle.handle()).unwrap();
-            spawn_laser(commands, body, asset_server, materials);
+            spawn_laser(commands, body, asset_server, materials, audio_output);
         }
     }
 }
