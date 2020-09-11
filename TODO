@@ -1,5 +1,4 @@
 ## Bugs
-. Rotation/speed key not working if not pressed at beginning of game
 
 ## Improvments
 . Despawn from rapier pipeline : remove_rigid_body
