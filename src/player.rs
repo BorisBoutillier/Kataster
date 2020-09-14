@@ -1,5 +1,6 @@
 use super::components::*;
 use super::laser::*;
+use super::state::*;
 use bevy::prelude::*;
 use bevy_rapier2d::{
     na::Vector2,
@@ -13,6 +14,7 @@ use bevy_rapier2d::{
 
 pub fn spawn_player(
     mut commands: Commands,
+    mut runstate: ResMut<RunState>,
     asset_server: Res<AssetServer>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
@@ -43,7 +45,7 @@ pub fn spawn_player(
         })
         .with(body)
         .with(collider);
-    commands.insert_resource(Player(player_entity));
+    runstate.player = Some(player_entity);
 
     // Helper points to visualize some points in space for Collider
     //commands
@@ -69,15 +71,17 @@ pub fn spawn_player(
 
 pub fn player_dampening_system(
     time: Res<Time>,
-    player: Res<Player>,
+    runstate: Res<RunState>,
     mut bodies: ResMut<RigidBodySet>,
     query: Query<&RigidBodyHandleComponent>,
 ) {
-    if let Ok(body_handle) = query.get::<RigidBodyHandleComponent>(player.0) {
-        let elapsed = time.delta_seconds;
-        let mut body = bodies.get_mut(body_handle.handle()).unwrap();
-        body.angvel = body.angvel * 0.1f32.powf(elapsed);
-        body.linvel = body.linvel * 0.8f32.powf(elapsed);
+    if runstate.current == Some(GameState::Game) {
+        if let Ok(body_handle) = query.get::<RigidBodyHandleComponent>(runstate.player.unwrap()) {
+            let elapsed = time.delta_seconds;
+            let mut body = bodies.get_mut(body_handle.handle()).unwrap();
+            body.angvel = body.angvel * 0.1f32.powf(elapsed);
+            body.linvel = body.linvel * 0.8f32.powf(elapsed);
+        }
     }
 }
 
@@ -86,44 +90,51 @@ pub fn user_input_system(
     asset_server: Res<AssetServer>,
     materials: ResMut<Assets<ColorMaterial>>,
     audio_output: Res<AudioOutput>,
+    mut runstate: ResMut<RunState>,
     input: Res<Input<KeyCode>>,
-    player: Res<Player>,
     mut bodies: ResMut<RigidBodySet>,
     query: Query<(&RigidBodyHandleComponent, &Ship)>,
 ) {
-    let mut rotation = 0;
-    let mut thrust = 0;
-    if input.pressed(KeyCode::W) {
-        thrust += 1
-    }
-    if input.pressed(KeyCode::A) {
-        rotation += 1
-    }
-    if input.pressed(KeyCode::D) {
-        rotation -= 1
-    }
-    if rotation != 0 || thrust != 0 {
-        if let Ok(body_handle) = query.get::<RigidBodyHandleComponent>(player.0) {
-            let mut body = bodies.get_mut(body_handle.handle()).unwrap();
-            let ship = query.get::<Ship>(player.0).unwrap();
-            if rotation != 0 {
-                let rotation = rotation as f32 * ship.rotation_speed;
-                body.wake_up();
-                body.apply_torque_impulse(rotation);
-            }
-            if thrust != 0 {
-                let force = body.position.rotation.transform_vector(&Vector2::y())
-                    * thrust as f32
-                    * ship.thrust;
-                body.wake_up();
-                body.apply_force(force);
+    if runstate.current == Some(GameState::Game) {
+        let player = runstate.player.unwrap();
+        let mut rotation = 0;
+        let mut thrust = 0;
+        if input.pressed(KeyCode::W) {
+            thrust += 1
+        }
+        if input.pressed(KeyCode::A) {
+            rotation += 1
+        }
+        if input.pressed(KeyCode::D) {
+            rotation -= 1
+        }
+        if rotation != 0 || thrust != 0 {
+            if let Ok(body_handle) = query.get::<RigidBodyHandleComponent>(player) {
+                let mut body = bodies.get_mut(body_handle.handle()).unwrap();
+                let ship = query.get::<Ship>(player).unwrap();
+                if rotation != 0 {
+                    let rotation = rotation as f32 * ship.rotation_speed;
+                    body.wake_up();
+                    body.apply_torque_impulse(rotation);
+                }
+                if thrust != 0 {
+                    let force = body.position.rotation.transform_vector(&Vector2::y())
+                        * thrust as f32
+                        * ship.thrust;
+                    body.wake_up();
+                    body.apply_force(force);
+                }
             }
         }
-    }
-    if input.just_pressed(KeyCode::Space) {
-        if let Ok(body_handle) = query.get::<RigidBodyHandleComponent>(player.0) {
-            let body = bodies.get(body_handle.handle()).unwrap();
-            spawn_laser(commands, body, asset_server, materials, audio_output);
+        if input.just_pressed(KeyCode::Space) {
+            if let Ok(body_handle) = query.get::<RigidBodyHandleComponent>(player) {
+                let body = bodies.get(body_handle.handle()).unwrap();
+                spawn_laser(commands, body, asset_server, materials, audio_output);
+            }
+        }
+    } else if runstate.current == Some(GameState::MainMenu) {
+        if input.just_pressed(KeyCode::Return) {
+            runstate.next = Some(GameState::Game);
         }
     }
 }

@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-pub struct Player(pub Entity);
 
 pub struct Ship {
     /// Ship rotation speed in rad/s

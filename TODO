@@ -5,5 +5,4 @@
 . refactor damage handling
 . Split Ship component in Motor and Protection, Gun
 . Add Input->Action Events -> use bevy_prototype_input_map ?
-. Audio on explosions
 
