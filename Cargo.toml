@@ -5,15 +5,14 @@ authors = ["Boris Boutillier <boris.boutillier@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-#bevy = { git = "https://github.com/bevyengine/bevy" }
-bevy = { path = "/home/boris/work/rust/forks/bevy" }
+bevy = { git = "https://github.com/bevyengine/bevy" }
 rand = "0.7.3"
-bevy_rapier2d = { git = "https://github.com/dimforge/bevy_rapier"}
+#bevy_rapier2d = { git = "https://github.com/dimforge/bevy_rapier"}
+bevy_rapier2d = { path = "../gits/CleanCut_bevy_rapier/bevy_rapier2d"}
 
 
 # The following is required so that the bevy crate and the bevy_rapied2d crate reference
 # the same version of bevy.
 # Without you can have a 'missing bevy::Plugin trait' when load the Rapier2dEnginePlugin
 [patch.crates-io]
-#bevy= {git="https://github.com/bevyengine/bevy"}
-bevy = { path = "/home/boris/work/rust/forks/bevy" }
+bevy= {git="https://github.com/bevyengine/bevy"}

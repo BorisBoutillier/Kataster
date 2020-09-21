@@ -34,7 +34,7 @@ pub fn setup_arena(
                 far: 1000.0 / CAMERA_SCALE,
                 ..Default::default()
             },
-            scale: Scale(CAMERA_SCALE),
+            transform: Transform::from_scale(CAMERA_SCALE),
             ..Default::default()
         });
         runstate.arena = Some(Arena {
@@ -44,9 +44,9 @@ pub fn setup_arena(
             .load("assets/pexels-francesco-ungaro-998641.png")
             .unwrap();
         commands.spawn(SpriteComponents {
-            translation: Translation::new(0.0, 0.0, 0.0),
+            transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0))
+                .with_scale(CAMERA_SCALE),
             material: materials.add(texture_handle.into()),
-            scale: Scale(CAMERA_SCALE),
             ..Default::default()
         });
         spawn_player(commands, runstate, asset_server, materials);
@@ -85,9 +85,9 @@ pub fn spawn_asteroid_system(
         let collider = ColliderBuilder::ball(radius).friction(-0.3);
         commands
             .spawn(SpriteComponents {
-                translation: Translation::new(event.x, event.y, 1.0),
+                transform: Transform::from_translation(Vec3::new(event.x, event.y, 1.0))
+                    .with_scale(1.0 / 10.0),
                 material: materials.add(texture_handle.into()),
-                scale: Scale(1.0 / 10.0),
                 ..Default::default()
             })
             .with(Asteroid { size: event.size })

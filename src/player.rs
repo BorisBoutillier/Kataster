@@ -27,17 +27,12 @@ pub fn spawn_player(
     //    Point::new(0.0, 0.8),
     //    Point::new(-1.0, -0.5),
     //);
-    let player_entity = Entity::new();
     commands
-        .spawn_as_entity(
-            player_entity,
-            SpriteComponents {
-                translation: Translation::new(0.0, 0.0, 1.0),
-                material: materials.add(texture_handle.into()),
-                scale: Scale(1.0 / 37.0),
-                ..Default::default()
-            },
-        )
+        .spawn(SpriteComponents {
+            transform: Transform::from_translation(Vec3::new(0.0, 0.0, 1.0)).with_scale(1.0 / 37.0),
+            material: materials.add(texture_handle.into()),
+            ..Default::default()
+        })
         .with(Ship {
             rotation_speed: 0.3,
             thrust: 60.0,
@@ -45,6 +40,7 @@ pub fn spawn_player(
         })
         .with(body)
         .with(collider);
+    let player_entity = commands.current_entity().unwrap();
     runstate.player = Some(player_entity);
 
     // Helper points to visualize some points in space for Collider
