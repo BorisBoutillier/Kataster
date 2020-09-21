@@ -1,6 +1,5 @@
 use super::components::*;
 use bevy::prelude::*;
-use bevy_rapier2d::rapier::{dynamics::RigidBodyBuilder, geometry::ColliderBuilder};
 
 #[derive(Default)]
 pub struct SpawnExplosionState {
@@ -37,20 +36,14 @@ pub fn spawn_explosion(
                 0.5,
             ),
         };
-        // There should be no need for a body and collider.
-        // But will not display without
-        let body = RigidBodyBuilder::new_dynamic().translation(event.x, event.y);
-        let collider = ColliderBuilder::ball(1.0).sensor(true);
         let texture_handle = asset_server.load(texture_name).unwrap();
         commands
             .spawn(SpriteComponents {
-                transform: Transform::from_translation(Vec3::new(event.x, event.y, 2.0))
+                transform: Transform::from_translation(Vec3::new(event.x, event.y, -1.0))
                     .with_scale(start_scale),
                 material: materials.add(texture_handle.into()),
                 ..Default::default()
             })
-            .with(body)
-            .with(collider)
             .with(Explosion {
                 timer: Timer::from_seconds(duration, false),
                 start_scale,

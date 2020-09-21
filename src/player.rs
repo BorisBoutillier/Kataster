@@ -29,7 +29,8 @@ pub fn spawn_player(
     //);
     commands
         .spawn(SpriteComponents {
-            transform: Transform::from_translation(Vec3::new(0.0, 0.0, 1.0)).with_scale(1.0 / 37.0),
+            transform: Transform::from_translation(Vec3::new(0.0, 0.0, -5.0))
+                .with_scale(1.0 / 37.0),
             material: materials.add(texture_handle.into()),
             ..Default::default()
         })

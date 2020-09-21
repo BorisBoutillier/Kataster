@@ -1,7 +1,7 @@
 use super::components::*;
 use super::player::*;
 use super::state::*;
-use bevy::{prelude::*, render::camera::OrthographicProjection};
+use bevy::prelude::*;
 use bevy_rapier2d::{
     physics::RigidBodyHandleComponent,
     rapier::{
@@ -30,10 +30,6 @@ pub fn setup_arena(
 ) {
     if runstate.enter && runstate.next == Some(GameState::Game) {
         commands.spawn(Camera2dComponents {
-            orthographic_projection: OrthographicProjection {
-                far: 1000.0 / CAMERA_SCALE,
-                ..Default::default()
-            },
             transform: Transform::from_scale(CAMERA_SCALE),
             ..Default::default()
         });
@@ -44,7 +40,7 @@ pub fn setup_arena(
             .load("assets/pexels-francesco-ungaro-998641.png")
             .unwrap();
         commands.spawn(SpriteComponents {
-            transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0))
+            transform: Transform::from_translation(Vec3::new(0.0, 0.0, -10.0))
                 .with_scale(CAMERA_SCALE),
             material: materials.add(texture_handle.into()),
             ..Default::default()
@@ -85,7 +81,7 @@ pub fn spawn_asteroid_system(
         let collider = ColliderBuilder::ball(radius).friction(-0.3);
         commands
             .spawn(SpriteComponents {
-                transform: Transform::from_translation(Vec3::new(event.x, event.y, 1.0))
+                transform: Transform::from_translation(Vec3::new(event.x, event.y, -5.0))
                     .with_scale(1.0 / 10.0),
                 material: materials.add(texture_handle.into()),
                 ..Default::default()

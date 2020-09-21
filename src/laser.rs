@@ -28,7 +28,7 @@ pub fn spawn_laser(
             transform: Transform::from_translation(Vec3::new(
                 parent_body.position.translation.x,
                 parent_body.position.translation.y,
-                0.8,
+                -4.0,
             ))
             .with_scale(1.0 / 18.0),
             material: materials.add(texture_handle.into()),
