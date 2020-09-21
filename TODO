@@ -1,6 +1,13 @@
 ## Bugs
+. Why need for body/collider in explosions now.
 
 ## Improvments
+. Starting Menu:
+    Enter to start game.
+. Ending Menu:
+    Enter to go back to Starting Menu
+. Pause Menu:
+    Escape to pause, Escape to exit pause
 . UI : Life and Score
 . refactor damage handling
 . Split Ship component in Motor and Protection, Gun
