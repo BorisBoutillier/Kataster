@@ -1,7 +1,9 @@
 # Kataster
-A space shooter developped in Rust with Bevy and Rapier
+A single screen simple space shooter developped in Rust with Bevy and Rapier2d.
 
-![](media/Kataster_demo.mp4)
+It will remain a simple demonstration game.
+
+![](media/Kataster_demo.gif)
 
 https://www.rust-lang.org/
 
