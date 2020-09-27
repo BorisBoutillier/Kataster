@@ -1,4 +1,5 @@
 use super::components::*;
+use super::state::*;
 use bevy::prelude::*;
 use bevy_rapier2d::{
     na::Vector2,
@@ -38,20 +39,26 @@ pub fn spawn_laser(
             despawn_timer: Timer::from_seconds(2.0, false),
         })
         .with(body)
-        .with(collider);
+        .with(collider)
+        .with(ForStates {
+            states: vec![GameState::Game, GameState::Pause, GameState::GameOver],
+        });
     let sound = asset_server.load("assets/sfx_laser1.mp3").unwrap();
     audio_output.play(sound);
 }
 
 pub fn despawn_laser_system(
     mut commands: Commands,
+    runstate: Res<RunState>,
     time: Res<Time>,
     mut query: Query<(Entity, Mut<Laser>)>,
 ) {
-    for (entity, mut laser) in &mut query.iter() {
-        laser.despawn_timer.tick(time.delta_seconds);
-        if laser.despawn_timer.finished {
-            commands.despawn(entity);
+    if runstate.current == Some(GameState::Game) {
+        for (entity, mut laser) in &mut query.iter() {
+            laser.despawn_timer.tick(time.delta_seconds);
+            if laser.despawn_timer.finished {
+                commands.despawn(entity);
+            }
         }
     }
 }

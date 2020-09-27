@@ -1,3 +1,6 @@
+use crate::rapier2d::RapierPipelineActive;
+use bevy::app::AppExit;
+
 use super::components::*;
 use super::laser::*;
 use super::state::*;
@@ -40,7 +43,10 @@ pub fn spawn_player(
             life: 1,
         })
         .with(body)
-        .with(collider);
+        .with(collider)
+        .with(ForStates {
+            states: vec![GameState::Game, GameState::Pause, GameState::GameOver],
+        });
     let player_entity = commands.current_entity().unwrap();
     runstate.player = Some(player_entity);
 
@@ -89,7 +95,9 @@ pub fn user_input_system(
     audio_output: Res<AudioOutput>,
     mut runstate: ResMut<RunState>,
     input: Res<Input<KeyCode>>,
+    mut rapier_active: ResMut<RapierPipelineActive>,
     mut bodies: ResMut<RigidBodySet>,
+    mut app_exit_events: ResMut<Events<AppExit>>,
     query: Query<(&RigidBodyHandleComponent, &Ship)>,
 ) {
     if runstate.current == Some(GameState::Game) {
@@ -129,9 +137,28 @@ pub fn user_input_system(
                 spawn_laser(commands, body, asset_server, materials, audio_output);
             }
         }
-    } else if runstate.current == Some(GameState::MainMenu) {
+        if input.just_pressed(KeyCode::Escape) {
+            runstate.next = Some(GameState::Pause);
+            rapier_active.0 = false;
+        }
+    } else if runstate.current == Some(GameState::StartMenu) {
         if input.just_pressed(KeyCode::Return) {
             runstate.next = Some(GameState::Game);
+        }
+        if input.just_pressed(KeyCode::Escape) {
+            app_exit_events.send(AppExit);
+        }
+    } else if runstate.current == Some(GameState::GameOver) {
+        if input.just_pressed(KeyCode::Return) {
+            runstate.next = Some(GameState::StartMenu);
+        }
+        if input.just_pressed(KeyCode::Escape) {
+            app_exit_events.send(AppExit);
+        }
+    } else if runstate.current == Some(GameState::Pause) {
+        if input.just_pressed(KeyCode::Escape) {
+            runstate.next = Some(GameState::Game);
+            rapier_active.0 = true;
         }
     }
 }

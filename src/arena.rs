@@ -14,7 +14,7 @@ use rand::{thread_rng, Rng};
 
 pub const WINDOW_WIDTH: u32 = 1280;
 pub const WINDOW_HEIGHT: u32 = 800;
-const CAMERA_SCALE: f32 = 0.1;
+pub const CAMERA_SCALE: f32 = 0.1;
 pub const ARENA_WIDTH: f32 = WINDOW_WIDTH as f32 * CAMERA_SCALE;
 pub const ARENA_HEIGHT: f32 = WINDOW_HEIGHT as f32 * CAMERA_SCALE;
 
@@ -23,27 +23,17 @@ pub struct Arena {
     pub asteroid_spawn_timer: Timer,
 }
 pub fn setup_arena(
-    mut commands: Commands,
+    commands: Commands,
     mut runstate: ResMut<RunState>,
     asset_server: Res<AssetServer>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    if runstate.enter && runstate.next == Some(GameState::Game) {
-        commands.spawn(Camera2dComponents {
-            transform: Transform::from_scale(CAMERA_SCALE),
-            ..Default::default()
-        });
+    if runstate.enter
+        && runstate.next == Some(GameState::Game)
+        && runstate.prev != Some(GameState::Pause)
+    {
         runstate.arena = Some(Arena {
             asteroid_spawn_timer: Timer::from_seconds(5.0, false),
-        });
-        let texture_handle = asset_server
-            .load("assets/pexels-francesco-ungaro-998641.png")
-            .unwrap();
-        commands.spawn(SpriteComponents {
-            transform: Transform::from_translation(Vec3::new(0.0, 0.0, -10.0))
-                .with_scale(CAMERA_SCALE),
-            material: materials.add(texture_handle.into()),
-            ..Default::default()
         });
         spawn_player(commands, runstate, asset_server, materials);
     }
@@ -89,7 +79,10 @@ pub fn spawn_asteroid_system(
             .with(Asteroid { size: event.size })
             .with(Damage { value: 1 })
             .with(body)
-            .with(collider);
+            .with(collider)
+            .with(ForStates {
+                states: vec![GameState::Game, GameState::Pause, GameState::GameOver],
+            });
     }
 }
 

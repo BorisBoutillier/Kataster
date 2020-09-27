@@ -1,14 +1,12 @@
 ## Bugs
+. Audio for explosion finish in panic, but not lasers.
 
 ## Improvments
-. Starting Menu:
-    Enter to start game.
-. Ending Menu:
-    Enter to go back to Starting Menu
-. Pause Menu:
-    Escape to pause, Escape to exit pause
 . UI : Life and Score
-. refactor damage handling
+. Add GamePad support -> use bevy_prototype_input_map ?
+. Add Menu/Pause musics ?
+
+## Other
 . Split Ship component in Motor and Protection, Gun
-. Add Input->Action Events -> use bevy_prototype_input_map ?
+. refactor damage handling
 

@@ -1,4 +1,5 @@
 use super::components::*;
+use super::state::*;
 use bevy::prelude::*;
 
 #[derive(Default)]
@@ -48,6 +49,9 @@ pub fn spawn_explosion(
                 timer: Timer::from_seconds(duration, false),
                 start_scale,
                 end_scale,
+            })
+            .with(ForStates {
+                states: vec![GameState::Game, GameState::Pause, GameState::GameOver],
             });
         let sound = asset_server.load(sound_name).unwrap();
         audio_output.play(sound);
