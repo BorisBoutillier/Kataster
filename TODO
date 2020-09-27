@@ -3,10 +3,5 @@
 
 ## Improvments
 . UI : Life and Score
+. Spaceship continuous rate of fire
 . Add GamePad support -> use bevy_prototype_input_map ?
-. Add Menu/Pause musics ?
-
-## Other
-. Split Ship component in Motor and Protection, Gun
-. refactor damage handling
-
