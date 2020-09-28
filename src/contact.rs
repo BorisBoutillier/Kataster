@@ -41,7 +41,7 @@ pub fn contact_system(
     asteroids: Query<Mut<Asteroid>>,
     handles: Query<&RigidBodyHandleComponent>,
 ) {
-    if runstate.current == Some(GameState::Game) {
+    if runstate.gamestate.is(GameState::Game) {
         let (
             mut pipeline,
             mut broad_phase,
@@ -161,7 +161,7 @@ pub fn contact_system(
                             y: player_body.position.translation.y,
                         });
                         commands.despawn(e1);
-                        runstate.next = Some(GameState::GameOver);
+                        runstate.gamestate.transit_to(GameState::GameOver);
                     } else {
                     }
                 }

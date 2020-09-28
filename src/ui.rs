@@ -9,7 +9,7 @@ pub fn start_menu(
     asset_server: Res<AssetServer>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    if runstate.enter && runstate.next == Some(GameState::StartMenu) {
+    if runstate.gamestate.entering(GameState::StartMenu) {
         let font_handle = asset_server.load("assets/kenvector_future.ttf").unwrap();
         commands
             .spawn(NodeComponents {
@@ -77,7 +77,7 @@ pub fn gameover_menu(
     asset_server: Res<AssetServer>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    if runstate.enter && runstate.next == Some(GameState::GameOver) {
+    if runstate.gamestate.entering(GameState::GameOver) {
         let font_handle = asset_server.load("assets/kenvector_future.ttf").unwrap();
         commands
             .spawn(NodeComponents {
@@ -145,7 +145,7 @@ pub fn pause_menu(
     asset_server: Res<AssetServer>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    if runstate.enter && runstate.next == Some(GameState::Pause) {
+    if runstate.gamestate.entering(GameState::Pause) {
         let font_handle = asset_server.load("assets/kenvector_future.ttf").unwrap();
         commands
             .spawn(NodeComponents {

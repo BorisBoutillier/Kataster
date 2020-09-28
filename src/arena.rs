@@ -28,9 +28,9 @@ pub fn setup_arena(
     asset_server: Res<AssetServer>,
     materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    if runstate.enter
-        && runstate.next == Some(GameState::Game)
-        && runstate.prev != Some(GameState::Pause)
+    if runstate
+        .gamestate
+        .entering_not_from(GameState::Game, GameState::Pause)
     {
         runstate.arena = Some(Arena {
             asteroid_spawn_timer: Timer::from_seconds(5.0, false),
@@ -92,7 +92,7 @@ pub fn arena_spawn(
     mut asteroid_spawn_events: ResMut<Events<AsteroidSpawnEvent>>,
     mut asteroids: Query<&Asteroid>,
 ) {
-    if runstate.current == Some(GameState::Game) {
+    if runstate.gamestate.is(GameState::Game) {
         let mut arena = runstate.arena.as_mut().unwrap();
         arena.asteroid_spawn_timer.tick(time.delta_seconds);
         if arena.asteroid_spawn_timer.finished {
@@ -135,7 +135,7 @@ pub fn position_system(
     mut bodies: ResMut<RigidBodySet>,
     mut query: Query<&RigidBodyHandleComponent>,
 ) {
-    if runstate.current == Some(GameState::Game) {
+    if runstate.gamestate.is(GameState::Game) {
         for body_handle in &mut query.iter() {
             let mut body = bodies.get_mut(body_handle.handle()).unwrap();
             let mut x = body.position.translation.vector.x;

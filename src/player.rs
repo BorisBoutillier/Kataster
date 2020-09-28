@@ -78,7 +78,7 @@ pub fn player_dampening_system(
     mut bodies: ResMut<RigidBodySet>,
     query: Query<&RigidBodyHandleComponent>,
 ) {
-    if runstate.current == Some(GameState::Game) {
+    if runstate.gamestate.is(GameState::Game) {
         if let Ok(body_handle) = query.get::<RigidBodyHandleComponent>(runstate.player.unwrap()) {
             let elapsed = time.delta_seconds;
             let mut body = bodies.get_mut(body_handle.handle()).unwrap();
@@ -100,7 +100,7 @@ pub fn user_input_system(
     mut app_exit_events: ResMut<Events<AppExit>>,
     query: Query<(&RigidBodyHandleComponent, &Ship)>,
 ) {
-    if runstate.current == Some(GameState::Game) {
+    if runstate.gamestate.is(GameState::Game) {
         let player = runstate.player.unwrap();
         let mut rotation = 0;
         let mut thrust = 0;
@@ -138,26 +138,29 @@ pub fn user_input_system(
             }
         }
         if input.just_pressed(KeyCode::Escape) {
-            runstate.next = Some(GameState::Pause);
+            runstate.gamestate.transit_to(GameState::Pause);
             rapier_active.0 = false;
         }
-    } else if runstate.current == Some(GameState::StartMenu) {
+        if input.just_pressed(KeyCode::Back) {
+            runstate.gamestate.transit_to(GameState::StartMenu);
+        }
+    } else if runstate.gamestate.is(GameState::StartMenu) {
         if input.just_pressed(KeyCode::Return) {
-            runstate.next = Some(GameState::Game);
+            runstate.gamestate.transit_to(GameState::Game);
         }
         if input.just_pressed(KeyCode::Escape) {
             app_exit_events.send(AppExit);
         }
-    } else if runstate.current == Some(GameState::GameOver) {
+    } else if runstate.gamestate.is(GameState::GameOver) {
         if input.just_pressed(KeyCode::Return) {
-            runstate.next = Some(GameState::StartMenu);
+            runstate.gamestate.transit_to(GameState::StartMenu);
         }
         if input.just_pressed(KeyCode::Escape) {
             app_exit_events.send(AppExit);
         }
-    } else if runstate.current == Some(GameState::Pause) {
+    } else if runstate.gamestate.is(GameState::Pause) {
         if input.just_pressed(KeyCode::Escape) {
-            runstate.next = Some(GameState::Game);
+            runstate.gamestate.transit_to(GameState::Game);
             rapier_active.0 = true;
         }
     }

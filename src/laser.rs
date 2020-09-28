@@ -53,7 +53,7 @@ pub fn despawn_laser_system(
     time: Res<Time>,
     mut query: Query<(Entity, Mut<Laser>)>,
 ) {
-    if runstate.current == Some(GameState::Game) {
+    if runstate.gamestate.is(GameState::Game) {
         for (entity, mut laser) in &mut query.iter() {
             laser.despawn_timer.tick(time.delta_seconds);
             if laser.despawn_timer.finished {
