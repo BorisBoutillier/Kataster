@@ -1,4 +1,8 @@
+use std::collections::HashMap;
+
 use bevy::prelude::*;
+use bevy_rapier2d::physics::RapierConfiguration;
+use bevy_rapier2d::physics::RapierPhysicsPlugin;
 
 mod arena;
 mod components;
@@ -11,6 +15,7 @@ mod state;
 mod ui;
 
 use arena::*;
+use bevy_rapier2d::na::Vector2;
 use components::*;
 use contact::*;
 use explosion::*;
@@ -30,10 +35,15 @@ fn main() {
             ..Default::default()
         })
         .add_resource(ClearColor(Color::rgb_u8(5, 5, 10)))
+        .add_resource(BodyHandleToEntity(HashMap::new()))
         .add_event::<AsteroidSpawnEvent>()
         .add_event::<ExplosionSpawnEvent>()
-        .add_plugin(MyRapierPhysicsPlugin)
+        .add_plugin(RapierPhysicsPlugin)
         .add_default_plugins()
+        .add_resource(RapierConfiguration {
+            gravity: Vector2::zeros(),
+            ..Default::default()
+        })
         .add_stage_after(stage::POST_UPDATE, "HANDLE_CONTACT")
         .add_stage_after("HANDLE_CONTACT", "HANDLE_EXPLOSION")
         .add_stage_after("HANDLE_EXPLOSION", "HANDLE_RUNSTATE")
@@ -49,6 +59,7 @@ fn main() {
         .add_system(pause_menu.system())
         .add_system(draw_blink_system.system())
         .add_system(state_exit_despawn.system())
+        .add_system(body_to_entity_system.system())
         .add_startup_system(setup.system())
         .add_system_to_stage(stage::POST_UPDATE, contact_system.system())
         .add_system_to_stage("HANDLE_CONTACT", spawn_asteroid_system.system())

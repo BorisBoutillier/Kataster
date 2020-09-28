@@ -1,4 +1,3 @@
-use crate::rapier2d::RapierPipelineActive;
 use bevy::app::AppExit;
 
 use super::components::*;
@@ -7,7 +6,7 @@ use super::state::*;
 use bevy::prelude::*;
 use bevy_rapier2d::{
     na::Vector2,
-    physics::RigidBodyHandleComponent,
+    physics::{RapierConfiguration, RigidBodyHandleComponent},
     rapier::{
         dynamics::{RigidBodyBuilder, RigidBodySet},
         geometry::ColliderBuilder,
@@ -95,7 +94,7 @@ pub fn user_input_system(
     audio_output: Res<AudioOutput>,
     mut runstate: ResMut<RunState>,
     input: Res<Input<KeyCode>>,
-    mut rapier_active: ResMut<RapierPipelineActive>,
+    mut rapier_configuration: ResMut<RapierConfiguration>,
     mut bodies: ResMut<RigidBodySet>,
     mut app_exit_events: ResMut<Events<AppExit>>,
     query: Query<(&RigidBodyHandleComponent, &Ship)>,
@@ -139,7 +138,7 @@ pub fn user_input_system(
         }
         if input.just_pressed(KeyCode::Escape) {
             runstate.gamestate.transit_to(GameState::Pause);
-            rapier_active.0 = false;
+            rapier_configuration.active = false;
         }
         if input.just_pressed(KeyCode::Back) {
             runstate.gamestate.transit_to(GameState::StartMenu);
@@ -161,7 +160,7 @@ pub fn user_input_system(
     } else if runstate.gamestate.is(GameState::Pause) {
         if input.just_pressed(KeyCode::Escape) {
             runstate.gamestate.transit_to(GameState::Game);
-            rapier_active.0 = true;
+            rapier_configuration.active = true;
         }
     }
 }
