@@ -3,9 +3,8 @@ use bevy_rapier2d::{
     physics::EventQueue,
     physics::RigidBodyHandleComponent,
     rapier::{
-        dynamics::{JointSet, RigidBodySet},
-        geometry::{BroadPhase, ColliderSet, ContactEvent, NarrowPhase, Proximity},
-        pipeline::PhysicsPipeline,
+        dynamics::{RigidBodySet},
+        geometry::{ContactEvent, Proximity},
     },
 };
 
@@ -25,16 +24,8 @@ pub fn contact_system(
     mut explosion_spawn_events: ResMut<Events<ExplosionSpawnEvent>>,
     mut runstate: ResMut<RunState>,
     events: Res<EventQueue>,
-    h_to_e: Res<BodyHandleToEntity>,
-    res_rapiers: (
-        ResMut<PhysicsPipeline>,
-        ResMut<BroadPhase>,
-        ResMut<NarrowPhase>,
-        ResMut<RigidBodySet>,
-        ResMut<ColliderSet>,
-        ResMut<JointSet>,
-    ),
-
+    bh_to_e: Res<BodyHandleToEntity>,
+    bodies: ResMut<RigidBodySet>,
     damages: Query<&Damage>,
     ships: Query<Mut<Ship>>,
     lasers: Query<Mut<Laser>>,
@@ -42,20 +33,12 @@ pub fn contact_system(
     handles: Query<&RigidBodyHandleComponent>,
 ) {
     if runstate.gamestate.is(GameState::Game) {
-        let (
-            mut pipeline,
-            mut broad_phase,
-            mut narrow_phase,
-            mut bodies,
-            mut colliders,
-            mut joints,
-        ) = res_rapiers;
         let mut contacts = vec![];
         while let Ok(contact_event) = events.contact_events.pop() {
             match contact_event {
                 ContactEvent::Started(h1, h2) => {
-                    let e1 = *(h_to_e.0.get(&h1).unwrap());
-                    let e2 = *(h_to_e.0.get(&h2).unwrap());
+                    let e1 = *(bh_to_e.0.get(&h1).unwrap());
+                    let e2 = *(bh_to_e.0.get(&h2).unwrap());
                     if ships.get::<Ship>(e1).is_ok() && damages.get::<Damage>(e2).is_ok() {
                         contacts.push(Contacts::ShipAsteroid(e1, e2));
                     } else if ships.get::<Ship>(e2).is_ok() && damages.get::<Damage>(e1).is_ok() {
@@ -67,8 +50,8 @@ pub fn contact_system(
         }
         while let Ok(proximity_event) = events.proximity_events.pop() {
             if proximity_event.new_status == Proximity::Intersecting {
-                let e1 = *(h_to_e.0.get(&proximity_event.collider1).unwrap());
-                let e2 = *(h_to_e.0.get(&proximity_event.collider2).unwrap());
+                let e1 = *(bh_to_e.0.get(&proximity_event.collider1).unwrap());
+                let e2 = *(bh_to_e.0.get(&proximity_event.collider2).unwrap());
                 if asteroids.get::<Asteroid>(e2).is_ok() && lasers.get::<Laser>(e1).is_ok() {
                     contacts.push(Contacts::LaserAsteroid(e1, e2));
                 } else if asteroids.get::<Asteroid>(e1).is_ok() && lasers.get::<Laser>(e2).is_ok() {
@@ -123,22 +106,6 @@ pub fn contact_system(
                             }
                         }
                     }
-                    pipeline.remove_rigid_body(
-                        laser_handle,
-                        &mut broad_phase,
-                        &mut narrow_phase,
-                        &mut bodies,
-                        &mut colliders,
-                        &mut joints,
-                    );
-                    pipeline.remove_rigid_body(
-                        asteroid_handle,
-                        &mut broad_phase,
-                        &mut narrow_phase,
-                        &mut bodies,
-                        &mut colliders,
-                        &mut joints,
-                    );
                     commands.despawn(e1);
                     commands.despawn(e2);
                 }

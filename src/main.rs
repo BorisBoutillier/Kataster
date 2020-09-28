@@ -36,6 +36,7 @@ fn main() {
         })
         .add_resource(ClearColor(Color::rgb_u8(5, 5, 10)))
         .add_resource(BodyHandleToEntity(HashMap::new()))
+        .add_resource(EntityToBodyHandle(HashMap::new()))
         .add_event::<AsteroidSpawnEvent>()
         .add_event::<ExplosionSpawnEvent>()
         .add_plugin(RapierPhysicsPlugin)
@@ -47,6 +48,7 @@ fn main() {
         .add_stage_after(stage::POST_UPDATE, "HANDLE_CONTACT")
         .add_stage_after("HANDLE_CONTACT", "HANDLE_EXPLOSION")
         .add_stage_after("HANDLE_EXPLOSION", "HANDLE_RUNSTATE")
+        .add_stage_after("HANDLE_RUNSTATE", "CLEANUP")
         .add_system(position_system.system())
         .add_system(user_input_system.system())
         .add_system(player_dampening_system.system())
@@ -65,6 +67,7 @@ fn main() {
         .add_system_to_stage("HANDLE_CONTACT", spawn_asteroid_system.system())
         .add_system_to_stage("HANDLE_EXPLOSION", spawn_explosion.system())
         .add_system_to_stage("HANDLE_RUNSTATE", runstate_fsm.system())
+        .add_system_to_stage("CLEANUP", remove_rigid_body_system.system())
         .add_resource(RunState::new(GameState::StartMenu))
         .run();
 }
