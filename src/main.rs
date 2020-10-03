@@ -27,7 +27,6 @@ use ui::*;
 
 fn main() {
     App::build()
-        .add_resource(Msaa { samples: 2 })
         .add_resource(WindowDescriptor {
             title: "Kataster".to_string(),
             width: WINDOW_WIDTH,
