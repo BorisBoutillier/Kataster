@@ -7,6 +7,8 @@ pub struct Ship {
     pub thrust: f32,
     /// Ship life points
     pub life: u32,
+    /// Cannon auto-fire timer
+    pub cannon_timer: Timer,
 }
 
 pub enum ExplosionKind {

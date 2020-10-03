@@ -40,6 +40,7 @@ pub fn spawn_player(
             rotation_speed: 0.3,
             thrust: 60.0,
             life: 1,
+            cannon_timer: Timer::from_seconds(0.2, false),
         })
         .with(body)
         .with(collider)
@@ -87,6 +88,12 @@ pub fn player_dampening_system(
     }
 }
 
+pub fn ship_cannon_system(time: Res<Time>, mut ship: Query<Mut<Ship>>) {
+    for mut ship in &mut ship.iter() {
+        ship.cannon_timer.tick(time.delta_seconds);
+    }
+}
+
 pub fn user_input_system(
     commands: Commands,
     asset_server: Res<AssetServer>,
@@ -97,8 +104,11 @@ pub fn user_input_system(
     mut rapier_configuration: ResMut<RapierConfiguration>,
     mut bodies: ResMut<RigidBodySet>,
     mut app_exit_events: ResMut<Events<AppExit>>,
-    query: Query<(&RigidBodyHandleComponent, &Ship)>,
+    query: Query<(&RigidBodyHandleComponent, Mut<Ship>)>,
 ) {
+    if input.just_pressed(KeyCode::Back) {
+        runstate.gamestate.transit_to(GameState::StartMenu);
+    }
     if runstate.gamestate.is(GameState::Game) {
         let player = runstate.player.unwrap();
         let mut rotation = 0;
@@ -130,18 +140,20 @@ pub fn user_input_system(
                 }
             }
         }
-        if input.just_pressed(KeyCode::Space) {
-            if let Ok(body_handle) = query.get::<RigidBodyHandleComponent>(player) {
-                let body = bodies.get(body_handle.handle()).unwrap();
-                spawn_laser(commands, body, asset_server, materials, audio_output);
+        if input.pressed(KeyCode::Space) {
+            if let Ok(mut ship) = query.get_mut::<Ship>(player) {
+                if ship.cannon_timer.finished {
+                    if let Ok(body_handle) = query.get::<RigidBodyHandleComponent>(player) {
+                        let body = bodies.get(body_handle.handle()).unwrap();
+                        spawn_laser(commands, body, asset_server, materials, audio_output);
+                    }
+                    ship.cannon_timer.reset();
+                }
             }
         }
         if input.just_pressed(KeyCode::Escape) {
             runstate.gamestate.transit_to(GameState::Pause);
             rapier_configuration.active = false;
-        }
-        if input.just_pressed(KeyCode::Back) {
-            runstate.gamestate.transit_to(GameState::StartMenu);
         }
     } else if runstate.gamestate.is(GameState::StartMenu) {
         if input.just_pressed(KeyCode::Return) {
