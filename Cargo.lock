@@ -428,6 +428,7 @@ dependencies = [
 [[package]]
 name = "bevy_rapier2d"
 version = "0.2.0"
+source = "git+https://github.com/Bobox214/bevy_rapier?branch=rapier_configuration#4c9569d2498e2e792eae2fb5f25925483c022ef6"
 dependencies = [
  "bevy",
  "concurrent-queue",

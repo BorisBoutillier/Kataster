@@ -9,8 +9,8 @@ bevy = { git = "https://github.com/bevyengine/bevy" }
 #bevy = { path = "/home/boris/work/rust/forks/bevy"}
 #bevy = "0.2.1"
 rand = "0.7.3"
-#bevy_rapier2d = { git = "https://github.com/dimforge/bevy_rapier"}
-bevy_rapier2d = { path = "/home/boris/work/rust/forks/bevy_rapier/bevy_rapier2d" }
+bevy_rapier2d = { git = "https://github.com/Bobox214/bevy_rapier" , branch="rapier_configuration"}
+#bevy_rapier2d = { path = "/home/boris/work/rust/forks/bevy_rapier/bevy_rapier2d" }
 #bevy_rapier2d = "0.2.0"
 
 
