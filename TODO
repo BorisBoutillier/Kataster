@@ -1,7 +1,4 @@
 ## Bugs
-. Audio for explosion finish in panic, but not lasers.
-. First firing is 'doubled', issue with timer.delta_seconds 
-
-## Improvments
-. UI : Life and Score
-. Add GamePad support -> use bevy_prototype_input_map ?
+. Audio for explosion finish in panic, but not lasers. Only in Debug mode, this seems to be a known rodio issue.
+. First firing is 'doubled', seems issue with timer.delta_seconds 
+. `Result::unwrap()` on an `Err` value: NoSuchEntity', double despawning of lasers or asteroids ? 

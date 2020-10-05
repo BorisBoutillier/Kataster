@@ -35,17 +35,18 @@ fn main() {
         .add_resource(ClearColor(Color::rgb_u8(5, 5, 10)))
         .add_event::<AsteroidSpawnEvent>()
         .add_event::<ExplosionSpawnEvent>()
-        .add_stage_after(stage::POST_UPDATE, "HANDLE_CONTACT")
-        .add_stage_after("HANDLE_CONTACT", "HANDLE_EXPLOSION")
-        .add_stage_after("HANDLE_EXPLOSION", "HANDLE_RUNSTATE")
-        .add_stage_after("HANDLE_RUNSTATE", "CLEANUP") // CLEANUP stage required by RapierUtilsPlugin
         .add_plugin(RapierPhysicsPlugin)
-        .add_plugin(RapierUtilsPlugin)
         .add_default_plugins()
         .add_resource(RapierConfiguration {
             gravity: Vector2::zeros(),
             ..Default::default()
         })
+        // Stage added after add_default_plugins, else something messes up CLEANUP
+        .add_stage_after(stage::POST_UPDATE, "HANDLE_CONTACT")
+        .add_stage_after("HANDLE_CONTACT", "HANDLE_EXPLOSION")
+        .add_stage_after("HANDLE_EXPLOSION", "HANDLE_RUNSTATE")
+        .add_stage_after("HANDLE_RUNSTATE", "CLEANUP") // CLEANUP stage required by RapierUtilsPlugin
+        .add_plugin(RapierUtilsPlugin)
         .add_system(position_system.system())
         .add_system(user_input_system.system())
         .add_system(player_dampening_system.system())
