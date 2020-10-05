@@ -11,8 +11,14 @@ pub struct Ship {
     pub cannon_timer: Timer,
 }
 
+pub struct UiScore {}
+pub struct UiLife {
+    pub min: u32,
+}
+
 pub enum ExplosionKind {
-    Ship,
+    ShipDead,
+    ShipContact,
     LaserOnAsteroid,
 }
 pub struct ExplosionSpawnEvent {

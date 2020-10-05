@@ -35,6 +35,7 @@ pub fn setup_arena(
         runstate.arena = Some(Arena {
             asteroid_spawn_timer: Timer::from_seconds(5.0, false),
         });
+        runstate.score = Some(0);
         spawn_player(commands, runstate, asset_server, materials);
     }
 }

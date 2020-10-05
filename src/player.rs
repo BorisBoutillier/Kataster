@@ -3,6 +3,7 @@ use bevy::app::AppExit;
 use super::components::*;
 use super::laser::*;
 use super::state::*;
+use super::START_LIFE;
 use bevy::prelude::*;
 use bevy_rapier2d::{
     na::Vector2,
@@ -39,7 +40,7 @@ pub fn spawn_player(
         .with(Ship {
             rotation_speed: 0.3,
             thrust: 60.0,
-            life: 1,
+            life: START_LIFE,
             cannon_timer: Timer::from_seconds(0.2, false),
         })
         .with(body)

@@ -3,7 +3,7 @@ use bevy_rapier2d::{
     physics::EventQueue,
     physics::RigidBodyHandleComponent,
     rapier::{
-        dynamics::{RigidBodySet},
+        dynamics::RigidBodySet,
         geometry::{ContactEvent, Proximity},
     },
 };
@@ -71,6 +71,16 @@ pub fn contact_system(
                         .get::<RigidBodyHandleComponent>(e2)
                         .unwrap()
                         .handle();
+                    runstate.score = runstate.score.and_then(|score| {
+                        Some(
+                            score
+                                + match asteroid.size {
+                                    AsteroidSize::Small => 40,
+                                    AsteroidSize::Medium => 20,
+                                    AsteroidSize::Big => 10,
+                                },
+                        )
+                    });
                     {
                         let laser_body = bodies.get(laser_handle).unwrap();
                         let asteroid_body = bodies.get(asteroid_handle).unwrap();
@@ -123,13 +133,18 @@ pub fn contact_system(
                     ship.life -= damage.value;
                     if ship.life <= 0 {
                         explosion_spawn_events.send(ExplosionSpawnEvent {
-                            kind: ExplosionKind::Ship,
+                            kind: ExplosionKind::ShipDead,
                             x: player_body.position.translation.x,
                             y: player_body.position.translation.y,
                         });
                         commands.despawn(e1);
                         runstate.gamestate.transit_to(GameState::GameOver);
                     } else {
+                        explosion_spawn_events.send(ExplosionSpawnEvent {
+                            kind: ExplosionKind::ShipContact,
+                            x: player_body.position.translation.x,
+                            y: player_body.position.translation.y,
+                        });
                     }
                 }
             }

@@ -22,12 +22,19 @@ pub fn spawn_explosion(
 ) {
     for event in state.event_reader.iter(&events) {
         let (texture_name, sound_name, start_scale, end_scale, duration) = match event.kind {
-            ExplosionKind::Ship => (
+            ExplosionKind::ShipDead => (
                 "assets/explosion01.png",
                 "assets/Explosion_ship.mp3",
                 0.1 / 15.0,
                 0.5 / 15.0,
                 1.5,
+            ),
+            ExplosionKind::ShipContact => (
+                "assets/flash00.png",
+                "assets/Explosion.mp3",
+                0.05 / 15.0,
+                0.1 / 15.0,
+                0.5,
             ),
             ExplosionKind::LaserOnAsteroid => (
                 "assets/flash00.png",

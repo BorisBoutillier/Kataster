@@ -19,6 +19,7 @@ pub struct RunState {
     pub gamestate: GameStateFsm<GameState>,
     pub player: Option<Entity>,
     pub arena: Option<Arena>,
+    pub score: Option<u32>,
 }
 
 impl RunState {
@@ -27,6 +28,7 @@ impl RunState {
             gamestate: GameStateFsm::new(start),
             player: None,
             arena: None,
+            score: None,
         }
     }
 }

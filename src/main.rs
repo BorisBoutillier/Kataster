@@ -22,6 +22,7 @@ use player::*;
 use rapier2d::*;
 use state::*;
 use ui::*;
+const START_LIFE: u32 = 3;
 
 fn main() {
     App::build()
@@ -54,6 +55,9 @@ fn main() {
         .add_system(setup_arena.system())
         .add_system(arena_spawn.system())
         .add_system(start_menu.system())
+        .add_system(game_ui_spawn.system())
+        .add_system(score_ui_system.system())
+        .add_system(life_ui_system.system())
         .add_system(gameover_menu.system())
         .add_system(pause_menu.system())
         .add_system(draw_blink_system.system())
