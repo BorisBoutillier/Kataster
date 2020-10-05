@@ -6,12 +6,26 @@ use bevy_rapier2d::{
     rapier::pipeline::PhysicsPipeline,
 };
 use std::collections::HashMap;
+
+/// Plugin for additional Rapier2d features.
+/// . A BodyHandleToEntity and EntityToBodyHandle resource.
+/// . An automatic rigid_body removal from rapier2d, requiring the existence of CLEANUP stage
+///   This stage must be after all stages that can despawn entities containing a RigidBody
+pub struct RapierUtilsPlugin;
+
+impl Plugin for RapierUtilsPlugin {
+    fn build(&self, app: &mut AppBuilder) {
+        app.add_resource(BodyHandleToEntity(HashMap::new()))
+            .add_resource(EntityToBodyHandle(HashMap::new()))
+            .add_system(body_to_entity_system.system())
+            .add_system_to_stage("CLEANUP", remove_rigid_body_system.system());
+    }
+}
 pub struct BodyHandleToEntity(pub HashMap<RigidBodyHandle, Entity>);
 pub struct EntityToBodyHandle(pub HashMap<Entity, RigidBodyHandle>);
 
-/// Keeps BodyHandleToEntity resource in sync.
-// TODO: handle removals.
-pub fn body_to_entity_system(
+/// Keeps BodyHandleToEntity, EntityToBodyHandle resource in sync.
+fn body_to_entity_system(
     mut bh_to_e: ResMut<BodyHandleToEntity>,
     mut e_to_bh: ResMut<EntityToBodyHandle>,
     mut added: Query<(Entity, Added<RigidBodyHandleComponent>)>,
@@ -24,7 +38,8 @@ pub fn body_to_entity_system(
 
 /// Detects when a RigidBodyHandle is removed from an entity, as it despawns
 /// And inform rapier about the removal
-pub fn remove_rigid_body_system(
+/// Requires the EntityToBodyHandle resource, as the
+fn remove_rigid_body_system(
     mut pipeline: ResMut<PhysicsPipeline>,
     mut broad_phase: ResMut<BroadPhase>,
     mut narrow_phase: ResMut<NarrowPhase>,

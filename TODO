@@ -1,7 +1,7 @@
 ## Bugs
 . Audio for explosion finish in panic, but not lasers.
+. First firing is 'doubled', issue with timer.delta_seconds 
 
 ## Improvments
 . UI : Life and Score
-. Spaceship continuous rate of fire
 . Add GamePad support -> use bevy_prototype_input_map ?
