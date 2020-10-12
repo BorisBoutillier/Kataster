@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_contrib_bobox::RapierUtilsPlugin;
 use bevy_rapier2d::physics::RapierConfiguration;
 use bevy_rapier2d::physics::RapierPhysicsPlugin;
 
@@ -8,7 +9,6 @@ mod contact;
 mod explosion;
 mod laser;
 mod player;
-mod rapier2d;
 mod state;
 mod ui;
 
@@ -19,7 +19,6 @@ use contact::*;
 use explosion::*;
 use laser::*;
 use player::*;
-use rapier2d::*;
 use state::*;
 use ui::*;
 const START_LIFE: u32 = 3;

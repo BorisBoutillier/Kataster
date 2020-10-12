@@ -1,7 +1,7 @@
 use bevy::prelude::*;
+use bevy_contrib_bobox::BodyHandleToEntity;
 use bevy_rapier2d::{
-    physics::EventQueue,
-    physics::RigidBodyHandleComponent,
+    physics::{EventQueue, RigidBodyHandleComponent},
     rapier::{
         dynamics::RigidBodySet,
         geometry::{ContactEvent, Proximity},
@@ -10,7 +10,6 @@ use bevy_rapier2d::{
 
 use super::arena::*;
 use super::components::*;
-use super::rapier2d::*;
 use super::state::*;
 use rand::{thread_rng, Rng};
 enum Contacts {

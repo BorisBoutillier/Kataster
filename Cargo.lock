@@ -246,6 +246,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_contrib_bobox"
+version = "0.1.0"
+source = "git+https://github.com/Bobox214/bevy_contrib_bobox#8fa7ade3c35d91712efbec633543ffee0e0bcde1"
+dependencies = [
+ "bevy",
+ "bevy_rapier2d",
+]
+
+[[package]]
 name = "bevy_core"
 version = "0.2.1"
 source = "git+https://github.com/bevyengine/bevy#22a2c88a476c85dcd23f19b25d5ac3f517d59edb"
@@ -427,8 +436,9 @@ dependencies = [
 
 [[package]]
 name = "bevy_rapier2d"
-version = "0.2.0"
-source = "git+https://github.com/Bobox214/bevy_rapier?branch=rapier_configuration#4c9569d2498e2e792eae2fb5f25925483c022ef6"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ad44db4a979e4696b6677a804713c97782dd42c295274703d01d2f4b329c341"
 dependencies = [
  "bevy",
  "concurrent-queue",
@@ -1798,6 +1808,7 @@ name = "kataster"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_contrib_bobox",
  "bevy_rapier2d",
  "rand",
 ]
@@ -2533,9 +2544,8 @@ checksum = "a871f1e45a3a3f0c73fb60343c811238bb5143a81642e27c2ac7aac27ff01a63"
 
 [[package]]
 name = "rapier2d"
-version = "0.1.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7dcede1595567885ba2a8b2f8136168d8ba151a08160681ce3ec84c3b70e68d"
+version = "0.2.0"
+source = "git+https://github.com/dimforge/rapier?branch=wquadtree_stack_overflow#76118d6885a0aa6420b4a5a13271e8087bde3a42"
 dependencies = [
  "approx",
  "arrayvec",
@@ -2757,9 +2767,9 @@ checksum = "7fdf1b9db47230893d76faad238fd6097fd6d6a9245cd7a4d90dbd639536bbd2"
 
 [[package]]
 name = "simba"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1585d831b5c904e42c4df7a4fcfa03e4b56a8cfa445aff0a04f4effe397ecac9"
+checksum = "cdec3fb717e5504ecbef1cf4223c334a215f95323092afeae57125ec40e4995b"
 dependencies = [
  "approx",
  "num-complex",

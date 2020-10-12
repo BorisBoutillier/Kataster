@@ -129,14 +129,14 @@ pub fn user_input_system(
                 let ship = query.get::<Ship>(player).unwrap();
                 if rotation != 0 {
                     let rotation = rotation as f32 * ship.rotation_speed;
-                    body.wake_up();
+                    body.wake_up(true);
                     body.apply_torque_impulse(rotation);
                 }
                 if thrust != 0 {
                     let force = body.position.rotation.transform_vector(&Vector2::y())
                         * thrust as f32
                         * ship.thrust;
-                    body.wake_up();
+                    body.wake_up(true);
                     body.apply_force(force);
                 }
             }
@@ -154,7 +154,7 @@ pub fn user_input_system(
         }
         if input.just_pressed(KeyCode::Escape) {
             runstate.gamestate.transit_to(GameState::Pause);
-            rapier_configuration.active = false;
+            rapier_configuration.physics_pipeline_active = false;
         }
     } else if runstate.gamestate.is(GameState::StartMenu) {
         if input.just_pressed(KeyCode::Return) {
@@ -173,7 +173,7 @@ pub fn user_input_system(
     } else if runstate.gamestate.is(GameState::Pause) {
         if input.just_pressed(KeyCode::Escape) {
             runstate.gamestate.transit_to(GameState::Game);
-            rapier_configuration.active = true;
+            rapier_configuration.physics_pipeline_active = true;
         }
     }
 }
