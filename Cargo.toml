@@ -21,4 +21,4 @@ bevy_contrib_bobox = {git = "https://github.com/Bobox214/bevy_contrib_bobox", fe
 [patch.crates-io]
 bevy= {git="https://github.com/bevyengine/bevy"}
 #bevy = { path = "/home/boris/work/rust/forks/bevy"}
-rapier2d = {git="https://github.com/dimforge/rapier", branch="wquadtree_stack_overflow"}
+rapier2d = {git="https://github.com/dimforge/rapier"}

@@ -107,8 +107,10 @@ pub fn user_input_system(
     mut app_exit_events: ResMut<Events<AppExit>>,
     query: Query<(&RigidBodyHandleComponent, Mut<Ship>)>,
 ) {
-    if input.just_pressed(KeyCode::Back) {
-        runstate.gamestate.transit_to(GameState::StartMenu);
+    if !runstate.gamestate.is(GameState::StartMenu) {
+        if input.just_pressed(KeyCode::Back) {
+            runstate.gamestate.transit_to(GameState::StartMenu);
+        }
     }
     if runstate.gamestate.is(GameState::Game) {
         let player = runstate.player.unwrap();
