@@ -35,7 +35,7 @@ fn main() {
         .add_event::<AsteroidSpawnEvent>()
         .add_event::<ExplosionSpawnEvent>()
         .add_plugin(RapierPhysicsPlugin)
-        .add_default_plugins()
+        .add_plugins(DefaultPlugins)
         .add_resource(RapierConfiguration {
             gravity: Vector2::zeros(),
             ..Default::default()
@@ -80,15 +80,20 @@ pub fn setup(
 ) {
     commands
         .spawn(Camera2dComponents {
-            transform: Transform::from_scale(CAMERA_SCALE),
+            transform: Transform {
+                scale: Vec3::splat(CAMERA_SCALE),
+                ..Default::default()
+            },
             ..Default::default()
         })
         .spawn(UiCameraComponents::default());
-    let texture_handle = asset_server
-        .load("assets/pexels-francesco-ungaro-998641.png")
-        .unwrap();
+    let texture_handle = asset_server.load("pexels-francesco-ungaro-998641.png");
     commands.spawn(SpriteComponents {
-        transform: Transform::from_translation(Vec3::new(0.0, 0.0, -10.0)).with_scale(CAMERA_SCALE),
+        transform: Transform {
+            translation: Vec3::new(0.0, 0.0, -10.0),
+            scale: Vec3::splat(CAMERA_SCALE),
+            ..Default::default()
+        },
         material: materials.add(texture_handle.into()),
         ..Default::default()
     });

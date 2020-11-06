@@ -15,9 +15,9 @@ pub fn spawn_laser(
     parent_body: &RigidBody,
     asset_server: Res<AssetServer>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    audio_output: Res<AudioOutput>,
+    audio: Res<Audio>,
 ) {
-    let texture_handle = asset_server.load("assets/laserRed07.png").unwrap();
+    let texture_handle = asset_server.load("laserRed07.png");
     let v = parent_body.position.rotation * Vector2::y() * 50.0;
     let body = RigidBodyBuilder::new_dynamic()
         .position(parent_body.position)
@@ -26,12 +26,15 @@ pub fn spawn_laser(
     let collider = ColliderBuilder::cuboid(0.25, 1.0).sensor(true);
     commands
         .spawn(SpriteComponents {
-            transform: Transform::from_translation(Vec3::new(
-                parent_body.position.translation.x,
-                parent_body.position.translation.y,
-                -4.0,
-            ))
-            .with_scale(1.0 / 18.0),
+            transform: Transform {
+                translation: Vec3::new(
+                    parent_body.position.translation.x,
+                    parent_body.position.translation.y,
+                    -4.0,
+                ),
+                scale: Vec3::splat(1.0 / 18.0),
+                ..Default::default()
+            },
             material: materials.add(texture_handle.into()),
             ..Default::default()
         })
@@ -43,8 +46,8 @@ pub fn spawn_laser(
         .with(ForStates {
             states: vec![GameState::Game, GameState::Pause, GameState::GameOver],
         });
-    let sound = asset_server.load("assets/sfx_laser1.mp3").unwrap();
-    audio_output.play(sound);
+    let sound = asset_server.load("sfx_laser1.mp3");
+    audio.play(sound);
 }
 
 pub fn despawn_laser_system(
@@ -54,7 +57,7 @@ pub fn despawn_laser_system(
     mut query: Query<(Entity, Mut<Laser>)>,
 ) {
     if runstate.gamestate.is(GameState::Game) {
-        for (entity, mut laser) in &mut query.iter() {
+        for (entity, mut laser) in query.iter_mut() {
             laser.despawn_timer.tick(time.delta_seconds);
             if laser.despawn_timer.finished {
                 commands.despawn(entity);

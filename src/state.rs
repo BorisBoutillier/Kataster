@@ -40,7 +40,7 @@ pub fn runstate_fsm(mut runstate: ResMut<RunState>) {
 pub fn state_exit_despawn(
     mut commands: Commands,
     runstate: ResMut<RunState>,
-    mut query: Query<(Entity, &ForStates)>,
+    query: Query<(Entity, &ForStates)>,
 ) {
     for (entity, for_states) in &mut query.iter() {
         if runstate.gamestate.exiting_one_of(&for_states.states)

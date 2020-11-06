@@ -17,38 +17,33 @@ pub fn spawn_explosion(
     mut state: Local<SpawnExplosionState>,
     asset_server: Res<AssetServer>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    audio_output: Res<AudioOutput>,
+    audio: Res<Audio>,
     events: Res<Events<ExplosionSpawnEvent>>,
 ) {
     for event in state.event_reader.iter(&events) {
         let (texture_name, sound_name, start_scale, end_scale, duration) = match event.kind {
             ExplosionKind::ShipDead => (
-                "assets/explosion01.png",
-                "assets/Explosion_ship.mp3",
+                "explosion01.png",
+                "Explosion_ship.mp3",
                 0.1 / 15.0,
                 0.5 / 15.0,
                 1.5,
             ),
-            ExplosionKind::ShipContact => (
-                "assets/flash00.png",
-                "assets/Explosion.mp3",
-                0.05 / 15.0,
-                0.1 / 15.0,
-                0.5,
-            ),
-            ExplosionKind::LaserOnAsteroid => (
-                "assets/flash00.png",
-                "assets/Explosion.mp3",
-                0.1 / 15.0,
-                0.15 / 15.0,
-                0.5,
-            ),
+            ExplosionKind::ShipContact => {
+                ("flash00.png", "Explosion.mp3", 0.05 / 15.0, 0.1 / 15.0, 0.5)
+            }
+            ExplosionKind::LaserOnAsteroid => {
+                ("flash00.png", "Explosion.mp3", 0.1 / 15.0, 0.15 / 15.0, 0.5)
+            }
         };
-        let texture_handle = asset_server.load(texture_name).unwrap();
+        let texture_handle = asset_server.load(texture_name);
         commands
             .spawn(SpriteComponents {
-                transform: Transform::from_translation(Vec3::new(event.x, event.y, -1.0))
-                    .with_scale(start_scale),
+                transform: Transform {
+                    translation: Vec3::new(event.x, event.y, -1.0),
+                    scale: Vec3::splat(start_scale),
+                    ..Default::default()
+                },
                 material: materials.add(texture_handle.into()),
                 ..Default::default()
             })
@@ -60,8 +55,8 @@ pub fn spawn_explosion(
             .with(ForStates {
                 states: vec![GameState::Game, GameState::Pause, GameState::GameOver],
             });
-        let sound = asset_server.load(sound_name).unwrap();
-        audio_output.play(sound);
+        let sound = asset_server.load(sound_name);
+        audio.play(sound);
     }
 }
 
@@ -71,12 +66,12 @@ pub fn handle_explosion(
     mut query: Query<(Entity, Mut<Transform>, Mut<Explosion>)>,
 ) {
     let elapsed = time.delta_seconds;
-    for (entity, mut transform, mut explosion) in &mut query.iter() {
+    for (entity, mut transform, mut explosion) in query.iter_mut() {
         explosion.timer.tick(elapsed);
         if explosion.timer.finished {
             commands.despawn(entity);
         } else {
-            transform.set_scale(
+            transform.scale = Vec3::splat(
                 explosion.start_scale
                     + (explosion.end_scale - explosion.start_scale)
                         * (explosion.timer.elapsed / explosion.timer.duration),

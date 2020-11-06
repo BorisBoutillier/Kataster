@@ -21,7 +21,7 @@ pub fn spawn_player(
     asset_server: Res<AssetServer>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    let texture_handle = asset_server.load("assets/playerShip2_red.png").unwrap();
+    let texture_handle = asset_server.load("playerShip2_red.png");
     let body = RigidBodyBuilder::new_dynamic();
     let collider = ColliderBuilder::ball(1.0);
     // The triangle Collider does not compute mass
@@ -32,8 +32,11 @@ pub fn spawn_player(
     //);
     commands
         .spawn(SpriteComponents {
-            transform: Transform::from_translation(Vec3::new(0.0, 0.0, -5.0))
-                .with_scale(1.0 / 37.0),
+            transform: Transform {
+                translation: Vec3::new(0.0, 0.0, -5.0),
+                scale: Vec3::splat(1.0 / 37.0),
+                ..Default::default()
+            },
             material: materials.add(texture_handle.into()),
             ..Default::default()
         })
@@ -80,7 +83,9 @@ pub fn player_dampening_system(
     query: Query<&RigidBodyHandleComponent>,
 ) {
     if runstate.gamestate.is(GameState::Game) {
-        if let Ok(body_handle) = query.get::<RigidBodyHandleComponent>(runstate.player.unwrap()) {
+        if let Ok(body_handle) =
+            query.get_component::<RigidBodyHandleComponent>(runstate.player.unwrap())
+        {
             let elapsed = time.delta_seconds;
             let mut body = bodies.get_mut(body_handle.handle()).unwrap();
             body.angvel = body.angvel * 0.1f32.powf(elapsed);
@@ -90,7 +95,7 @@ pub fn player_dampening_system(
 }
 
 pub fn ship_cannon_system(time: Res<Time>, mut ship: Query<Mut<Ship>>) {
-    for mut ship in &mut ship.iter() {
+    for mut ship in ship.iter_mut() {
         ship.cannon_timer.tick(time.delta_seconds);
     }
 }
@@ -99,13 +104,13 @@ pub fn user_input_system(
     commands: Commands,
     asset_server: Res<AssetServer>,
     materials: ResMut<Assets<ColorMaterial>>,
-    audio_output: Res<AudioOutput>,
+    audio: Res<Audio>,
     mut runstate: ResMut<RunState>,
     input: Res<Input<KeyCode>>,
     mut rapier_configuration: ResMut<RapierConfiguration>,
     mut bodies: ResMut<RigidBodySet>,
     mut app_exit_events: ResMut<Events<AppExit>>,
-    query: Query<(&RigidBodyHandleComponent, Mut<Ship>)>,
+    mut query: Query<(&RigidBodyHandleComponent, Mut<Ship>)>,
 ) {
     if !runstate.gamestate.is(GameState::StartMenu) {
         if input.just_pressed(KeyCode::Back) {
@@ -126,9 +131,9 @@ pub fn user_input_system(
             rotation -= 1
         }
         if rotation != 0 || thrust != 0 {
-            if let Ok(body_handle) = query.get::<RigidBodyHandleComponent>(player) {
+            if let Ok(body_handle) = query.get_component::<RigidBodyHandleComponent>(player) {
                 let mut body = bodies.get_mut(body_handle.handle()).unwrap();
-                let ship = query.get::<Ship>(player).unwrap();
+                let ship = query.get_component::<Ship>(player).unwrap();
                 if rotation != 0 {
                     let rotation = rotation as f32 * ship.rotation_speed;
                     body.wake_up(true);
@@ -144,12 +149,10 @@ pub fn user_input_system(
             }
         }
         if input.pressed(KeyCode::Space) {
-            if let Ok(mut ship) = query.get_mut::<Ship>(player) {
+            if let Ok((body_handle, mut ship)) = query.get_mut(player) {
                 if ship.cannon_timer.finished {
-                    if let Ok(body_handle) = query.get::<RigidBodyHandleComponent>(player) {
-                        let body = bodies.get(body_handle.handle()).unwrap();
-                        spawn_laser(commands, body, asset_server, materials, audio_output);
-                    }
+                    let body = bodies.get(body_handle.handle()).unwrap();
+                    spawn_laser(commands, body, asset_server, materials, audio);
                     ship.cannon_timer.reset();
                 }
             }

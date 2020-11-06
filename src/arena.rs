@@ -53,13 +53,11 @@ pub fn spawn_asteroid_system(
     events: Res<Events<AsteroidSpawnEvent>>,
 ) {
     for event in local_state.event_reader.iter(&events) {
-        let texture_handle = asset_server
-            .load(match event.size {
-                AsteroidSize::Big => "assets/meteorBrown_big1.png",
-                AsteroidSize::Medium => "assets/meteorBrown_med1.png",
-                AsteroidSize::Small => "assets/meteorBrown_small1.png",
-            })
-            .unwrap();
+        let texture_handle = asset_server.load(match event.size {
+            AsteroidSize::Big => "meteorBrown_big1.png",
+            AsteroidSize::Medium => "meteorBrown_med1.png",
+            AsteroidSize::Small => "meteorBrown_small1.png",
+        });
         let radius = match event.size {
             AsteroidSize::Big => 10.1 / 2.0,
             AsteroidSize::Medium => 4.3 / 2.0,
@@ -72,8 +70,11 @@ pub fn spawn_asteroid_system(
         let collider = ColliderBuilder::ball(radius).friction(-0.3);
         commands
             .spawn(SpriteComponents {
-                transform: Transform::from_translation(Vec3::new(event.x, event.y, -5.0))
-                    .with_scale(1.0 / 10.0),
+                transform: Transform {
+                    translation: Vec3::new(event.x, event.y, -5.0),
+                    scale: Vec3::splat(1.0 / 10.0),
+                    ..Default::default()
+                },
                 material: materials.add(texture_handle.into()),
                 ..Default::default()
             })
@@ -91,13 +92,13 @@ pub fn arena_spawn(
     time: Res<Time>,
     mut runstate: ResMut<RunState>,
     mut asteroid_spawn_events: ResMut<Events<AsteroidSpawnEvent>>,
-    mut asteroids: Query<&Asteroid>,
+    asteroids: Query<&Asteroid>,
 ) {
     if runstate.gamestate.is(GameState::Game) {
         let mut arena = runstate.arena.as_mut().unwrap();
         arena.asteroid_spawn_timer.tick(time.delta_seconds);
         if arena.asteroid_spawn_timer.finished {
-            let n_asteroid = asteroids.iter().iter().count();
+            let n_asteroid = asteroids.iter().count();
             arena.asteroid_spawn_timer.reset();
             if n_asteroid < 20 {
                 arena.asteroid_spawn_timer.duration =
@@ -134,7 +135,7 @@ pub fn arena_spawn(
 pub fn position_system(
     runstate: Res<RunState>,
     mut bodies: ResMut<RigidBodySet>,
-    mut query: Query<&RigidBodyHandleComponent>,
+    query: Query<&RigidBodyHandleComponent>,
 ) {
     if runstate.gamestate.is(GameState::Game) {
         for body_handle in &mut query.iter() {

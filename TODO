@@ -1,2 +1,4 @@
 ## Bugs
-. Audio for explosion finish in panic, but not lasers. Only in Debug mode, this seems to be a known rodio issue.
+. UI disapearing issues.
+. Audio playing is weird.
+. TextureId(xxx) panics sometimes.

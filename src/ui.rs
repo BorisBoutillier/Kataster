@@ -12,7 +12,7 @@ pub fn start_menu(
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     if runstate.gamestate.entering(GameState::StartMenu) {
-        let font_handle = asset_server.load("assets/kenvector_future.ttf").unwrap();
+        let font_handle = asset_server.load("kenvector_future.ttf");
         commands
             .spawn(NodeComponents {
                 style: Style {
@@ -40,7 +40,7 @@ pub fn start_menu(
                         },
                         text: Text {
                             value: "Kataster".to_string(),
-                            font: font_handle,
+                            font: font_handle.clone(),
                             style: TextStyle {
                                 font_size: 100.0,
                                 color: Color::rgb_u8(0x00, 0xAA, 0xAA),
@@ -57,7 +57,7 @@ pub fn start_menu(
                         },
                         text: Text {
                             value: "enter".to_string(),
-                            font: font_handle,
+                            font: font_handle.clone(),
                             style: TextStyle {
                                 font_size: 50.0,
                                 color: Color::rgb_u8(0x00, 0x44, 0x44),
@@ -80,7 +80,7 @@ pub fn gameover_menu(
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     if runstate.gamestate.entering(GameState::GameOver) {
-        let font_handle = asset_server.load("assets/kenvector_future.ttf").unwrap();
+        let font_handle = asset_server.load("kenvector_future.ttf");
         commands
             .spawn(NodeComponents {
                 style: Style {
@@ -108,7 +108,7 @@ pub fn gameover_menu(
                         },
                         text: Text {
                             value: "Game Over".to_string(),
-                            font: font_handle,
+                            font: font_handle.clone(),
                             style: TextStyle {
                                 font_size: 100.0,
                                 color: Color::rgb_u8(0xAA, 0x22, 0x22),
@@ -125,10 +125,10 @@ pub fn gameover_menu(
                         },
                         text: Text {
                             value: "enter".to_string(),
-                            font: font_handle,
+                            font: font_handle.clone(),
                             style: TextStyle {
                                 font_size: 50.0,
-                                color: Color::rgb_u8(0x44, 0x11, 0x11),
+                                color: Color::rgb_u8(0x88, 0x22, 0x22),
                             },
                         },
                         ..Default::default()
@@ -148,7 +148,7 @@ pub fn pause_menu(
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     if runstate.gamestate.entering(GameState::Pause) {
-        let font_handle = asset_server.load("assets/kenvector_future.ttf").unwrap();
+        let font_handle = asset_server.load("kenvector_future.ttf");
         commands
             .spawn(NodeComponents {
                 style: Style {
@@ -209,7 +209,7 @@ pub fn game_ui_spawn(
         .gamestate
         .entering_not_from(GameState::Game, GameState::Pause)
     {
-        let font_handle = asset_server.load("assets/kenvector_future.ttf").unwrap();
+        let font_handle = asset_server.load("kenvector_future.ttf");
         commands
             .spawn(NodeComponents {
                 style: Style {
@@ -292,12 +292,8 @@ pub fn game_ui_spawn(
                                 },
                                 ..Default::default()
                             },
-                            material: materials.add(
-                                asset_server
-                                    .load("assets/playerLife1_red.png")
-                                    .unwrap()
-                                    .into(),
-                            ),
+                            material: materials
+                                .add(asset_server.load("playerLife1_red.png").into()),
                             draw: Draw {
                                 is_transparent: true,
                                 ..Default::default()
@@ -325,8 +321,8 @@ pub fn life_ui_system(
 ) {
     if runstate.gamestate.is(GameState::Game) {
         if let Some(player) = runstate.player {
-            if let Ok(ship) = ship_query.get::<Ship>(player) {
-                for (mut draw, uilife) in &mut uilife_query.iter() {
+            if let Ok(ship) = ship_query.get_component::<Ship>(player) {
+                for (mut draw, uilife) in uilife_query.iter_mut() {
                     draw.is_visible = ship.life >= uilife.min;
                 }
             }
