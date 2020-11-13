@@ -1,4 +1,2 @@
 ## Bugs
-. UI disapearing issues.
-. Audio playing is weird.
 . TextureId(xxx) panics sometimes.

@@ -97,4 +97,8 @@ pub fn setup(
         material: materials.add(texture_handle.into()),
         ..Default::default()
     });
+    // Workaround for bevy issue #824
+    // Store the font handle as a resource, so that its ref_count never reach 0.
+    let font_handle: Handle<Font> = asset_server.load("kenvector_future.ttf");
+    commands.insert_resource(font_handle);
 }

@@ -244,7 +244,7 @@ pub fn game_ui_spawn(
                             ..Default::default()
                         },
                         text: Text {
-                            value: "00".to_string(),
+                            value: "0".to_string(),
                             font: font_handle,
                             style: TextStyle {
                                 font_size: 50.0,
