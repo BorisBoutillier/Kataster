@@ -48,20 +48,14 @@ pub struct SpawnAsteroidState {
 pub fn spawn_asteroid_system(
     mut commands: Commands,
     mut local_state: Local<SpawnAsteroidState>,
-    asset_server: Res<AssetServer>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    runstate: Res<RunState>,
     events: Res<Events<AsteroidSpawnEvent>>,
 ) {
     for event in local_state.event_reader.iter(&events) {
-        let texture_handle = asset_server.load(match event.size {
-            AsteroidSize::Big => "meteorBrown_big1.png",
-            AsteroidSize::Medium => "meteorBrown_med1.png",
-            AsteroidSize::Small => "meteorBrown_small1.png",
-        });
-        let radius = match event.size {
-            AsteroidSize::Big => 10.1 / 2.0,
-            AsteroidSize::Medium => 4.3 / 2.0,
-            AsteroidSize::Small => 2.8 / 2.0,
+        let (sprite_handle, radius) = match event.size {
+            AsteroidSize::Big => (runstate.meteor_big_handle.clone(), 10.1 / 2.0),
+            AsteroidSize::Medium => (runstate.meteor_med_handle.clone(), 4.3 / 2.0),
+            AsteroidSize::Small => (runstate.meteor_small_handle.clone(), 2.8 / 2.0),
         };
         let body = RigidBodyBuilder::new_dynamic()
             .translation(event.x, event.y)
@@ -75,7 +69,7 @@ pub fn spawn_asteroid_system(
                     scale: Vec3::splat(1.0 / 10.0),
                     ..Default::default()
                 },
-                material: materials.add(texture_handle.into()),
+                material: sprite_handle.clone(),
                 ..Default::default()
             })
             .with(Asteroid { size: event.size })

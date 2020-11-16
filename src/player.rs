@@ -102,8 +102,6 @@ pub fn ship_cannon_system(time: Res<Time>, mut ship: Query<Mut<Ship>>) {
 
 pub fn user_input_system(
     commands: Commands,
-    asset_server: Res<AssetServer>,
-    materials: ResMut<Assets<ColorMaterial>>,
     audio: Res<Audio>,
     mut runstate: ResMut<RunState>,
     input: Res<Input<KeyCode>>,
@@ -152,7 +150,7 @@ pub fn user_input_system(
             if let Ok((body_handle, mut ship)) = query.get_mut(player) {
                 if ship.cannon_timer.finished {
                     let body = bodies.get(body_handle.handle()).unwrap();
-                    spawn_laser(commands, body, asset_server, materials, audio);
+                    spawn_laser(commands, body, &runstate, audio);
                     ship.cannon_timer.reset();
                 }
             }

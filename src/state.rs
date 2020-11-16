@@ -20,15 +20,32 @@ pub struct RunState {
     pub player: Option<Entity>,
     pub arena: Option<Arena>,
     pub score: Option<u32>,
+    // Store the most used asset handles
+    pub font_handle: Handle<Font>,
+    pub laser_texture_handle: Handle<ColorMaterial>,
+    pub laser_audio_handle: Handle<AudioSource>,
+    pub meteor_big_handle: Handle<ColorMaterial>,
+    pub meteor_med_handle: Handle<ColorMaterial>,
+    pub meteor_small_handle: Handle<ColorMaterial>,
 }
 
 impl RunState {
-    pub fn new(start: GameState) -> RunState {
+    pub fn new(
+        start: GameState,
+        asset_server: &AssetServer,
+        mut materials: ResMut<Assets<ColorMaterial>>,
+    ) -> RunState {
         RunState {
             gamestate: GameStateFsm::new(start),
             player: None,
             arena: None,
             score: None,
+            font_handle: asset_server.load("kenvector_future.ttf"),
+            laser_texture_handle: materials.add(asset_server.load("laserRed07.png").into()),
+            laser_audio_handle: asset_server.load("sfx_laser1.mp3"),
+            meteor_big_handle: materials.add(asset_server.load("meteorBrown_big1.png").into()),
+            meteor_med_handle: materials.add(asset_server.load("meteorBrown_med1.png").into()),
+            meteor_small_handle: materials.add(asset_server.load("meteorBrown_small1.png").into()),
         }
     }
 }
