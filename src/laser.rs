@@ -16,18 +16,13 @@ pub fn spawn_laser(
     runstate: &RunState,
     audio: Res<Audio>,
 ) {
-    let v = parent_body.position.rotation * Vector2::y() * 50.0;
-    let body = RigidBodyBuilder::new_dynamic()
-        .position(parent_body.position)
-        .rotation(parent_body.position.rotation.angle())
-        .linvel(v.x, v.y);
-    let collider = ColliderBuilder::cuboid(0.25, 1.0).sensor(true);
-    commands
+    let v = parent_body.position().rotation * Vector2::y() * 50.0;
+    let entity = commands
         .spawn(SpriteComponents {
             transform: Transform {
                 translation: Vec3::new(
-                    parent_body.position.translation.x,
-                    parent_body.position.translation.y,
+                    parent_body.position().translation.x,
+                    parent_body.position().translation.y,
                     -4.0,
                 ),
                 scale: Vec3::splat(1.0 / 18.0),
@@ -39,11 +34,18 @@ pub fn spawn_laser(
         .with(Laser {
             despawn_timer: Timer::from_seconds(2.0, false),
         })
-        .with(body)
-        .with(collider)
         .with(ForStates {
             states: vec![GameState::Game, GameState::Pause, GameState::GameOver],
-        });
+        })
+        .current_entity()
+        .unwrap();
+    let body = RigidBodyBuilder::new_dynamic()
+        .position(parent_body.position().clone())
+        .rotation(parent_body.position().rotation.angle())
+        .linvel(v.x, v.y)
+        .user_data(entity.to_bits() as u128);
+    let collider = ColliderBuilder::cuboid(0.25, 1.0).sensor(true);
+    commands.insert(entity, (body, collider));
     audio.play(runstate.laser_audio_handle.clone());
 }
 

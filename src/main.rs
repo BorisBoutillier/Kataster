@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_contrib_bobox::RapierUtilsPlugin;
 use bevy_rapier2d::physics::RapierConfiguration;
 use bevy_rapier2d::physics::RapierPhysicsPlugin;
 
@@ -38,14 +37,9 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_resource(RapierConfiguration {
             gravity: Vector2::zeros(),
+            time_dependent_number_of_timesteps: true, // In bevy_rapier 0.6.2, if false cannot pause physics.
             ..Default::default()
         })
-        // Stage added after add_default_plugins, else something messes up CLEANUP
-        .add_stage_after(stage::POST_UPDATE, "HANDLE_CONTACT")
-        .add_stage_after("HANDLE_CONTACT", "HANDLE_EXPLOSION")
-        .add_stage_after("HANDLE_EXPLOSION", "HANDLE_RUNSTATE")
-        .add_stage_after("HANDLE_RUNSTATE", "CLEANUP") // CLEANUP stage required by RapierUtilsPlugin
-        .add_plugin(RapierUtilsPlugin)
         .add_system(position_system.system())
         .add_system(user_input_system.system())
         .add_system(player_dampening_system.system())
@@ -62,11 +56,11 @@ fn main() {
         .add_system(pause_menu.system())
         .add_system(draw_blink_system.system())
         .add_system(state_exit_despawn.system())
+        .add_system(contact_system.system())
+        .add_system(spawn_asteroid_system.system())
+        .add_system(spawn_explosion.system())
+        .add_system(runstate_fsm.system())
         .add_startup_system(setup.system())
-        .add_system_to_stage(stage::POST_UPDATE, contact_system.system())
-        .add_system_to_stage("HANDLE_CONTACT", spawn_asteroid_system.system())
-        .add_system_to_stage("HANDLE_EXPLOSION", spawn_explosion.system())
-        .add_system_to_stage("HANDLE_RUNSTATE", runstate_fsm.system())
         .run();
 }
 

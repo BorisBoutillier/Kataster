@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_contrib_bobox::BodyHandleToEntity;
 use bevy_rapier2d::{
     physics::{EventQueue, RigidBodyHandleComponent},
     rapier::{
@@ -23,7 +22,6 @@ pub fn contact_system(
     mut explosion_spawn_events: ResMut<Events<ExplosionSpawnEvent>>,
     mut runstate: ResMut<RunState>,
     events: Res<EventQueue>,
-    bh_to_e: Res<BodyHandleToEntity>,
     bodies: ResMut<RigidBodySet>,
     damages: Query<&Damage>,
     mut ships: Query<Mut<Ship>>,
@@ -36,8 +34,10 @@ pub fn contact_system(
         while let Ok(contact_event) = events.contact_events.pop() {
             match contact_event {
                 ContactEvent::Started(h1, h2) => {
-                    let e1 = *(bh_to_e.0.get(&h1).unwrap());
-                    let e2 = *(bh_to_e.0.get(&h2).unwrap());
+                    let b1 = bodies.get(h1).unwrap();
+                    let b2 = bodies.get(h2).unwrap();
+                    let e1 = Entity::from_bits(b1.user_data as u64);
+                    let e2 = Entity::from_bits(b2.user_data as u64);
                     if ships.get_component::<Ship>(e1).is_ok()
                         && damages.get_component::<Damage>(e2).is_ok()
                     {
@@ -53,8 +53,10 @@ pub fn contact_system(
         }
         while let Ok(proximity_event) = events.proximity_events.pop() {
             if proximity_event.new_status == Proximity::Intersecting {
-                let e1 = *(bh_to_e.0.get(&proximity_event.collider1).unwrap());
-                let e2 = *(bh_to_e.0.get(&proximity_event.collider2).unwrap());
+                let b1 = bodies.get(proximity_event.collider1).unwrap();
+                let b2 = bodies.get(proximity_event.collider2).unwrap();
+                let e1 = Entity::from_bits(b1.user_data as u64);
+                let e2 = Entity::from_bits(b2.user_data as u64);
                 if asteroids.get_component::<Asteroid>(e2).is_ok()
                     && lasers.get_component::<Laser>(e1).is_ok()
                 {
@@ -94,8 +96,8 @@ pub fn contact_system(
 
                         explosion_spawn_events.send(ExplosionSpawnEvent {
                             kind: ExplosionKind::LaserOnAsteroid,
-                            x: laser_body.position.translation.x,
-                            y: laser_body.position.translation.y,
+                            x: laser_body.position().translation.x,
+                            y: laser_body.position().translation.y,
                         });
                         if asteroid.size != AsteroidSize::Small {
                             let (size, radius) = match asteroid.size {
@@ -105,9 +107,9 @@ pub fn contact_system(
                             };
                             let mut rng = thread_rng();
                             for _ in 0..rng.gen_range(1, 4) {
-                                let x = asteroid_body.position.translation.x
+                                let x = asteroid_body.position().translation.x
                                     + rng.gen_range(-radius, radius);
-                                let y = asteroid_body.position.translation.y
+                                let y = asteroid_body.position().translation.y
                                     + rng.gen_range(-radius, radius);
                                 let vx = rng.gen_range(-ARENA_WIDTH / radius, ARENA_WIDTH / radius);
                                 let vy =
@@ -118,7 +120,7 @@ pub fn contact_system(
                                     y,
                                     vx,
                                     vy,
-                                    angvel: asteroid_body.angvel,
+                                    angvel: asteroid_body.angvel(),
                                 });
                             }
                         }
@@ -141,16 +143,16 @@ pub fn contact_system(
                     if ship.life <= 0 {
                         explosion_spawn_events.send(ExplosionSpawnEvent {
                             kind: ExplosionKind::ShipDead,
-                            x: player_body.position.translation.x,
-                            y: player_body.position.translation.y,
+                            x: player_body.position().translation.x,
+                            y: player_body.position().translation.y,
                         });
                         commands.despawn(e1);
                         runstate.gamestate.transit_to(GameState::GameOver);
                     } else {
                         explosion_spawn_events.send(ExplosionSpawnEvent {
                             kind: ExplosionKind::ShipContact,
-                            x: player_body.position.translation.x,
-                            y: player_body.position.translation.y,
+                            x: player_body.position().translation.x,
+                            y: player_body.position().translation.y,
                         });
                     }
                 }

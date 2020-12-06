@@ -22,14 +22,6 @@ pub fn spawn_player(
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     let texture_handle = asset_server.load("playerShip2_red.png");
-    let body = RigidBodyBuilder::new_dynamic();
-    let collider = ColliderBuilder::ball(1.0);
-    // The triangle Collider does not compute mass
-    //let collider = ColliderBuilder::triangle(
-    //    Point::new(1.0, -0.5),
-    //    Point::new(0.0, 0.8),
-    //    Point::new(-1.0, -0.5),
-    //);
     commands
         .spawn(SpriteComponents {
             transform: Transform {
@@ -46,12 +38,19 @@ pub fn spawn_player(
             life: START_LIFE,
             cannon_timer: Timer::from_seconds(0.2, false),
         })
-        .with(body)
-        .with(collider)
         .with(ForStates {
             states: vec![GameState::Game, GameState::Pause, GameState::GameOver],
         });
     let player_entity = commands.current_entity().unwrap();
+    let body = RigidBodyBuilder::new_dynamic().user_data(player_entity.to_bits() as u128);
+    let collider = ColliderBuilder::ball(1.0);
+    // The triangle Collider does not compute mass
+    //let collider = ColliderBuilder::triangle(
+    //    Point::new(1.0, -0.5),
+    //    Point::new(0.0, 0.8),
+    //    Point::new(-1.0, -0.5),
+    //);
+    commands.insert(player_entity, (body, collider));
     runstate.player = Some(player_entity);
 
     // Helper points to visualize some points in space for Collider
@@ -87,9 +86,9 @@ pub fn player_dampening_system(
             query.get_component::<RigidBodyHandleComponent>(runstate.player.unwrap())
         {
             let elapsed = time.delta_seconds;
-            let mut body = bodies.get_mut(body_handle.handle()).unwrap();
-            body.angvel = body.angvel * 0.1f32.powf(elapsed);
-            body.linvel = body.linvel * 0.8f32.powf(elapsed);
+            let body = bodies.get_mut(body_handle.handle()).unwrap();
+            body.set_angvel(body.angvel() * 0.1f32.powf(elapsed), false);
+            body.set_linvel(body.linvel() * 0.8f32.powf(elapsed), false);
         }
     }
 }
@@ -130,19 +129,17 @@ pub fn user_input_system(
         }
         if rotation != 0 || thrust != 0 {
             if let Ok(body_handle) = query.get_component::<RigidBodyHandleComponent>(player) {
-                let mut body = bodies.get_mut(body_handle.handle()).unwrap();
+                let body = bodies.get_mut(body_handle.handle()).unwrap();
                 let ship = query.get_component::<Ship>(player).unwrap();
                 if rotation != 0 {
                     let rotation = rotation as f32 * ship.rotation_speed;
-                    body.wake_up(true);
-                    body.apply_torque_impulse(rotation);
+                    body.apply_torque_impulse(rotation, true);
                 }
                 if thrust != 0 {
-                    let force = body.position.rotation.transform_vector(&Vector2::y())
+                    let force = body.position().rotation.transform_vector(&Vector2::y())
                         * thrust as f32
                         * ship.thrust;
-                    body.wake_up(true);
-                    body.apply_force(force);
+                    body.apply_force(force, true);
                 }
             }
         }
@@ -157,6 +154,7 @@ pub fn user_input_system(
         }
         if input.just_pressed(KeyCode::Escape) {
             runstate.gamestate.transit_to(GameState::Pause);
+            rapier_configuration.query_pipeline_active = false;
             rapier_configuration.physics_pipeline_active = false;
         }
     } else if runstate.gamestate.is(GameState::StartMenu) {
@@ -176,6 +174,7 @@ pub fn user_input_system(
     } else if runstate.gamestate.is(GameState::Pause) {
         if input.just_pressed(KeyCode::Escape) {
             runstate.gamestate.transit_to(GameState::Game);
+            rapier_configuration.query_pipeline_active = true;
             rapier_configuration.physics_pipeline_active = true;
         }
     }

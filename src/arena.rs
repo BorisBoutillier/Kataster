@@ -57,12 +57,7 @@ pub fn spawn_asteroid_system(
             AsteroidSize::Medium => (runstate.meteor_med_handle.clone(), 4.3 / 2.0),
             AsteroidSize::Small => (runstate.meteor_small_handle.clone(), 2.8 / 2.0),
         };
-        let body = RigidBodyBuilder::new_dynamic()
-            .translation(event.x, event.y)
-            .linvel(event.vx, event.vy)
-            .angvel(event.angvel);
-        let collider = ColliderBuilder::ball(radius).friction(-0.3);
-        commands
+        let entity = commands
             .spawn(SpriteComponents {
                 transform: Transform {
                     translation: Vec3::new(event.x, event.y, -5.0),
@@ -74,11 +69,18 @@ pub fn spawn_asteroid_system(
             })
             .with(Asteroid { size: event.size })
             .with(Damage { value: 1 })
-            .with(body)
-            .with(collider)
             .with(ForStates {
                 states: vec![GameState::Game, GameState::Pause, GameState::GameOver],
-            });
+            })
+            .current_entity()
+            .unwrap();
+        let body = RigidBodyBuilder::new_dynamic()
+            .translation(event.x, event.y)
+            .linvel(event.vx, event.vy)
+            .angvel(event.angvel)
+            .user_data(entity.to_bits() as u128);
+        let collider = ColliderBuilder::ball(radius).friction(-0.3);
+        commands.insert(entity, (body, collider));
     }
 }
 
@@ -133,32 +135,32 @@ pub fn position_system(
 ) {
     if runstate.gamestate.is(GameState::Game) {
         for body_handle in &mut query.iter() {
-            let mut body = bodies.get_mut(body_handle.handle()).unwrap();
-            let mut x = body.position.translation.vector.x;
-            let mut y = body.position.translation.vector.y;
+            let body = bodies.get_mut(body_handle.handle()).unwrap();
+            let mut x = body.position().translation.vector.x;
+            let mut y = body.position().translation.vector.y;
             let mut updated = false;
             // Wrap around screen edges
             let half_width = ARENA_WIDTH / 2.0;
             let half_height = ARENA_HEIGHT / 2.0;
-            if x < -half_width && body.linvel.x < 0.0 {
+            if x < -half_width && body.linvel().x < 0.0 {
                 x = half_width;
                 updated = true;
-            } else if x > half_width && body.linvel.x > 0.0 {
+            } else if x > half_width && body.linvel().x > 0.0 {
                 x = -half_width;
                 updated = true;
             }
-            if y < -half_height && body.linvel.y < 0.0 {
+            if y < -half_height && body.linvel().y < 0.0 {
                 y = half_height;
                 updated = true;
-            } else if y > half_height && body.linvel.y > 0.0 {
+            } else if y > half_height && body.linvel().y > 0.0 {
                 y = -half_height;
                 updated = true;
             }
             if updated {
-                let mut new_position = body.position.clone();
+                let mut new_position = body.position().clone();
                 new_position.translation.vector.x = x;
                 new_position.translation.vector.y = y;
-                body.set_position(new_position);
+                body.set_position(new_position, false);
             }
         }
     }

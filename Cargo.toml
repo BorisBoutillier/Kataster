@@ -9,12 +9,8 @@ edition = "2018"
 #bevy = { path = "/home/boris/work/gits/bevy"}
 bevy = "0.3.0"
 rand = "0.7.3"
-#bevy_rapier2d = { git = "https://github.com/Bobox214/bevy_rapier" , branch="rapier_configuration"}
-#bevy_rapier2d = { path = "/home/boris/work/rust/forks/bevy_rapier/bevy_rapier2d" }
-#bevy_rapier2d = {git = "https://github.com/dimforge/bevy_rapier"}
-bevy_rapier2d = "0.5.0"
-bevy_contrib_bobox = {git = "https://github.com/Bobox214/bevy_contrib_bobox", tag="0.3.0" , features = ["rapier2d"]}
-#bevy_contrib_bobox = {path = "../bevy_contrib_bobox", features = ["rapier2d"]}
+#bevy_rapier2d = { path = "/home/boris/work/gits/bevy_rapier/bevy_rapier2d" }
+bevy_rapier2d = "0.6.2"
 
 
 # Ensure crates reference the same versions
@@ -22,5 +18,3 @@ bevy_contrib_bobox = {git = "https://github.com/Bobox214/bevy_contrib_bobox", ta
 #[patch.crates-io]
 #bevy = { path = "/home/boris/work/gits/bevy"}
 #bevy= {git="https://github.com/bevyengine/bevy"}
-##bevy = { path = "/home/boris/work/rust/forks/bevy"}
-#rapier2d = {git="https://github.com/dimforge/rapier"}
