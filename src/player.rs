@@ -16,14 +16,14 @@ use bevy_rapier2d::{
 };
 
 pub fn spawn_player(
-    mut commands: Commands,
+    commands: &mut Commands,
     mut runstate: ResMut<RunState>,
     asset_server: Res<AssetServer>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     let texture_handle = asset_server.load("playerShip2_red.png");
     commands
-        .spawn(SpriteComponents {
+        .spawn(SpriteBundle {
             transform: Transform {
                 translation: Vec3::new(0.0, 0.0, -5.0),
                 scale: Vec3::splat(1.0 / 37.0),
@@ -85,7 +85,7 @@ pub fn player_dampening_system(
         if let Ok(body_handle) =
             query.get_component::<RigidBodyHandleComponent>(runstate.player.unwrap())
         {
-            let elapsed = time.delta_seconds;
+            let elapsed = time.delta_seconds();
             let body = bodies.get_mut(body_handle.handle()).unwrap();
             body.set_angvel(body.angvel() * 0.1f32.powf(elapsed), false);
             body.set_linvel(body.linvel() * 0.8f32.powf(elapsed), false);
@@ -95,12 +95,12 @@ pub fn player_dampening_system(
 
 pub fn ship_cannon_system(time: Res<Time>, mut ship: Query<Mut<Ship>>) {
     for mut ship in ship.iter_mut() {
-        ship.cannon_timer.tick(time.delta_seconds);
+        ship.cannon_timer.tick(time.delta_seconds());
     }
 }
 
 pub fn user_input_system(
-    commands: Commands,
+    commands: &mut Commands,
     audio: Res<Audio>,
     mut runstate: ResMut<RunState>,
     input: Res<Input<KeyCode>>,
@@ -145,7 +145,7 @@ pub fn user_input_system(
         }
         if input.pressed(KeyCode::Space) {
             if let Ok((body_handle, mut ship)) = query.get_mut(player) {
-                if ship.cannon_timer.finished {
+                if ship.cannon_timer.finished() {
                     let body = bodies.get(body_handle.handle()).unwrap();
                     spawn_laser(commands, body, &runstate, audio);
                     ship.cannon_timer.reset();

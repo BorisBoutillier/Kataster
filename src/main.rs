@@ -37,51 +37,50 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_resource(RapierConfiguration {
             gravity: Vector2::zeros(),
-            time_dependent_number_of_timesteps: true, // In bevy_rapier 0.6.2, if false cannot pause physics.
             ..Default::default()
         })
-        .add_system(position_system.system())
-        .add_system(user_input_system.system())
-        .add_system(player_dampening_system.system())
-        .add_system(ship_cannon_system.system())
-        .add_system(despawn_laser_system.system())
-        .add_system(handle_explosion.system())
-        .add_system(setup_arena.system())
-        .add_system(arena_spawn.system())
-        .add_system(start_menu.system())
-        .add_system(game_ui_spawn.system())
-        .add_system(score_ui_system.system())
-        .add_system(life_ui_system.system())
-        .add_system(gameover_menu.system())
-        .add_system(pause_menu.system())
-        .add_system(draw_blink_system.system())
-        .add_system(state_exit_despawn.system())
-        .add_system(contact_system.system())
-        .add_system(spawn_asteroid_system.system())
-        .add_system(spawn_explosion.system())
-        .add_system(runstate_fsm.system())
-        .add_startup_system(setup.system())
+        .add_system(position_system)
+        .add_system(user_input_system)
+        .add_system(player_dampening_system)
+        .add_system(ship_cannon_system)
+        .add_system(despawn_laser_system)
+        .add_system(handle_explosion)
+        .add_system(setup_arena)
+        .add_system(arena_spawn)
+        .add_system(start_menu)
+        .add_system(game_ui_spawn)
+        .add_system(score_ui_system)
+        .add_system(life_ui_system)
+        .add_system(gameover_menu)
+        .add_system(pause_menu)
+        .add_system(draw_blink_system)
+        .add_system(state_exit_despawn)
+        .add_system(contact_system)
+        .add_system(spawn_asteroid_system)
+        .add_system(spawn_explosion)
+        .add_system(runstate_fsm)
+        .add_startup_system(setup)
         .run();
 }
 
 /// UiCamera and Camera2d are spawn once and for all.
 /// Despawning them does not seem to be the way to go in bevy.
 pub fn setup(
-    mut commands: Commands,
+    commands: &mut Commands,
     asset_server: Res<AssetServer>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     commands
-        .spawn(Camera2dComponents {
+        .spawn(Camera2dBundle {
             transform: Transform {
                 scale: Vec3::splat(CAMERA_SCALE),
                 ..Default::default()
             },
             ..Default::default()
         })
-        .spawn(UiCameraComponents::default());
+        .spawn(CameraUiBundle::default());
     let texture_handle = asset_server.load("pexels-francesco-ungaro-998641.png");
-    commands.spawn(SpriteComponents {
+    commands.spawn(SpriteBundle {
         transform: Transform {
             translation: Vec3::new(0.0, 0.0, -10.0),
             scale: Vec3::splat(CAMERA_SCALE),

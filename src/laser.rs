@@ -11,14 +11,14 @@ use bevy_rapier2d::{
 };
 
 pub fn spawn_laser(
-    mut commands: Commands,
+    commands: &mut Commands,
     parent_body: &RigidBody,
     runstate: &RunState,
     audio: Res<Audio>,
 ) {
     let v = parent_body.position().rotation * Vector2::y() * 50.0;
     let entity = commands
-        .spawn(SpriteComponents {
+        .spawn(SpriteBundle {
             transform: Transform {
                 translation: Vec3::new(
                     parent_body.position().translation.x,
@@ -50,15 +50,15 @@ pub fn spawn_laser(
 }
 
 pub fn despawn_laser_system(
-    mut commands: Commands,
+    commands: &mut Commands,
     runstate: Res<RunState>,
     time: Res<Time>,
     mut query: Query<(Entity, Mut<Laser>)>,
 ) {
     if runstate.gamestate.is(GameState::Game) {
         for (entity, mut laser) in query.iter_mut() {
-            laser.despawn_timer.tick(time.delta_seconds);
-            if laser.despawn_timer.finished {
+            laser.despawn_timer.tick(time.delta_seconds());
+            if laser.despawn_timer.finished() {
                 commands.despawn(entity);
             }
         }

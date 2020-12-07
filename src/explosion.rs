@@ -13,7 +13,7 @@ pub struct Explosion {
     end_scale: f32,
 }
 pub fn spawn_explosion(
-    mut commands: Commands,
+    commands: &mut Commands,
     mut state: Local<SpawnExplosionState>,
     asset_server: Res<AssetServer>,
     mut materials: ResMut<Assets<ColorMaterial>>,
@@ -38,7 +38,7 @@ pub fn spawn_explosion(
         };
         let texture_handle = asset_server.load(texture_name);
         commands
-            .spawn(SpriteComponents {
+            .spawn(SpriteBundle {
                 transform: Transform {
                     translation: Vec3::new(event.x, event.y, -1.0),
                     scale: Vec3::splat(start_scale),
@@ -61,20 +61,20 @@ pub fn spawn_explosion(
 }
 
 pub fn handle_explosion(
-    mut commands: Commands,
+    commands: &mut Commands,
     time: Res<Time>,
     mut query: Query<(Entity, Mut<Transform>, Mut<Explosion>)>,
 ) {
-    let elapsed = time.delta_seconds;
+    let elapsed = time.delta_seconds();
     for (entity, mut transform, mut explosion) in query.iter_mut() {
         explosion.timer.tick(elapsed);
-        if explosion.timer.finished {
+        if explosion.timer.finished() {
             commands.despawn(entity);
         } else {
             transform.scale = Vec3::splat(
                 explosion.start_scale
                     + (explosion.end_scale - explosion.start_scale)
-                        * (explosion.timer.elapsed / explosion.timer.duration),
+                        * (explosion.timer.elapsed() / explosion.timer.duration()),
             );
         }
     }

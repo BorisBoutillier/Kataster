@@ -2,13 +2,11 @@ use super::components::*;
 use super::player::*;
 use super::state::*;
 use bevy::prelude::*;
-use bevy_rapier2d::{
-    physics::RigidBodyHandleComponent,
-    rapier::{
-        dynamics::{RigidBodyBuilder, RigidBodySet},
-        geometry::ColliderBuilder,
-        //        math::Point,
-    },
+use bevy_rapier2d::physics::RigidBodyHandleComponent;
+use bevy_rapier2d::rapier::{
+    dynamics::{RigidBodyBuilder, RigidBodySet},
+    geometry::ColliderBuilder,
+    //        math::Point,
 };
 use rand::{thread_rng, Rng};
 
@@ -23,7 +21,7 @@ pub struct Arena {
     pub asteroid_spawn_timer: Timer,
 }
 pub fn setup_arena(
-    commands: Commands,
+    commands: &mut Commands,
     mut runstate: ResMut<RunState>,
     asset_server: Res<AssetServer>,
     materials: ResMut<Assets<ColorMaterial>>,
@@ -46,7 +44,7 @@ pub struct SpawnAsteroidState {
 }
 
 pub fn spawn_asteroid_system(
-    mut commands: Commands,
+    commands: &mut Commands,
     mut local_state: Local<SpawnAsteroidState>,
     runstate: Res<RunState>,
     events: Res<Events<AsteroidSpawnEvent>>,
@@ -58,7 +56,7 @@ pub fn spawn_asteroid_system(
             AsteroidSize::Small => (runstate.meteor_small_handle.clone(), 2.8 / 2.0),
         };
         let entity = commands
-            .spawn(SpriteComponents {
+            .spawn(SpriteBundle {
                 transform: Transform {
                     translation: Vec3::new(event.x, event.y, -5.0),
                     scale: Vec3::splat(1.0 / 10.0),
@@ -91,14 +89,15 @@ pub fn arena_spawn(
     asteroids: Query<&Asteroid>,
 ) {
     if runstate.gamestate.is(GameState::Game) {
-        let mut arena = runstate.arena.as_mut().unwrap();
-        arena.asteroid_spawn_timer.tick(time.delta_seconds);
-        if arena.asteroid_spawn_timer.finished {
+        let arena = runstate.arena.as_mut().unwrap();
+        arena.asteroid_spawn_timer.tick(time.delta_seconds());
+        if arena.asteroid_spawn_timer.finished() {
             let n_asteroid = asteroids.iter().count();
             arena.asteroid_spawn_timer.reset();
             if n_asteroid < 20 {
-                arena.asteroid_spawn_timer.duration =
-                    (0.8 * arena.asteroid_spawn_timer.duration).max(0.1);
+                arena
+                    .asteroid_spawn_timer
+                    .set_duration((0.8 * arena.asteroid_spawn_timer.duration()).max(0.1));
                 let mut rng = thread_rng();
                 // 0: Top , 1:Left
                 let side = rng.gen_range(0, 2);

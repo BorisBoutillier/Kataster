@@ -5,16 +5,17 @@ authors = ["Boris Boutillier <boris.boutillier@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-#bevy = { git = "https://github.com/bevyengine/bevy" }
+bevy = { git = "https://github.com/bevyengine/bevy" ,  commit="1398d78"}
 #bevy = { path = "/home/boris/work/gits/bevy"}
-bevy = "0.3.0"
+#bevy = "0.3.0"
 rand = "0.7.3"
+bevy_rapier2d = { git = "https://github.com/alec-deason/bevy_rapier/" , branch = "update_to_latest_bevy_changes" }
 #bevy_rapier2d = { path = "/home/boris/work/gits/bevy_rapier/bevy_rapier2d" }
-bevy_rapier2d = "0.6.2"
+#bevy_rapier2d = "0.6.2"
 
 
 # Ensure crates reference the same versions
 # or customize a sub-crate version
-#[patch.crates-io]
+[patch.crates-io]
 #bevy = { path = "/home/boris/work/gits/bevy"}
-#bevy= {git="https://github.com/bevyengine/bevy"}
+bevy = { git = "https://github.com/bevyengine/bevy" ,  commit="1398d78"}

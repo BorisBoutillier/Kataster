@@ -6,13 +6,13 @@ use bevy::prelude::*;
 pub struct DrawBlinkTimer(pub Timer);
 
 pub fn start_menu(
-    mut commands: Commands,
+    commands: &mut Commands,
     runstate: ResMut<RunState>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     if runstate.gamestate.entering(GameState::StartMenu) {
         commands
-            .spawn(NodeComponents {
+            .spawn(NodeBundle {
                 style: Style {
                     size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
                     align_items: AlignItems::Center,
@@ -32,7 +32,7 @@ pub fn start_menu(
             })
             .with_children(|parent| {
                 parent
-                    .spawn(TextComponents {
+                    .spawn(TextBundle {
                         style: Style {
                             ..Default::default()
                         },
@@ -42,6 +42,7 @@ pub fn start_menu(
                             style: TextStyle {
                                 font_size: 100.0,
                                 color: Color::rgb_u8(0x00, 0xAA, 0xAA),
+                                ..Default::default()
                             },
                         },
                         ..Default::default()
@@ -49,7 +50,7 @@ pub fn start_menu(
                     .with(ForStates {
                         states: vec![GameState::StartMenu],
                     })
-                    .spawn(TextComponents {
+                    .spawn(TextBundle {
                         style: Style {
                             ..Default::default()
                         },
@@ -59,6 +60,7 @@ pub fn start_menu(
                             style: TextStyle {
                                 font_size: 50.0,
                                 color: Color::rgb_u8(0x00, 0x44, 0x44),
+                                ..Default::default()
                             },
                         },
                         ..Default::default()
@@ -72,13 +74,13 @@ pub fn start_menu(
 }
 
 pub fn gameover_menu(
-    mut commands: Commands,
+    commands: &mut Commands,
     runstate: ResMut<RunState>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     if runstate.gamestate.entering(GameState::GameOver) {
         commands
-            .spawn(NodeComponents {
+            .spawn(NodeBundle {
                 style: Style {
                     size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
                     align_items: AlignItems::Center,
@@ -98,7 +100,7 @@ pub fn gameover_menu(
             })
             .with_children(|parent| {
                 parent
-                    .spawn(TextComponents {
+                    .spawn(TextBundle {
                         style: Style {
                             ..Default::default()
                         },
@@ -108,6 +110,7 @@ pub fn gameover_menu(
                             style: TextStyle {
                                 font_size: 100.0,
                                 color: Color::rgb_u8(0xAA, 0x22, 0x22),
+                                ..Default::default()
                             },
                         },
                         ..Default::default()
@@ -115,7 +118,7 @@ pub fn gameover_menu(
                     .with(ForStates {
                         states: vec![GameState::GameOver],
                     })
-                    .spawn(TextComponents {
+                    .spawn(TextBundle {
                         style: Style {
                             ..Default::default()
                         },
@@ -125,6 +128,7 @@ pub fn gameover_menu(
                             style: TextStyle {
                                 font_size: 50.0,
                                 color: Color::rgb_u8(0x88, 0x22, 0x22),
+                                ..Default::default()
                             },
                         },
                         ..Default::default()
@@ -138,13 +142,13 @@ pub fn gameover_menu(
 }
 
 pub fn pause_menu(
-    mut commands: Commands,
+    commands: &mut Commands,
     runstate: ResMut<RunState>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     if runstate.gamestate.entering(GameState::Pause) {
         commands
-            .spawn(NodeComponents {
+            .spawn(NodeBundle {
                 style: Style {
                     position_type: PositionType::Absolute,
                     size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
@@ -164,7 +168,7 @@ pub fn pause_menu(
             })
             .with_children(|parent| {
                 parent
-                    .spawn(TextComponents {
+                    .spawn(TextBundle {
                         style: Style {
                             ..Default::default()
                         },
@@ -174,6 +178,7 @@ pub fn pause_menu(
                             style: TextStyle {
                                 font_size: 100.0,
                                 color: Color::rgb_u8(0xF8, 0xE4, 0x73),
+                                ..Default::default()
                             },
                         },
                         ..Default::default()
@@ -186,15 +191,17 @@ pub fn pause_menu(
     }
 }
 
-pub fn draw_blink_system(time: Res<Time>, mut timer: Mut<DrawBlinkTimer>, mut draw: Mut<Draw>) {
-    timer.0.tick(time.delta_seconds);
-    if timer.0.finished {
-        draw.is_visible = !draw.is_visible;
+pub fn draw_blink_system(time: Res<Time>, mut query: Query<(Mut<DrawBlinkTimer>, Mut<Draw>)>) {
+    for (mut timer, mut draw) in query.iter_mut() {
+        timer.0.tick(time.delta_seconds());
+        if timer.0.finished() {
+            draw.is_visible = !draw.is_visible;
+        }
     }
 }
 
 pub fn game_ui_spawn(
-    mut commands: Commands,
+    commands: &mut Commands,
     runstate: ResMut<RunState>,
     asset_server: Res<AssetServer>,
     mut materials: ResMut<Assets<ColorMaterial>>,
@@ -204,7 +211,7 @@ pub fn game_ui_spawn(
         .entering_not_from(GameState::Game, GameState::Pause)
     {
         commands
-            .spawn(NodeComponents {
+            .spawn(NodeBundle {
                 style: Style {
                     position_type: PositionType::Absolute,
                     size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
@@ -225,7 +232,7 @@ pub fn game_ui_spawn(
             })
             .with_children(|parent| {
                 parent
-                    .spawn(TextComponents {
+                    .spawn(TextBundle {
                         style: Style {
                             justify_content: JustifyContent::FlexEnd,
                             margin: Rect {
@@ -242,6 +249,7 @@ pub fn game_ui_spawn(
                             style: TextStyle {
                                 font_size: 50.0,
                                 color: Color::rgb_u8(0x00, 0xAA, 0xAA),
+                                ..Default::default()
                             },
                         },
                         ..Default::default()
@@ -253,7 +261,7 @@ pub fn game_ui_spawn(
             })
             // Life counters
             // Not kept in 'GameOver' state, simplifying last counter removal.
-            .spawn(NodeComponents {
+            .spawn(NodeBundle {
                 style: Style {
                     position_type: PositionType::Absolute,
                     size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
@@ -275,7 +283,7 @@ pub fn game_ui_spawn(
             .with_children(|parent| {
                 for i in 1..(START_LIFE + 1) {
                     parent
-                        .spawn(ImageComponents {
+                        .spawn(ImageBundle {
                             style: Style {
                                 margin: Rect {
                                     left: Val::Px(10.0),
@@ -302,9 +310,11 @@ pub fn game_ui_spawn(
     }
 }
 
-pub fn score_ui_system(runstate: ChangedRes<RunState>, mut text: Mut<Text>, _uiscore: &UiScore) {
+pub fn score_ui_system(runstate: ChangedRes<RunState>, mut query: Query<Mut<Text>, With<UiScore>>) {
     if runstate.gamestate.is(GameState::Game) {
-        text.value = format!("{}", runstate.score.unwrap());
+        for mut text in query.iter_mut() {
+            text.value = format!("{}", runstate.score.unwrap());
+        }
     }
 }
 pub fn life_ui_system(

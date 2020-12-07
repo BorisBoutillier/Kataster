@@ -17,7 +17,7 @@ enum Contacts {
 }
 
 pub fn contact_system(
-    mut commands: Commands,
+    commands: &mut Commands,
     mut asteroid_spawn_events: ResMut<Events<AsteroidSpawnEvent>>,
     mut explosion_spawn_events: ResMut<Events<ExplosionSpawnEvent>>,
     mut runstate: ResMut<RunState>,

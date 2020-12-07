@@ -55,7 +55,7 @@ pub fn runstate_fsm(mut runstate: ResMut<RunState>) {
 }
 
 pub fn state_exit_despawn(
-    mut commands: Commands,
+    commands: &mut Commands,
     runstate: ResMut<RunState>,
     query: Query<(Entity, &ForStates)>,
 ) {
