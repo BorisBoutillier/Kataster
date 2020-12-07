@@ -39,26 +39,38 @@ fn main() {
             gravity: Vector2::zeros(),
             ..Default::default()
         })
-        .add_system(position_system)
+        .add_state(AppState::StartMenu)
+        .add_state(AppGameState::Game)
+        .state_enter(AppState::StartMenu, start_menu)
+        .state_enter(AppGameState::GameOver, gameover_menu)
+        .state_enter(AppGameState::Pause, pause_menu)
+        .state_enter(
+            AppState::Game,
+            SystemStage::parallel()
+                .with_system(setup_arena)
+                .with_system(game_ui_spawn),
+        )
+        .state_update(
+            AppState::Game,
+            SystemStage::parallel()
+                .with_system(position_system)
+                .with_system(player_dampening_system)
+                .with_system(ship_cannon_system)
+                .with_system(despawn_laser_system)
+                .with_system(contact_system)
+                .with_system(arena_asteroids)
+                .with_system(spawn_asteroid_event)
+                .with_system(score_ui_system)
+                .with_system(life_ui_system),
+        )
+        .state_exit(AppState::Game, appstate_exit_despawn)
+        .state_exit(AppGameState::GameOver, appgamestate_exit_despawn)
+        .state_exit(AppGameState::Pause, appgamestate_exit_despawn)
+        .state_exit(AppState::StartMenu, appstate_exit_despawn)
         .add_system(user_input_system)
-        .add_system(player_dampening_system)
-        .add_system(ship_cannon_system)
-        .add_system(despawn_laser_system)
         .add_system(handle_explosion)
-        .add_system(setup_arena)
-        .add_system(arena_spawn)
-        .add_system(start_menu)
-        .add_system(game_ui_spawn)
-        .add_system(score_ui_system)
-        .add_system(life_ui_system)
-        .add_system(gameover_menu)
-        .add_system(pause_menu)
         .add_system(draw_blink_system)
-        .add_system(state_exit_despawn)
-        .add_system(contact_system)
-        .add_system(spawn_asteroid_system)
-        .add_system(spawn_explosion)
-        .add_system(runstate_fsm)
+        .add_system(spawn_explosion_event)
         .add_startup_system(setup)
         .run();
 }
@@ -89,9 +101,5 @@ pub fn setup(
         material: materials.add(texture_handle.into()),
         ..Default::default()
     });
-    commands.insert_resource(RunState::new(
-        GameState::StartMenu,
-        &asset_server,
-        materials,
-    ));
+    commands.insert_resource(RunState::new(&asset_server, materials));
 }

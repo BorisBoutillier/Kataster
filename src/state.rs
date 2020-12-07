@@ -1,22 +1,24 @@
-use core::fmt;
-
 use super::arena::*;
 use bevy::prelude::*;
-/// Component to tag an entity as only needed in one game state
-pub struct ForStates {
-    pub states: Vec<GameState>,
+/// Component to tag an entity as only needed in one state
+pub struct ForState<T> {
+    pub states: Vec<T>,
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum GameState {
+#[derive(Debug, Copy, Clone, Hash, Eq, PartialEq)]
+pub enum AppState {
     StartMenu,
     Game,
-    GameOver,
-    Pause,
 }
+#[derive(Debug, Copy, Clone, Hash, Eq, PartialEq)]
+pub enum AppGameState {
+    Game,
+    Pause,
+    GameOver,
+}
+
 #[derive(Debug)]
 pub struct RunState {
-    pub gamestate: GameStateFsm<GameState>,
     pub player: Option<Entity>,
     pub arena: Option<Arena>,
     pub score: Option<u32>,
@@ -31,12 +33,10 @@ pub struct RunState {
 
 impl RunState {
     pub fn new(
-        start: GameState,
         asset_server: &AssetServer,
         mut materials: ResMut<Assets<ColorMaterial>>,
     ) -> RunState {
         RunState {
-            gamestate: GameStateFsm::new(start),
             player: None,
             arena: None,
             score: None,
@@ -50,92 +50,26 @@ impl RunState {
     }
 }
 
-pub fn runstate_fsm(mut runstate: ResMut<RunState>) {
-    runstate.gamestate.update();
-}
-
-pub fn state_exit_despawn(
+pub fn appstate_exit_despawn(
     commands: &mut Commands,
-    runstate: ResMut<RunState>,
-    query: Query<(Entity, &ForStates)>,
+    state: Res<State<AppState>>,
+    query: Query<(Entity, &ForState<AppState>)>,
 ) {
-    for (entity, for_states) in &mut query.iter() {
-        if runstate.gamestate.exiting_one_of(&for_states.states)
-            && !runstate.gamestate.transiting_to_one_of(&for_states.states)
-        {
+    for (entity, for_state) in &mut query.iter() {
+        if !for_state.states.contains(&state.get()) {
             commands.despawn(entity);
         }
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Copy, Clone)]
-enum FsmTransition {
-    Exit,
-    Enter,
-    None,
-}
-#[derive(Debug)]
-pub struct GameStateFsm<T: PartialEq + Eq + Copy + fmt::Debug> {
-    current: Option<T>,
-    transition: FsmTransition,
-    next: Option<T>,
-    prev: Option<T>,
-}
-
-impl<T: PartialEq + Eq + Copy + fmt::Debug> GameStateFsm<T> {
-    pub fn new(start: T) -> GameStateFsm<T> {
-        GameStateFsm {
-            current: None,
-            transition: FsmTransition::Enter,
-            next: Some(start),
-            prev: None,
-        }
-    }
-    pub fn is(&self, state: T) -> bool {
-        self.current == Some(state)
-    }
-    pub fn exiting_one_of(&self, states: &[T]) -> bool {
-        self.transition == FsmTransition::Exit && states.contains(&self.current.unwrap())
-    }
-    pub fn transiting_to_one_of(&self, states: &[T]) -> bool {
-        self.next
-            .map(|next| states.contains(&next))
-            .unwrap_or(false)
-    }
-    pub fn entering(&self, state: T) -> bool {
-        self.transition == FsmTransition::Enter && self.next == Some(state)
-    }
-    pub fn entering_not_from(&self, state: T, from: T) -> bool {
-        self.transition == FsmTransition::Enter
-            && self.next == Some(state)
-            && self.prev != Some(from)
-    }
-    pub fn transit_to(&mut self, state: T) {
-        self.next = Some(state);
-    }
-    /// Called every frame to update the phases of transitions.
-    /// A transition requires 3 frames: Exit current, enter next, current=next
-    pub fn update(&mut self) {
-        if self.next.is_some() {
-            match self.transition {
-                FsmTransition::Exit => {
-                    // We have exited current state, we can enter the new one
-                    self.prev = self.current;
-                    self.current = None;
-                    self.transition = FsmTransition::Enter;
-                }
-                FsmTransition::Enter => {
-                    // We have entered the new one it is now current
-                    self.current = self.next;
-                    self.transition = FsmTransition::None;
-                    self.next = None;
-                }
-                FsmTransition::None => {
-                    // This is new request to go to the next state, exit the current one first
-                    self.transition = FsmTransition::Exit;
-                }
-            }
-            //println!("After Update {:?}", self);
+pub fn appgamestate_exit_despawn(
+    commands: &mut Commands,
+    state: ResMut<State<AppGameState>>,
+    query: Query<(Entity, &ForState<AppGameState>)>,
+) {
+    for (entity, for_state) in &mut query.iter() {
+        if !for_state.states.contains(&state.get()) {
+            commands.despawn(entity);
         }
     }
 }

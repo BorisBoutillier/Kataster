@@ -26,16 +26,11 @@ pub fn setup_arena(
     asset_server: Res<AssetServer>,
     materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    if runstate
-        .gamestate
-        .entering_not_from(GameState::Game, GameState::Pause)
-    {
-        runstate.arena = Some(Arena {
-            asteroid_spawn_timer: Timer::from_seconds(5.0, false),
-        });
-        runstate.score = Some(0);
-        spawn_player(commands, runstate, asset_server, materials);
-    }
+    runstate.arena = Some(Arena {
+        asteroid_spawn_timer: Timer::from_seconds(5.0, false),
+    });
+    runstate.score = Some(0);
+    spawn_player(commands, runstate, asset_server, materials);
 }
 
 #[derive(Default)]
@@ -43,7 +38,7 @@ pub struct SpawnAsteroidState {
     event_reader: EventReader<AsteroidSpawnEvent>,
 }
 
-pub fn spawn_asteroid_system(
+pub fn spawn_asteroid_event(
     commands: &mut Commands,
     mut local_state: Local<SpawnAsteroidState>,
     runstate: Res<RunState>,
@@ -67,8 +62,8 @@ pub fn spawn_asteroid_system(
             })
             .with(Asteroid { size: event.size })
             .with(Damage { value: 1 })
-            .with(ForStates {
-                states: vec![GameState::Game, GameState::Pause, GameState::GameOver],
+            .with(ForState {
+                states: vec![AppState::Game],
             })
             .current_entity()
             .unwrap();
@@ -82,13 +77,14 @@ pub fn spawn_asteroid_system(
     }
 }
 
-pub fn arena_spawn(
+pub fn arena_asteroids(
     time: Res<Time>,
+    gamestate: Res<State<AppGameState>>,
     mut runstate: ResMut<RunState>,
     mut asteroid_spawn_events: ResMut<Events<AsteroidSpawnEvent>>,
     asteroids: Query<&Asteroid>,
 ) {
-    if runstate.gamestate.is(GameState::Game) {
+    if gamestate.get() == AppGameState::Game {
         let arena = runstate.arena.as_mut().unwrap();
         arena.asteroid_spawn_timer.tick(time.delta_seconds());
         if arena.asteroid_spawn_timer.finished() {
@@ -127,40 +123,34 @@ pub fn arena_spawn(
     }
 }
 
-pub fn position_system(
-    runstate: Res<RunState>,
-    mut bodies: ResMut<RigidBodySet>,
-    query: Query<&RigidBodyHandleComponent>,
-) {
-    if runstate.gamestate.is(GameState::Game) {
-        for body_handle in &mut query.iter() {
-            let body = bodies.get_mut(body_handle.handle()).unwrap();
-            let mut x = body.position().translation.vector.x;
-            let mut y = body.position().translation.vector.y;
-            let mut updated = false;
-            // Wrap around screen edges
-            let half_width = ARENA_WIDTH / 2.0;
-            let half_height = ARENA_HEIGHT / 2.0;
-            if x < -half_width && body.linvel().x < 0.0 {
-                x = half_width;
-                updated = true;
-            } else if x > half_width && body.linvel().x > 0.0 {
-                x = -half_width;
-                updated = true;
-            }
-            if y < -half_height && body.linvel().y < 0.0 {
-                y = half_height;
-                updated = true;
-            } else if y > half_height && body.linvel().y > 0.0 {
-                y = -half_height;
-                updated = true;
-            }
-            if updated {
-                let mut new_position = body.position().clone();
-                new_position.translation.vector.x = x;
-                new_position.translation.vector.y = y;
-                body.set_position(new_position, false);
-            }
+pub fn position_system(mut bodies: ResMut<RigidBodySet>, query: Query<&RigidBodyHandleComponent>) {
+    for body_handle in &mut query.iter() {
+        let body = bodies.get_mut(body_handle.handle()).unwrap();
+        let mut x = body.position().translation.vector.x;
+        let mut y = body.position().translation.vector.y;
+        let mut updated = false;
+        // Wrap around screen edges
+        let half_width = ARENA_WIDTH / 2.0;
+        let half_height = ARENA_HEIGHT / 2.0;
+        if x < -half_width && body.linvel().x < 0.0 {
+            x = half_width;
+            updated = true;
+        } else if x > half_width && body.linvel().x > 0.0 {
+            x = -half_width;
+            updated = true;
+        }
+        if y < -half_height && body.linvel().y < 0.0 {
+            y = half_height;
+            updated = true;
+        } else if y > half_height && body.linvel().y > 0.0 {
+            y = -half_height;
+            updated = true;
+        }
+        if updated {
+            let mut new_position = body.position().clone();
+            new_position.translation.vector.x = x;
+            new_position.translation.vector.y = y;
+            body.set_position(new_position, false);
         }
     }
 }

@@ -12,7 +12,7 @@ pub struct Explosion {
     start_scale: f32,
     end_scale: f32,
 }
-pub fn spawn_explosion(
+pub fn spawn_explosion_event(
     commands: &mut Commands,
     mut state: Local<SpawnExplosionState>,
     asset_server: Res<AssetServer>,
@@ -52,8 +52,8 @@ pub fn spawn_explosion(
                 start_scale,
                 end_scale,
             })
-            .with(ForStates {
-                states: vec![GameState::Game, GameState::Pause, GameState::GameOver],
+            .with(ForState {
+                states: vec![AppState::Game],
             });
         let sound = asset_server.load(sound_name);
         audio.play(sound);

@@ -1,2 +1,7 @@
 ## Bugs
 . TextureId(xxx) panics sometimes.
+
+
+. Why State queue support multiple ? Order becomes important, and last is inpredictable ? 
+. SubState ? 
+. State exit despawn system

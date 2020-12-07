@@ -34,8 +34,8 @@ pub fn spawn_laser(
         .with(Laser {
             despawn_timer: Timer::from_seconds(2.0, false),
         })
-        .with(ForStates {
-            states: vec![GameState::Game, GameState::Pause, GameState::GameOver],
+        .with(ForState {
+            states: vec![AppState::Game],
         })
         .current_entity()
         .unwrap();
@@ -51,11 +51,11 @@ pub fn spawn_laser(
 
 pub fn despawn_laser_system(
     commands: &mut Commands,
-    runstate: Res<RunState>,
+    gamestate: Res<State<AppGameState>>,
     time: Res<Time>,
     mut query: Query<(Entity, Mut<Laser>)>,
 ) {
-    if runstate.gamestate.is(GameState::Game) {
+    if gamestate.get() == AppGameState::Game {
         for (entity, mut laser) in query.iter_mut() {
             laser.despawn_timer.tick(time.delta_seconds());
             if laser.despawn_timer.finished() {
