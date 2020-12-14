@@ -12,6 +12,8 @@ pub enum AppState {
 }
 #[derive(Debug, Copy, Clone, Hash, Eq, PartialEq)]
 pub enum AppGameState {
+    /// Invalid used when AppState is NOT Game
+    Invalid,
     Game,
     Pause,
     GameOver,
@@ -56,7 +58,7 @@ pub fn appstate_exit_despawn(
     query: Query<(Entity, &ForState<AppState>)>,
 ) {
     for (entity, for_state) in &mut query.iter() {
-        if !for_state.states.contains(&state.get()) {
+        if !for_state.states.contains(&state.current()) {
             commands.despawn(entity);
         }
     }
@@ -68,7 +70,7 @@ pub fn appgamestate_exit_despawn(
     query: Query<(Entity, &ForState<AppGameState>)>,
 ) {
     for (entity, for_state) in &mut query.iter() {
-        if !for_state.states.contains(&state.get()) {
+        if !for_state.states.contains(&state.current()) {
             commands.despawn(entity);
         }
     }

@@ -26,8 +26,8 @@ fn main() {
     App::build()
         .add_resource(WindowDescriptor {
             title: "Kataster".to_string(),
-            width: WINDOW_WIDTH,
-            height: WINDOW_HEIGHT,
+            width: WINDOW_WIDTH as f32,
+            height: WINDOW_HEIGHT as f32,
             ..Default::default()
         })
         .add_resource(ClearColor(Color::rgb_u8(5, 5, 10)))
@@ -40,17 +40,17 @@ fn main() {
             ..Default::default()
         })
         .add_state(AppState::StartMenu)
-        .add_state(AppGameState::Game)
-        .state_enter(AppState::StartMenu, start_menu)
-        .state_enter(AppGameState::GameOver, gameover_menu)
-        .state_enter(AppGameState::Pause, pause_menu)
-        .state_enter(
+        .add_state(AppGameState::Invalid)
+        .on_state_enter(AppState::StartMenu, start_menu)
+        .on_state_enter(AppGameState::GameOver, gameover_menu)
+        .on_state_enter(AppGameState::Pause, pause_menu)
+        .on_state_enter(
             AppState::Game,
             SystemStage::parallel()
                 .with_system(setup_arena)
                 .with_system(game_ui_spawn),
         )
-        .state_update(
+        .on_state_update(
             AppState::Game,
             SystemStage::parallel()
                 .with_system(position_system)
@@ -63,10 +63,10 @@ fn main() {
                 .with_system(score_ui_system)
                 .with_system(life_ui_system),
         )
-        .state_exit(AppState::Game, appstate_exit_despawn)
-        .state_exit(AppGameState::GameOver, appgamestate_exit_despawn)
-        .state_exit(AppGameState::Pause, appgamestate_exit_despawn)
-        .state_exit(AppState::StartMenu, appstate_exit_despawn)
+        .on_state_exit(AppState::Game, appstate_exit_despawn)
+        .on_state_exit(AppGameState::GameOver, appgamestate_exit_despawn)
+        .on_state_exit(AppGameState::Pause, appgamestate_exit_despawn)
+        .on_state_exit(AppState::StartMenu, appstate_exit_despawn)
         .add_system(user_input_system)
         .add_system(handle_explosion)
         .add_system(draw_blink_system)

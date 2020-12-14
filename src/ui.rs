@@ -20,10 +20,6 @@ pub fn start_menu(
                 ..Default::default()
             },
             material: materials.add(Color::NONE.into()),
-            draw: Draw {
-                is_transparent: true,
-                ..Default::default()
-            },
             ..Default::default()
         })
         .with(ForState {
@@ -86,10 +82,6 @@ pub fn gameover_menu(
                 ..Default::default()
             },
             material: materials.add(Color::NONE.into()),
-            draw: Draw {
-                is_transparent: true,
-                ..Default::default()
-            },
             ..Default::default()
         })
         .with(ForState {
@@ -152,10 +144,6 @@ pub fn pause_menu(
                 ..Default::default()
             },
             material: materials.add(Color::NONE.into()),
-            draw: Draw {
-                is_transparent: true,
-                ..Default::default()
-            },
             ..Default::default()
         })
         .with(ForState {
@@ -185,11 +173,11 @@ pub fn pause_menu(
         });
 }
 
-pub fn draw_blink_system(time: Res<Time>, mut query: Query<(Mut<DrawBlinkTimer>, Mut<Draw>)>) {
-    for (mut timer, mut draw) in query.iter_mut() {
+pub fn draw_blink_system(time: Res<Time>, mut query: Query<(Mut<DrawBlinkTimer>, Mut<Visible>)>) {
+    for (mut timer, mut visible) in query.iter_mut() {
         timer.0.tick(time.delta_seconds());
         if timer.0.finished() {
-            draw.is_visible = !draw.is_visible;
+            visible.is_visible = !visible.is_visible;
         }
     }
 }
@@ -211,10 +199,6 @@ pub fn game_ui_spawn(
                 ..Default::default()
             },
             material: materials.add(Color::NONE.into()),
-            draw: Draw {
-                is_transparent: true,
-                ..Default::default()
-            },
             ..Default::default()
         })
         .with(ForState {
@@ -261,10 +245,6 @@ pub fn game_ui_spawn(
                 ..Default::default()
             },
             material: materials.add(Color::NONE.into()),
-            draw: Draw {
-                is_transparent: true,
-                ..Default::default()
-            },
             ..Default::default()
         })
         .with(ForState {
@@ -284,10 +264,6 @@ pub fn game_ui_spawn(
                             ..Default::default()
                         },
                         material: materials.add(asset_server.load("playerLife1_red.png").into()),
-                        draw: Draw {
-                            is_transparent: true,
-                            ..Default::default()
-                        },
                         ..Default::default()
                     })
                     .with(ForState {
@@ -306,7 +282,7 @@ pub fn score_ui_system(runstate: ChangedRes<RunState>, mut query: Query<Mut<Text
 pub fn life_ui_system(
     runstate: Res<RunState>,
     ship_query: Query<&Ship>,
-    mut uilife_query: Query<(Mut<Draw>, &UiLife)>,
+    mut uilife_query: Query<(Mut<Visible>, &UiLife)>,
 ) {
     let mut life = 0;
     if let Some(player) = runstate.player {
@@ -314,7 +290,7 @@ pub fn life_ui_system(
             life = ship.life;
         }
     }
-    for (mut draw, uilife) in uilife_query.iter_mut() {
-        draw.is_visible = life >= uilife.min;
+    for (mut visible, uilife) in uilife_query.iter_mut() {
+        visible.is_visible = life >= uilife.min;
     }
 }

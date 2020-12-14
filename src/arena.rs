@@ -84,7 +84,7 @@ pub fn arena_asteroids(
     mut asteroid_spawn_events: ResMut<Events<AsteroidSpawnEvent>>,
     asteroids: Query<&Asteroid>,
 ) {
-    if gamestate.get() == AppGameState::Game {
+    if gamestate.current() == &AppGameState::Game {
         let arena = runstate.arena.as_mut().unwrap();
         arena.asteroid_spawn_timer.tick(time.delta_seconds());
         if arena.asteroid_spawn_timer.finished() {

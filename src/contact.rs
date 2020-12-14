@@ -18,7 +18,7 @@ enum Contacts {
 
 pub fn contact_system(
     commands: &mut Commands,
-    gamestate: Res<State<AppGameState>>,
+    mut gamestate: ResMut<State<AppGameState>>,
     mut asteroid_spawn_events: ResMut<Events<AsteroidSpawnEvent>>,
     mut explosion_spawn_events: ResMut<Events<ExplosionSpawnEvent>>,
     mut runstate: ResMut<RunState>,
@@ -151,7 +151,7 @@ pub fn contact_system(
                     });
                     commands.despawn(e1);
                     //runstate.gamestate.transit_to(GameState::GameOver);
-                    gamestate.queue(AppGameState::GameOver)
+                    gamestate.set_next(AppGameState::GameOver).unwrap();
                 } else {
                     explosion_spawn_events.send(ExplosionSpawnEvent {
                         kind: ExplosionKind::ShipContact,

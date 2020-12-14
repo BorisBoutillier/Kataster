@@ -100,8 +100,8 @@ pub fn ship_cannon_system(time: Res<Time>, mut ship: Query<Mut<Ship>>) {
 pub fn user_input_system(
     commands: &mut Commands,
     audio: Res<Audio>,
-    state: Res<State<AppState>>,
-    gamestate: Res<State<AppGameState>>,
+    mut state: ResMut<State<AppState>>,
+    mut gamestate: ResMut<State<AppGameState>>,
     runstate: ResMut<RunState>,
     input: Res<Input<KeyCode>>,
     mut rapier_configuration: ResMut<RapierConfiguration>,
@@ -109,16 +109,16 @@ pub fn user_input_system(
     mut app_exit_events: ResMut<Events<AppExit>>,
     mut query: Query<(&RigidBodyHandleComponent, Mut<Ship>)>,
 ) {
-    if state.get() != AppState::StartMenu {
+    if state.current() != &AppState::StartMenu {
         if input.just_pressed(KeyCode::Back) {
-            state.queue(AppState::StartMenu);
-            gamestate.queue(AppGameState::Game);
+            state.set_next(AppState::StartMenu).unwrap();
+            gamestate.set_next(AppGameState::Invalid).unwrap();
             rapier_configuration.query_pipeline_active = true;
             rapier_configuration.physics_pipeline_active = true;
         }
     }
-    if state.get() == AppState::Game {
-        if gamestate.get() == AppGameState::Game {
+    if state.current() == &AppState::Game {
+        if gamestate.current() == &AppGameState::Game {
             let player = runstate.player.unwrap();
             let mut rotation = 0;
             let mut thrust = 0;
@@ -157,29 +157,29 @@ pub fn user_input_system(
                 }
             }
             if input.just_pressed(KeyCode::Escape) {
-                gamestate.queue(AppGameState::Pause);
+                gamestate.set_next(AppGameState::Pause).unwrap();
                 rapier_configuration.query_pipeline_active = false;
                 rapier_configuration.physics_pipeline_active = false;
             }
-        } else if gamestate.get() == AppGameState::Pause {
+        } else if gamestate.current() == &AppGameState::Pause {
             if input.just_pressed(KeyCode::Escape) {
-                gamestate.queue(AppGameState::Game);
+                gamestate.set_next(AppGameState::Game).unwrap();
                 rapier_configuration.query_pipeline_active = true;
                 rapier_configuration.physics_pipeline_active = true;
             }
-        } else if gamestate.get() == AppGameState::GameOver {
+        } else if gamestate.current() == &AppGameState::GameOver {
             if input.just_pressed(KeyCode::Return) {
-                state.queue(AppState::StartMenu);
-                gamestate.queue(AppGameState::Game);
+                state.set_next(AppState::StartMenu).unwrap();
+                gamestate.set_next(AppGameState::Invalid).unwrap();
             }
             if input.just_pressed(KeyCode::Escape) {
                 app_exit_events.send(AppExit);
             }
         }
-    } else if state.get() == AppState::StartMenu {
+    } else if state.current() == &AppState::StartMenu {
         if input.just_pressed(KeyCode::Return) {
-            state.queue(AppState::Game);
-            gamestate.queue(AppGameState::Game);
+            state.set_next(AppState::Game).unwrap();
+            gamestate.set_next(AppGameState::Game).unwrap();
         }
         if input.just_pressed(KeyCode::Escape) {
             app_exit_events.send(AppExit);
