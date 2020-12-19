@@ -5,6 +5,9 @@ pub struct ForState<T> {
     pub states: Vec<T>,
 }
 
+pub const APPSTATE_STAGE: &str = "appstate_stage";
+pub const APPGAMESTATE_STAGE: &str = "appgamestate_stage";
+
 #[derive(Debug, Copy, Clone, Hash, Eq, PartialEq)]
 pub enum AppState {
     StartMenu,

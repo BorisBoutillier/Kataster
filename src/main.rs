@@ -39,39 +39,54 @@ fn main() {
             gravity: Vector2::zeros(),
             ..Default::default()
         })
-        .add_state(AppState::StartMenu)
-        .add_state(AppGameState::Invalid)
-        .on_state_enter(AppState::StartMenu, start_menu)
-        .on_state_enter(AppGameState::GameOver, gameover_menu)
-        .on_state_enter(AppGameState::Pause, pause_menu)
-        .on_state_enter(
-            AppState::Game,
-            SystemStage::parallel()
-                .with_system(setup_arena)
-                .with_system(game_ui_spawn),
+        .add_resource(State::new(AppState::StartMenu))
+        .add_stage_after(
+            stage::UPDATE,
+            APPSTATE_STAGE,
+            StateStage::<AppState>::default(),
         )
-        .on_state_update(
-            AppState::Game,
-            SystemStage::parallel()
-                .with_system(position_system)
-                .with_system(player_dampening_system)
-                .with_system(ship_cannon_system)
-                .with_system(despawn_laser_system)
-                .with_system(contact_system)
-                .with_system(arena_asteroids)
-                .with_system(spawn_asteroid_event)
-                .with_system(score_ui_system)
-                .with_system(life_ui_system),
+        .stage(APPSTATE_STAGE, |stage: &mut StateStage<AppState>| {
+            stage
+                .on_state_enter(AppState::StartMenu, start_menu.system())
+                .on_state_exit(AppState::StartMenu, appstate_exit_despawn.system())
+                .on_state_enter(AppState::Game, setup_arena.system())
+                .on_state_enter(AppState::Game, game_ui_spawn.system())
+                .update_stage(AppState::Game, |stage: &mut SystemStage| {
+                    stage
+                        .add_system(position_system.system())
+                        .add_system(position_system.system())
+                        .add_system(player_dampening_system.system())
+                        .add_system(ship_cannon_system.system())
+                        .add_system(despawn_laser_system.system())
+                        .add_system(contact_system.system())
+                        .add_system(arena_asteroids.system())
+                        .add_system(spawn_asteroid_event.system())
+                        .add_system(score_ui_system.system())
+                        .add_system(life_ui_system.system())
+                })
+                .on_state_exit(AppState::Game, appstate_exit_despawn.system())
+        })
+        .add_resource(State::new(AppGameState::Invalid))
+        .add_stage_after(
+            APPSTATE_STAGE,
+            APPGAMESTATE_STAGE,
+            StateStage::<AppGameState>::default(),
         )
-        .on_state_exit(AppState::Game, appstate_exit_despawn)
-        .on_state_exit(AppGameState::GameOver, appgamestate_exit_despawn)
-        .on_state_exit(AppGameState::Pause, appgamestate_exit_despawn)
-        .on_state_exit(AppState::StartMenu, appstate_exit_despawn)
-        .add_system(user_input_system)
-        .add_system(handle_explosion)
-        .add_system(draw_blink_system)
-        .add_system(spawn_explosion_event)
-        .add_startup_system(setup)
+        .stage(
+            APPGAMESTATE_STAGE,
+            |stage: &mut StateStage<AppGameState>| {
+                stage
+                    .on_state_enter(AppGameState::Pause, pause_menu.system())
+                    .on_state_exit(AppGameState::Pause, appgamestate_exit_despawn.system())
+                    .on_state_enter(AppGameState::GameOver, gameover_menu.system())
+                    .on_state_exit(AppGameState::GameOver, appgamestate_exit_despawn.system())
+            },
+        )
+        .add_system(user_input_system.system())
+        .add_system(handle_explosion.system())
+        .add_system(draw_blink_system.system())
+        .add_system(spawn_explosion_event.system())
+        .add_startup_system(setup.system())
         .run();
 }
 
