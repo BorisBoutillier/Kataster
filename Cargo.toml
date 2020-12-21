@@ -1,6 +1,6 @@
 [package]
 name = "kataster"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Boris Boutillier <boris.boutillier@gmail.com>"]
 edition = "2018"
 
@@ -9,9 +9,9 @@ bevy = "0.4.0"
 #bevy = { path = "/home/boris/work/gits/bevy"}
 #bevy = { git = "https://github.com/bevyengine/bevy"}
 rand = "0.7.3"
-#bevy_rapier2d = "0.6.2"
+bevy_rapier2d = "0.7.0"
 #bevy_rapier2d = { path = "/home/boris/work/gits/bevy_rapier/bevy_rapier2d" }
-bevy_rapier2d = { git = "https://github.com/Fedcomp/bevy_rapier/" , branch = "bevy-0.4" }
+#bevy_rapier2d = { git = "https://github.com/dimforge/bevy_rapier/" }
 
 
 # Ensure crates reference the same versions
