@@ -55,7 +55,6 @@ fn main() {
                 .update_stage(AppState::Game, |stage: &mut SystemStage| {
                     stage
                         .add_system(position_system.system())
-                        .add_system(position_system.system())
                         .add_system(player_dampening_system.system())
                         .add_system(ship_cannon_system.system())
                         .add_system(despawn_laser_system.system())
