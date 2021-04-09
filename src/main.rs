@@ -37,6 +37,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_resource(RapierConfiguration {
             gravity: Vector2::zeros(),
+            time_dependent_number_of_timesteps: true, //physic run at fixed 60Hz
             ..Default::default()
         })
         .add_resource(State::new(AppState::StartMenu))
