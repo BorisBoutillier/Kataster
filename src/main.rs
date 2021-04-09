@@ -24,63 +24,64 @@ const START_LIFE: u32 = 3;
 
 fn main() {
     App::build()
-        .add_resource(WindowDescriptor {
+        .insert_resource(WindowDescriptor {
             title: "Kataster".to_string(),
             width: WINDOW_WIDTH as f32,
             height: WINDOW_HEIGHT as f32,
             ..Default::default()
         })
-        .add_resource(ClearColor(Color::rgb_u8(5, 5, 10)))
+        .insert_resource(ClearColor(Color::rgb_u8(5, 5, 10)))
         .add_event::<AsteroidSpawnEvent>()
         .add_event::<ExplosionSpawnEvent>()
         .add_plugin(RapierPhysicsPlugin)
         .add_plugins(DefaultPlugins)
-        .add_resource(RapierConfiguration {
+        .insert_resource(RapierConfiguration {
             gravity: Vector2::zeros(),
             time_dependent_number_of_timesteps: true, //physic run at fixed 60Hz
             ..Default::default()
         })
-        .add_resource(State::new(AppState::StartMenu))
-        .add_stage_after(
-            stage::UPDATE,
-            APPSTATE_STAGE,
-            StateStage::<AppState>::default(),
+        .add_state(AppState::StartMenu)
+        .add_system_set(
+            SystemSet::on_enter(AppState::StartMenu)
+                .with_system(start_menu.system())
+                .with_system(appstate_enter_despawn.system()),
         )
-        .stage(APPSTATE_STAGE, |stage: &mut StateStage<AppState>| {
-            stage
-                .on_state_enter(AppState::StartMenu, start_menu.system())
-                .on_state_exit(AppState::StartMenu, appstate_exit_despawn.system())
-                .on_state_enter(AppState::Game, setup_arena.system())
-                .on_state_enter(AppState::Game, game_ui_spawn.system())
-                .update_stage(AppState::Game, |stage: &mut SystemStage| {
-                    stage
-                        .add_system(position_system.system())
-                        .add_system(player_dampening_system.system())
-                        .add_system(ship_cannon_system.system())
-                        .add_system(despawn_laser_system.system())
-                        .add_system(contact_system.system())
-                        .add_system(arena_asteroids.system())
-                        .add_system(spawn_asteroid_event.system())
-                        .add_system(score_ui_system.system())
-                        .add_system(life_ui_system.system())
-                })
-                .on_state_exit(AppState::Game, appstate_exit_despawn.system())
-        })
-        .add_resource(State::new(AppGameState::Invalid))
-        .add_stage_after(
-            APPSTATE_STAGE,
-            APPGAMESTATE_STAGE,
-            StateStage::<AppGameState>::default(),
+        .add_system_set(
+            SystemSet::on_enter(AppState::Game)
+                .with_system(setup_arena.system())
+                .with_system(game_ui_spawn.system())
+                .with_system(appstate_enter_despawn.system()),
         )
-        .stage(
-            APPGAMESTATE_STAGE,
-            |stage: &mut StateStage<AppGameState>| {
-                stage
-                    .on_state_enter(AppGameState::Pause, pause_menu.system())
-                    .on_state_exit(AppGameState::Pause, appgamestate_exit_despawn.system())
-                    .on_state_enter(AppGameState::GameOver, gameover_menu.system())
-                    .on_state_exit(AppGameState::GameOver, appgamestate_exit_despawn.system())
-            },
+        .add_system_set(
+            SystemSet::on_update(AppState::Game)
+                .with_system(position_system.system())
+                .with_system(player_dampening_system.system())
+                .with_system(ship_cannon_system.system())
+                .with_system(despawn_laser_system.system())
+                .with_system(contact_system.system())
+                .with_system(arena_asteroids.system())
+                .with_system(spawn_asteroid_event.system())
+                .with_system(score_ui_system.system())
+                .with_system(life_ui_system.system()),
+        )
+        .add_state(AppGameState::Invalid)
+        .add_system_set(
+            SystemSet::on_enter(AppGameState::Pause)
+                .with_system(pause_menu.system())
+                .with_system(appgamestate_enter_despawn.system()),
+        )
+        .add_system_set(
+            SystemSet::on_enter(AppGameState::GameOver)
+                .with_system(gameover_menu.system())
+                .with_system(appgamestate_enter_despawn.system()),
+        )
+        .add_system_set(
+            SystemSet::on_enter(AppGameState::Invalid)
+                .with_system(appgamestate_enter_despawn.system()),
+        )
+        .add_system_set(
+            SystemSet::on_enter(AppGameState::Game)
+                .with_system(appgamestate_enter_despawn.system()),
         )
         .add_system(user_input_system.system())
         .add_system(handle_explosion.system())
@@ -93,21 +94,19 @@ fn main() {
 /// UiCamera and Camera2d are spawn once and for all.
 /// Despawning them does not seem to be the way to go in bevy.
 pub fn setup(
-    commands: &mut Commands,
+    mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    commands
-        .spawn(Camera2dBundle {
-            transform: Transform {
-                scale: Vec3::splat(CAMERA_SCALE),
-                ..Default::default()
-            },
-            ..Default::default()
-        })
-        .spawn(CameraUiBundle::default());
+    let mut camera = OrthographicCameraBundle::new_2d();
+    camera.transform = Transform {
+        scale: Vec3::splat(CAMERA_SCALE),
+        ..Default::default()
+    };
+    commands.spawn_bundle(camera);
+    commands.spawn_bundle(UiCameraBundle::default());
     let texture_handle = asset_server.load("pexels-francesco-ungaro-998641.png");
-    commands.spawn(SpriteBundle {
+    commands.spawn_bundle(SpriteBundle {
         transform: Transform {
             translation: Vec3::new(0.0, 0.0, -10.0),
             scale: Vec3::splat(CAMERA_SCALE),

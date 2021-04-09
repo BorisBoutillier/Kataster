@@ -1,15 +1,15 @@
 [package]
 name = "kataster"
-version = "0.4.0"
+version = "0.5.0"
 authors = ["Boris Boutillier <boris.boutillier@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-bevy = "0.4.0"
+bevy = "0.5.0"
 #bevy = { path = "/home/boris/work/gits/bevy"}
 #bevy = { git = "https://github.com/bevyengine/bevy"}
 rand = "0.7.3"
-bevy_rapier2d = "0.7.0"
+bevy_rapier2d = "0.9.0"
 #bevy_rapier2d = { path = "/home/boris/work/gits/bevy_rapier/bevy_rapier2d" }
 #bevy_rapier2d = { git = "https://github.com/dimforge/bevy_rapier/" }
 

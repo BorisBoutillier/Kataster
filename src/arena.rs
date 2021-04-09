@@ -2,6 +2,7 @@ use super::components::*;
 use super::player::*;
 use super::state::*;
 use bevy::prelude::*;
+use bevy::utils::Duration;
 use bevy_rapier2d::physics::RigidBodyHandleComponent;
 use bevy_rapier2d::rapier::{
     dynamics::{RigidBodyBuilder, RigidBodySet},
@@ -21,7 +22,7 @@ pub struct Arena {
     pub asteroid_spawn_timer: Timer,
 }
 pub fn setup_arena(
-    commands: &mut Commands,
+    commands: Commands,
     mut runstate: ResMut<RunState>,
     asset_server: Res<AssetServer>,
     materials: ResMut<Assets<ColorMaterial>>,
@@ -33,47 +34,39 @@ pub fn setup_arena(
     spawn_player(commands, runstate, asset_server, materials);
 }
 
-#[derive(Default)]
-pub struct SpawnAsteroidState {
-    event_reader: EventReader<AsteroidSpawnEvent>,
-}
-
 pub fn spawn_asteroid_event(
-    commands: &mut Commands,
-    mut local_state: Local<SpawnAsteroidState>,
+    mut commands: Commands,
+    mut event_reader: EventReader<AsteroidSpawnEvent>,
     runstate: Res<RunState>,
-    events: Res<Events<AsteroidSpawnEvent>>,
 ) {
-    for event in local_state.event_reader.iter(&events) {
+    for event in event_reader.iter() {
         let (sprite_handle, radius) = match event.size {
             AsteroidSize::Big => (runstate.meteor_big_handle.clone(), 10.1 / 2.0),
             AsteroidSize::Medium => (runstate.meteor_med_handle.clone(), 4.3 / 2.0),
             AsteroidSize::Small => (runstate.meteor_small_handle.clone(), 2.8 / 2.0),
         };
-        let entity = commands
-            .spawn(SpriteBundle {
-                transform: Transform {
-                    translation: Vec3::new(event.x, event.y, -5.0),
-                    scale: Vec3::splat(1.0 / 10.0),
-                    ..Default::default()
-                },
-                material: sprite_handle.clone(),
+        let mut entity_builder = commands.spawn_bundle(SpriteBundle {
+            transform: Transform {
+                translation: Vec3::new(event.x, event.y, -5.0),
+                scale: Vec3::splat(1.0 / 10.0),
                 ..Default::default()
-            })
-            .with(Asteroid { size: event.size })
-            .with(Damage { value: 1 })
-            .with(ForState {
+            },
+            material: sprite_handle.clone(),
+            ..Default::default()
+        });
+        entity_builder
+            .insert(Asteroid { size: event.size })
+            .insert(Damage { value: 1 })
+            .insert(ForState {
                 states: vec![AppState::Game],
-            })
-            .current_entity()
-            .unwrap();
+            });
         let body = RigidBodyBuilder::new_dynamic()
             .translation(event.x, event.y)
             .linvel(event.vx, event.vy)
             .angvel(event.angvel)
-            .user_data(entity.to_bits() as u128);
+            .user_data(entity_builder.id().to_bits() as u128);
         let collider = ColliderBuilder::ball(radius).friction(-0.3);
-        commands.insert(entity, (body, collider));
+        entity_builder.insert_bundle((body, collider));
     }
 }
 
@@ -81,19 +74,21 @@ pub fn arena_asteroids(
     time: Res<Time>,
     gamestate: Res<State<AppGameState>>,
     mut runstate: ResMut<RunState>,
-    mut asteroid_spawn_events: ResMut<Events<AsteroidSpawnEvent>>,
+    mut asteroid_spawn_events: EventWriter<AsteroidSpawnEvent>,
     asteroids: Query<&Asteroid>,
 ) {
     if gamestate.current() == &AppGameState::Game {
         let arena = runstate.arena.as_mut().unwrap();
-        arena.asteroid_spawn_timer.tick(time.delta_seconds());
+        arena.asteroid_spawn_timer.tick(time.delta());
         if arena.asteroid_spawn_timer.finished() {
             let n_asteroid = asteroids.iter().count();
             arena.asteroid_spawn_timer.reset();
             if n_asteroid < 20 {
                 arena
                     .asteroid_spawn_timer
-                    .set_duration((0.8 * arena.asteroid_spawn_timer.duration()).max(0.1));
+                    .set_duration(Duration::from_secs_f32(
+                        (0.8 * arena.asteroid_spawn_timer.duration().as_secs_f32()).max(0.1),
+                    ));
                 let mut rng = thread_rng();
                 // 0: Top , 1:Left
                 let side = rng.gen_range(0, 2);

@@ -16,32 +16,32 @@ use bevy_rapier2d::{
 };
 
 pub fn spawn_player(
-    commands: &mut Commands,
+    mut commands: Commands,
     mut runstate: ResMut<RunState>,
     asset_server: Res<AssetServer>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     let texture_handle = asset_server.load("playerShip2_red.png");
-    commands
-        .spawn(SpriteBundle {
-            transform: Transform {
-                translation: Vec3::new(0.0, 0.0, -5.0),
-                scale: Vec3::splat(1.0 / 37.0),
-                ..Default::default()
-            },
-            material: materials.add(texture_handle.into()),
+    let mut player_entity_builder = commands.spawn_bundle(SpriteBundle {
+        transform: Transform {
+            translation: Vec3::new(0.0, 0.0, -5.0),
+            scale: Vec3::splat(1.0 / 37.0),
             ..Default::default()
-        })
-        .with(Ship {
+        },
+        material: materials.add(texture_handle.into()),
+        ..Default::default()
+    });
+    player_entity_builder
+        .insert(Ship {
             rotation_speed: 0.3,
             thrust: 60.0,
             life: START_LIFE,
             cannon_timer: Timer::from_seconds(0.2, false),
         })
-        .with(ForState {
+        .insert(ForState {
             states: vec![AppState::Game],
         });
-    let player_entity = commands.current_entity().unwrap();
+    let player_entity = player_entity_builder.id();
     let body = RigidBodyBuilder::new_dynamic().user_data(player_entity.to_bits() as u128);
     let collider = ColliderBuilder::ball(1.0);
     // The triangle Collider does not compute mass
@@ -50,24 +50,24 @@ pub fn spawn_player(
     //    Point::new(0.0, 0.8),
     //    Point::new(-1.0, -0.5),
     //);
-    commands.insert(player_entity, (body, collider));
+    player_entity_builder.insert_bundle((body, collider));
     runstate.player = Some(player_entity);
 
     // Helper points to visualize some points in space for Collider
     //commands
-    //    .spawn(SpriteComponents {
+    //    .spawn_bundle(SpriteComponents {
     //        translation: Translation::new(1.2, -1.0, 2.0),
     //        material: materials.add(texture_handle.into()),
     //        scale: Scale(0.001),
     //        ..Default::default()
     //    })
-    //    .spawn(SpriteComponents {
+    //    .spawn_bundle(SpriteComponents {
     //        translation: Translation::new(0.0, 1.0, 2.0),
     //        material: materials.add(texture_handle.into()),
     //        scale: Scale(0.001),
     //        ..Default::default()
     //    })
-    //    .spawn(SpriteComponents {
+    //    .spawn_bundle(SpriteComponents {
     //        translation: Translation::new(-1.2, -1.0, 2.0),
     //        material: materials.add(texture_handle.into()),
     //        scale: Scale(0.001),
@@ -91,14 +91,14 @@ pub fn player_dampening_system(
     }
 }
 
-pub fn ship_cannon_system(time: Res<Time>, mut ship: Query<Mut<Ship>>) {
+pub fn ship_cannon_system(time: Res<Time>, mut ship: Query<&mut Ship>) {
     for mut ship in ship.iter_mut() {
-        ship.cannon_timer.tick(time.delta_seconds());
+        ship.cannon_timer.tick(time.delta());
     }
 }
 
 pub fn user_input_system(
-    commands: &mut Commands,
+    commands: Commands,
     audio: Res<Audio>,
     mut state: ResMut<State<AppState>>,
     mut gamestate: ResMut<State<AppGameState>>,
@@ -106,13 +106,13 @@ pub fn user_input_system(
     input: Res<Input<KeyCode>>,
     mut rapier_configuration: ResMut<RapierConfiguration>,
     mut bodies: ResMut<RigidBodySet>,
-    mut app_exit_events: ResMut<Events<AppExit>>,
-    mut query: Query<(&RigidBodyHandleComponent, Mut<Ship>)>,
+    mut app_exit_events: EventWriter<AppExit>,
+    mut query: Query<(&RigidBodyHandleComponent, &mut Ship)>,
 ) {
     if state.current() != &AppState::StartMenu {
         if input.just_pressed(KeyCode::Back) {
-            state.set_next(AppState::StartMenu).unwrap();
-            gamestate.set_next(AppGameState::Invalid).unwrap();
+            state.set(AppState::StartMenu).unwrap();
+            gamestate.set(AppGameState::Invalid).unwrap();
             rapier_configuration.query_pipeline_active = true;
             rapier_configuration.physics_pipeline_active = true;
         }
@@ -157,20 +157,20 @@ pub fn user_input_system(
                 }
             }
             if input.just_pressed(KeyCode::Escape) {
-                gamestate.set_next(AppGameState::Pause).unwrap();
+                gamestate.set(AppGameState::Pause).unwrap();
                 rapier_configuration.query_pipeline_active = false;
                 rapier_configuration.physics_pipeline_active = false;
             }
         } else if gamestate.current() == &AppGameState::Pause {
             if input.just_pressed(KeyCode::Escape) {
-                gamestate.set_next(AppGameState::Game).unwrap();
+                gamestate.set(AppGameState::Game).unwrap();
                 rapier_configuration.query_pipeline_active = true;
                 rapier_configuration.physics_pipeline_active = true;
             }
         } else if gamestate.current() == &AppGameState::GameOver {
             if input.just_pressed(KeyCode::Return) {
-                state.set_next(AppState::StartMenu).unwrap();
-                gamestate.set_next(AppGameState::Invalid).unwrap();
+                state.set(AppState::StartMenu).unwrap();
+                gamestate.set(AppGameState::Invalid).unwrap();
             }
             if input.just_pressed(KeyCode::Escape) {
                 app_exit_events.send(AppExit);
@@ -178,8 +178,8 @@ pub fn user_input_system(
         }
     } else if state.current() == &AppState::StartMenu {
         if input.just_pressed(KeyCode::Return) {
-            state.set_next(AppState::Game).unwrap();
-            gamestate.set_next(AppGameState::Game).unwrap();
+            state.set(AppState::Game).unwrap();
+            gamestate.set(AppGameState::Game).unwrap();
         }
         if input.just_pressed(KeyCode::Escape) {
             app_exit_events.send(AppExit);

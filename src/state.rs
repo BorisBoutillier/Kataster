@@ -5,9 +5,6 @@ pub struct ForState<T> {
     pub states: Vec<T>,
 }
 
-pub const APPSTATE_STAGE: &str = "appstate_stage";
-pub const APPGAMESTATE_STAGE: &str = "appgamestate_stage";
-
 #[derive(Debug, Copy, Clone, Hash, Eq, PartialEq)]
 pub enum AppState {
     StartMenu,
@@ -55,26 +52,26 @@ impl RunState {
     }
 }
 
-pub fn appstate_exit_despawn(
-    commands: &mut Commands,
+pub fn appstate_enter_despawn(
+    mut commands: Commands,
     state: Res<State<AppState>>,
     query: Query<(Entity, &ForState<AppState>)>,
 ) {
     for (entity, for_state) in &mut query.iter() {
         if !for_state.states.contains(&state.current()) {
-            commands.despawn(entity);
+            commands.entity(entity).despawn();
         }
     }
 }
 
-pub fn appgamestate_exit_despawn(
-    commands: &mut Commands,
+pub fn appgamestate_enter_despawn(
+    mut commands: Commands,
     state: ResMut<State<AppGameState>>,
     query: Query<(Entity, &ForState<AppGameState>)>,
 ) {
     for (entity, for_state) in &mut query.iter() {
         if !for_state.states.contains(&state.current()) {
-            commands.despawn(entity);
+            commands.entity(entity).despawn();
         }
     }
 }
