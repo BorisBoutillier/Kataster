@@ -2,7 +2,7 @@
 name = "kataster"
 version = "0.5.0"
 authors = ["Boris Boutillier <boris.boutillier@gmail.com>"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 bevy = "0.5.0"
@@ -17,6 +17,6 @@ bevy_rapier2d = "0.9.0"
 # Ensure crates reference the same versions
 # or customize a sub-crate version
 #[patch.crates-io]
-#bevy = "0.4.0"
+#bevy = "0.5.0"
 #bevy = { path = "/home/boris/work/gits/bevy"}
 #bevy = { git = "https://github.com/bevyengine/bevy" }

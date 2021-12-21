@@ -1,5 +1,5 @@
-use super::arena::*;
-use bevy::prelude::*;
+use crate::prelude::*;
+
 /// Component to tag an entity as only needed in one state
 pub struct ForState<T> {
     pub states: Vec<T>,
@@ -58,7 +58,7 @@ pub fn appstate_enter_despawn(
     query: Query<(Entity, &ForState<AppState>)>,
 ) {
     for (entity, for_state) in &mut query.iter() {
-        if !for_state.states.contains(&state.current()) {
+        if !for_state.states.contains(state.current()) {
             commands.entity(entity).despawn();
         }
     }
@@ -70,7 +70,7 @@ pub fn appgamestate_enter_despawn(
     query: Query<(Entity, &ForState<AppGameState>)>,
 ) {
     for (entity, for_state) in &mut query.iter() {
-        if !for_state.states.contains(&state.current()) {
+        if !for_state.states.contains(state.current()) {
             commands.entity(entity).despawn();
         }
     }

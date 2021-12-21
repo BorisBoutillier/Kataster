@@ -1,12 +1,6 @@
+use crate::prelude::*;
 use bevy::app::AppExit;
-
-use super::components::*;
-use super::laser::*;
-use super::state::*;
-use super::START_LIFE;
-use bevy::prelude::*;
 use bevy_rapier2d::{
-    na::Vector2,
     physics::{RapierConfiguration, RigidBodyHandleComponent},
     rapier::{
         dynamics::{RigidBodyBuilder, RigidBodySet},
@@ -14,6 +8,8 @@ use bevy_rapier2d::{
         //        math::Point,
     },
 };
+
+pub const START_LIFE: u32 = 3;
 
 pub fn spawn_player(
     mut commands: Commands,
@@ -109,13 +105,11 @@ pub fn user_input_system(
     mut app_exit_events: EventWriter<AppExit>,
     mut query: Query<(&RigidBodyHandleComponent, &mut Ship)>,
 ) {
-    if state.current() != &AppState::StartMenu {
-        if input.just_pressed(KeyCode::Back) {
-            state.set(AppState::StartMenu).unwrap();
-            gamestate.set(AppGameState::Invalid).unwrap();
-            rapier_configuration.query_pipeline_active = true;
-            rapier_configuration.physics_pipeline_active = true;
-        }
+    if state.current() != &AppState::StartMenu && input.just_pressed(KeyCode::Back) {
+        state.set(AppState::StartMenu).unwrap();
+        gamestate.set(AppGameState::Invalid).unwrap();
+        rapier_configuration.query_pipeline_active = true;
+        rapier_configuration.physics_pipeline_active = true;
     }
     if state.current() == &AppState::Game {
         if gamestate.current() == &AppGameState::Game {

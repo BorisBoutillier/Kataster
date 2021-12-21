@@ -1,13 +1,8 @@
-use super::components::*;
-use super::state::*;
-use bevy::prelude::*;
-use bevy_rapier2d::{
-    na::Vector2,
-    rapier::{
-        dynamics::{RigidBody, RigidBodyBuilder},
-        geometry::ColliderBuilder,
-        //        math::Point,
-    },
+use crate::prelude::*;
+use bevy_rapier2d::rapier::{
+    dynamics::{RigidBody, RigidBodyBuilder},
+    geometry::ColliderBuilder,
+    //        math::Point,
 };
 
 pub fn spawn_laser(
@@ -38,7 +33,7 @@ pub fn spawn_laser(
             states: vec![AppState::Game],
         });
     let body = RigidBodyBuilder::new_dynamic()
-        .position(parent_body.position().clone())
+        .position(*parent_body.position())
         .rotation(parent_body.position().rotation.angle())
         .linvel(v.x, v.y)
         .user_data(entity_builder.id().to_bits() as u128);

@@ -1,7 +1,4 @@
-use super::components::*;
-use super::state::*;
-use super::START_LIFE;
-use bevy::prelude::*;
+use crate::prelude::*;
 
 pub struct DrawBlinkTimer(pub Timer);
 

@@ -1,6 +1,4 @@
-use super::components::*;
-use super::state::*;
-use bevy::prelude::*;
+use crate::prelude::*;
 
 pub struct Explosion {
     timer: Timer,

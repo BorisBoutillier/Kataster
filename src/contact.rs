@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use crate::prelude::*;
 use bevy_rapier2d::{
     physics::{EventQueue, RigidBodyHandleComponent},
     rapier::{
@@ -7,9 +7,6 @@ use bevy_rapier2d::{
     },
 };
 
-use super::arena::*;
-use super::components::*;
-use super::state::*;
 use rand::{thread_rng, Rng};
 enum Contacts {
     ShipAsteroid(Entity, Entity),
@@ -33,26 +30,23 @@ pub fn contact_system(
 ) {
     let mut contacts = vec![];
     while let Ok(contact_event) = events.contact_events.pop() {
-        match contact_event {
-            ContactEvent::Started(h1, h2) => {
-                let c1 = colliders.get(h1).unwrap();
-                let c2 = colliders.get(h2).unwrap();
-                let b1 = bodies.get(c1.parent()).unwrap();
-                let b2 = bodies.get(c2.parent()).unwrap();
-                let e1 = Entity::from_bits(b1.user_data as u64);
-                let e2 = Entity::from_bits(b2.user_data as u64);
-                if ships.get_component::<Ship>(e1).is_ok()
-                    && damages.get_component::<Damage>(e2).is_ok()
-                {
-                    contacts.push(Contacts::ShipAsteroid(e1, e2));
-                } else if ships.get_component::<Ship>(e2).is_ok()
-                    && damages.get_component::<Damage>(e1).is_ok()
-                {
-                    contacts.push(Contacts::ShipAsteroid(e2, e1));
-                }
+        if let ContactEvent::Started(h1, h2) = contact_event {
+            let c1 = colliders.get(h1).unwrap();
+            let c2 = colliders.get(h2).unwrap();
+            let b1 = bodies.get(c1.parent()).unwrap();
+            let b2 = bodies.get(c2.parent()).unwrap();
+            let e1 = Entity::from_bits(b1.user_data as u64);
+            let e2 = Entity::from_bits(b2.user_data as u64);
+            if ships.get_component::<Ship>(e1).is_ok()
+                && damages.get_component::<Damage>(e2).is_ok()
+            {
+                contacts.push(Contacts::ShipAsteroid(e1, e2));
+            } else if ships.get_component::<Ship>(e2).is_ok()
+                && damages.get_component::<Damage>(e1).is_ok()
+            {
+                contacts.push(Contacts::ShipAsteroid(e2, e1));
             }
-            _ => (),
-        };
+        }
     }
     while let Ok(intersection_event) = events.intersection_events.pop() {
         if intersection_event.intersecting {
@@ -85,15 +79,13 @@ pub fn contact_system(
                     .get_component::<RigidBodyHandleComponent>(e2)
                     .unwrap()
                     .handle();
-                runstate.score = runstate.score.and_then(|score| {
-                    Some(
-                        score
-                            + match asteroid.size {
-                                AsteroidSize::Small => 40,
-                                AsteroidSize::Medium => 20,
-                                AsteroidSize::Big => 10,
-                            },
-                    )
+                runstate.score = runstate.score.map(|score| {
+                    score
+                        + match asteroid.size {
+                            AsteroidSize::Small => 40,
+                            AsteroidSize::Medium => 20,
+                            AsteroidSize::Big => 10,
+                        }
                 });
                 {
                     let laser_body = bodies.get(laser_handle).unwrap();
@@ -148,7 +140,7 @@ pub fn contact_system(
                 } else {
                     ship.life = 0;
                 }
-                if ship.life <= 0 {
+                if ship.life == 0 {
                     explosion_spawn_events.send(ExplosionSpawnEvent {
                         kind: ExplosionKind::ShipDead,
                         x: player_body.position().translation.x,

@@ -1,7 +1,4 @@
-use bevy::prelude::*;
-use bevy_rapier2d::physics::RapierConfiguration;
-use bevy_rapier2d::physics::RapierPhysicsPlugin;
-
+#![allow(clippy::too_many_arguments)]
 mod arena;
 mod components;
 mod contact;
@@ -11,16 +8,22 @@ mod player;
 mod state;
 mod ui;
 
-use arena::*;
-use bevy_rapier2d::na::Vector2;
-use components::*;
-use contact::*;
-use explosion::*;
-use laser::*;
-use player::*;
-use state::*;
-use ui::*;
-const START_LIFE: u32 = 3;
+mod prelude {
+    pub use crate::arena::*;
+    pub use crate::components::*;
+    pub use crate::contact::*;
+    pub use crate::explosion::*;
+    pub use crate::laser::*;
+    pub use crate::player::*;
+    pub use crate::state::*;
+    pub use crate::ui::*;
+    pub use bevy::prelude::*;
+    pub use bevy_rapier2d::na::Vector2;
+}
+
+use crate::prelude::*;
+use bevy_rapier2d::physics::RapierConfiguration;
+use bevy_rapier2d::physics::RapierPhysicsPlugin;
 
 fn main() {
     App::build()

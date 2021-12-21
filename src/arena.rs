@@ -1,7 +1,4 @@
-use super::components::*;
-use super::player::*;
-use super::state::*;
-use bevy::prelude::*;
+use crate::prelude::*;
 use bevy::utils::Duration;
 use bevy_rapier2d::physics::RigidBodyHandleComponent;
 use bevy_rapier2d::rapier::{
@@ -142,7 +139,7 @@ pub fn position_system(mut bodies: ResMut<RigidBodySet>, query: Query<&RigidBody
             updated = true;
         }
         if updated {
-            let mut new_position = body.position().clone();
+            let mut new_position = *body.position();
             new_position.translation.vector.x = x;
             new_position.translation.vector.y = y;
             body.set_position(new_position, false);
