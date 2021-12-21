@@ -1,11 +1,4 @@
 use crate::prelude::*;
-use bevy_rapier2d::{
-    physics::{EventQueue, RigidBodyHandleComponent},
-    rapier::{
-        dynamics::RigidBodySet,
-        geometry::{ColliderSet, ContactEvent},
-    },
-};
 
 use rand::{thread_rng, Rng};
 enum Contacts {
@@ -19,66 +12,39 @@ pub fn contact_system(
     mut asteroid_spawn_events: EventWriter<AsteroidSpawnEvent>,
     mut explosion_spawn_events: EventWriter<ExplosionSpawnEvent>,
     mut runstate: ResMut<RunState>,
-    events: Res<EventQueue>,
-    bodies: ResMut<RigidBodySet>,
-    colliders: ResMut<ColliderSet>,
+    mut events: EventReader<CollisionEvent>,
     damages: Query<&Damage>,
-    mut ships: Query<&mut Ship>,
-    lasers: Query<&Laser>,
-    asteroids: Query<&Asteroid>,
-    handles: Query<&RigidBodyHandleComponent>,
+    mut ships: Query<(&Transform, &mut Ship)>,
+    lasers: Query<(&Transform, &Laser)>,
+    asteroids: Query<(&Velocity, &Transform, &Asteroid)>,
 ) {
     let mut contacts = vec![];
-    while let Ok(contact_event) = events.contact_events.pop() {
-        if let ContactEvent::Started(h1, h2) = contact_event {
-            let c1 = colliders.get(h1).unwrap();
-            let c2 = colliders.get(h2).unwrap();
-            let b1 = bodies.get(c1.parent()).unwrap();
-            let b2 = bodies.get(c2.parent()).unwrap();
-            let e1 = Entity::from_bits(b1.user_data as u64);
-            let e2 = Entity::from_bits(b2.user_data as u64);
-            if ships.get_component::<Ship>(e1).is_ok()
-                && damages.get_component::<Damage>(e2).is_ok()
-            {
-                contacts.push(Contacts::ShipAsteroid(e1, e2));
-            } else if ships.get_component::<Ship>(e2).is_ok()
-                && damages.get_component::<Damage>(e1).is_ok()
-            {
-                contacts.push(Contacts::ShipAsteroid(e2, e1));
-            }
+    for event in events.iter().filter(|e| e.is_started()) {
+        let (e1, e2) = event.rigid_body_entities();
+        if ships.get_component::<Ship>(e1).is_ok() && damages.get_component::<Damage>(e2).is_ok() {
+            contacts.push(Contacts::ShipAsteroid(e1, e2));
         }
-    }
-    while let Ok(intersection_event) = events.intersection_events.pop() {
-        if intersection_event.intersecting {
-            let c1 = colliders.get(intersection_event.collider1).unwrap();
-            let c2 = colliders.get(intersection_event.collider2).unwrap();
-            let b1 = bodies.get(c1.parent()).unwrap();
-            let b2 = bodies.get(c2.parent()).unwrap();
-            let e1 = Entity::from_bits(b1.user_data as u64);
-            let e2 = Entity::from_bits(b2.user_data as u64);
-            if asteroids.get_component::<Asteroid>(e2).is_ok()
-                && lasers.get_component::<Laser>(e1).is_ok()
-            {
-                contacts.push(Contacts::LaserAsteroid(e1, e2));
-            } else if asteroids.get_component::<Asteroid>(e1).is_ok()
-                && lasers.get_component::<Laser>(e2).is_ok()
-            {
-                contacts.push(Contacts::LaserAsteroid(e2, e1));
-            }
+        if ships.get_component::<Ship>(e2).is_ok() && damages.get_component::<Damage>(e1).is_ok() {
+            contacts.push(Contacts::ShipAsteroid(e2, e1));
+        }
+        if asteroids.get_component::<Asteroid>(e2).is_ok()
+            && lasers.get_component::<Laser>(e1).is_ok()
+        {
+            contacts.push(Contacts::LaserAsteroid(e1, e2));
+        }
+        if asteroids.get_component::<Asteroid>(e1).is_ok()
+            && lasers.get_component::<Laser>(e2).is_ok()
+        {
+            contacts.push(Contacts::LaserAsteroid(e2, e1));
         }
     }
     for contact in contacts.into_iter() {
         match contact {
             Contacts::LaserAsteroid(e1, e2) => {
-                let laser_handle = handles
-                    .get_component::<RigidBodyHandleComponent>(e1)
-                    .unwrap()
-                    .handle();
+                let laser_transform = lasers.get_component::<Transform>(e1).unwrap();
                 let asteroid = asteroids.get_component::<Asteroid>(e2).unwrap();
-                let asteroid_handle = handles
-                    .get_component::<RigidBodyHandleComponent>(e2)
-                    .unwrap()
-                    .handle();
+                let asteroid_transform = asteroids.get_component::<Transform>(e2).unwrap();
+                let asteroid_velocity = asteroids.get_component::<Velocity>(e2).unwrap();
                 runstate.score = runstate.score.map(|score| {
                     score
                         + match asteroid.size {
@@ -88,13 +54,10 @@ pub fn contact_system(
                         }
                 });
                 {
-                    let laser_body = bodies.get(laser_handle).unwrap();
-                    let asteroid_body = bodies.get(asteroid_handle).unwrap();
-
                     explosion_spawn_events.send(ExplosionSpawnEvent {
                         kind: ExplosionKind::LaserOnAsteroid,
-                        x: laser_body.position().translation.x,
-                        y: laser_body.position().translation.y,
+                        x: laser_transform.translation.x,
+                        y: laser_transform.translation.y,
                     });
                     if asteroid.size != AsteroidSize::Small {
                         let (size, radius) = match asteroid.size {
@@ -103,11 +66,11 @@ pub fn contact_system(
                             _ => panic!(),
                         };
                         let mut rng = thread_rng();
-                        for _ in 0..rng.gen_range(1, 4) {
-                            let x = asteroid_body.position().translation.x
-                                + rng.gen_range(-radius, radius);
-                            let y = asteroid_body.position().translation.y
-                                + rng.gen_range(-radius, radius);
+                        for _ in 0..rng.gen_range(1u8, 4u8) {
+                            let x =
+                                asteroid_transform.translation.x + rng.gen_range(-radius, radius);
+                            let y =
+                                asteroid_transform.translation.y + rng.gen_range(-radius, radius);
                             let vx = rng.gen_range(-ARENA_WIDTH / radius, ARENA_WIDTH / radius);
                             let vy = rng.gen_range(-ARENA_HEIGHT / radius, ARENA_HEIGHT / radius);
                             asteroid_spawn_events.send(AsteroidSpawnEvent {
@@ -116,7 +79,7 @@ pub fn contact_system(
                                 y,
                                 vx,
                                 vy,
-                                angvel: asteroid_body.angvel(),
+                                angvel: asteroid_velocity.angular.axis().z,
                             });
                         }
                     }
@@ -125,14 +88,7 @@ pub fn contact_system(
                 commands.entity(e2).despawn();
             }
             Contacts::ShipAsteroid(e1, e2) => {
-                let player_body = bodies
-                    .get(
-                        handles
-                            .get_component::<RigidBodyHandleComponent>(e1)
-                            .unwrap()
-                            .handle(),
-                    )
-                    .unwrap();
+                let player_translation = ships.get_component::<Transform>(e1).unwrap().translation;
                 let mut ship = ships.get_component_mut::<Ship>(e1).unwrap();
                 let damage = damages.get_component::<Damage>(e2).unwrap();
                 if ship.life > damage.value {
@@ -143,8 +99,8 @@ pub fn contact_system(
                 if ship.life == 0 {
                     explosion_spawn_events.send(ExplosionSpawnEvent {
                         kind: ExplosionKind::ShipDead,
-                        x: player_body.position().translation.x,
-                        y: player_body.position().translation.y,
+                        x: player_translation.x,
+                        y: player_translation.y,
                     });
                     commands.entity(e1).despawn();
                     //runstate.gamestate.transit_to(GameState::GameOver);
@@ -152,8 +108,8 @@ pub fn contact_system(
                 } else {
                     explosion_spawn_events.send(ExplosionSpawnEvent {
                         kind: ExplosionKind::ShipContact,
-                        x: player_body.position().translation.x,
-                        y: player_body.position().translation.y,
+                        x: player_translation.x,
+                        y: player_translation.y,
                     });
                 }
             }

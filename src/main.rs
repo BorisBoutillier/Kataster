@@ -18,12 +18,10 @@ mod prelude {
     pub use crate::state::*;
     pub use crate::ui::*;
     pub use bevy::prelude::*;
-    pub use bevy_rapier2d::na::Vector2;
+    pub use heron::prelude::*;
 }
 
 use crate::prelude::*;
-use bevy_rapier2d::physics::RapierConfiguration;
-use bevy_rapier2d::physics::RapierPhysicsPlugin;
 
 fn main() {
     App::build()
@@ -36,13 +34,8 @@ fn main() {
         .insert_resource(ClearColor(Color::rgb_u8(5, 5, 10)))
         .add_event::<AsteroidSpawnEvent>()
         .add_event::<ExplosionSpawnEvent>()
-        .add_plugin(RapierPhysicsPlugin)
         .add_plugins(DefaultPlugins)
-        .insert_resource(RapierConfiguration {
-            gravity: Vector2::zeros(),
-            time_dependent_number_of_timesteps: true, //physic run at fixed 60Hz
-            ..Default::default()
-        })
+        .add_plugin(PhysicsPlugin::default())
         .add_state(AppState::StartMenu)
         .add_system_set(
             SystemSet::on_enter(AppState::StartMenu)

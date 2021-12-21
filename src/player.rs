@@ -1,13 +1,5 @@
 use crate::prelude::*;
 use bevy::app::AppExit;
-use bevy_rapier2d::{
-    physics::{RapierConfiguration, RigidBodyHandleComponent},
-    rapier::{
-        dynamics::{RigidBodyBuilder, RigidBodySet},
-        geometry::ColliderBuilder,
-        //        math::Point,
-    },
-};
 
 pub const START_LIFE: u32 = 3;
 
@@ -29,24 +21,24 @@ pub fn spawn_player(
     });
     player_entity_builder
         .insert(Ship {
-            rotation_speed: 0.3,
+            rotation_speed: 3.0,
             thrust: 60.0,
             life: START_LIFE,
             cannon_timer: Timer::from_seconds(0.2, false),
         })
         .insert(ForState {
             states: vec![AppState::Game],
-        });
+        })
+        .insert(RigidBody::Dynamic)
+        .insert(CollisionShape::Sphere { radius: 1.0 })
+        .insert(Acceleration::from_linear(Vec3::ZERO))
+        .insert(Velocity::from_linear(Vec3::ZERO))
+        .insert(
+            CollisionLayers::none()
+                .with_group(ArenaLayer::Player)
+                .with_mask(ArenaLayer::World),
+        );
     let player_entity = player_entity_builder.id();
-    let body = RigidBodyBuilder::new_dynamic().user_data(player_entity.to_bits() as u128);
-    let collider = ColliderBuilder::ball(1.0);
-    // The triangle Collider does not compute mass
-    //let collider = ColliderBuilder::triangle(
-    //    Point::new(1.0, -0.5),
-    //    Point::new(0.0, 0.8),
-    //    Point::new(-1.0, -0.5),
-    //);
-    player_entity_builder.insert_bundle((body, collider));
     runstate.player = Some(player_entity);
 
     // Helper points to visualize some points in space for Collider
@@ -74,16 +66,12 @@ pub fn spawn_player(
 pub fn player_dampening_system(
     time: Res<Time>,
     runstate: Res<RunState>,
-    mut bodies: ResMut<RigidBodySet>,
-    query: Query<&RigidBodyHandleComponent>,
+    mut query: Query<&mut Velocity>,
 ) {
-    if let Ok(body_handle) =
-        query.get_component::<RigidBodyHandleComponent>(runstate.player.unwrap())
-    {
+    if let Ok(mut velocity) = query.get_component_mut::<Velocity>(runstate.player.unwrap()) {
         let elapsed = time.delta_seconds();
-        let body = bodies.get_mut(body_handle.handle()).unwrap();
-        body.set_angvel(body.angvel() * 0.1f32.powf(elapsed), false);
-        body.set_linvel(body.linvel() * 0.8f32.powf(elapsed), false);
+        velocity.angular *= 0.1f32.powf(elapsed);
+        velocity.linear *= 0.4f32.powf(elapsed);
     }
 }
 
@@ -100,16 +88,14 @@ pub fn user_input_system(
     mut gamestate: ResMut<State<AppGameState>>,
     runstate: ResMut<RunState>,
     input: Res<Input<KeyCode>>,
-    mut rapier_configuration: ResMut<RapierConfiguration>,
-    mut bodies: ResMut<RigidBodySet>,
+    mut physics_time: ResMut<PhysicsTime>,
     mut app_exit_events: EventWriter<AppExit>,
-    mut query: Query<(&RigidBodyHandleComponent, &mut Ship)>,
+    mut query: Query<(&mut Acceleration, &mut Velocity, &Transform, &mut Ship)>,
 ) {
     if state.current() != &AppState::StartMenu && input.just_pressed(KeyCode::Back) {
         state.set(AppState::StartMenu).unwrap();
         gamestate.set(AppGameState::Invalid).unwrap();
-        rapier_configuration.query_pipeline_active = true;
-        rapier_configuration.physics_pipeline_active = true;
+        physics_time.resume();
     }
     if state.current() == &AppState::Game {
         if gamestate.current() == &AppGameState::Game {
@@ -125,41 +111,29 @@ pub fn user_input_system(
             if input.pressed(KeyCode::D) {
                 rotation -= 1
             }
-            if rotation != 0 || thrust != 0 {
-                if let Ok(body_handle) = query.get_component::<RigidBodyHandleComponent>(player) {
-                    let body = bodies.get_mut(body_handle.handle()).unwrap();
-                    let ship = query.get_component::<Ship>(player).unwrap();
-                    if rotation != 0 {
-                        let rotation = rotation as f32 * ship.rotation_speed;
-                        body.apply_torque_impulse(rotation, true);
-                    }
-                    if thrust != 0 {
-                        let force = body.position().rotation.transform_vector(&Vector2::y())
-                            * thrust as f32
-                            * ship.thrust;
-                        body.apply_force(force, true);
-                    }
+            if let Ok((mut acceleration, mut velocity, transform, ship)) = query.get_mut(player) {
+                if rotation != 0 {
+                    velocity.angular =
+                        AxisAngle::new(Vec3::Z, rotation as f32 * ship.rotation_speed);
                 }
+                acceleration.linear = transform.rotation * (Vec3::Y * thrust as f32 * ship.thrust);
             }
             if input.pressed(KeyCode::Space) {
-                if let Ok((body_handle, mut ship)) = query.get_mut(player) {
+                if let Ok((_, _, transform, mut ship)) = query.get_mut(player) {
                     if ship.cannon_timer.finished() {
-                        let body = bodies.get(body_handle.handle()).unwrap();
-                        spawn_laser(commands, body, &runstate, audio);
+                        spawn_laser(commands, transform, &runstate, audio);
                         ship.cannon_timer.reset();
                     }
                 }
             }
             if input.just_pressed(KeyCode::Escape) {
                 gamestate.set(AppGameState::Pause).unwrap();
-                rapier_configuration.query_pipeline_active = false;
-                rapier_configuration.physics_pipeline_active = false;
+                physics_time.pause();
             }
         } else if gamestate.current() == &AppGameState::Pause {
             if input.just_pressed(KeyCode::Escape) {
                 gamestate.set(AppGameState::Game).unwrap();
-                rapier_configuration.query_pipeline_active = true;
-                rapier_configuration.physics_pipeline_active = true;
+                physics_time.resume();
             }
         } else if gamestate.current() == &AppGameState::GameOver {
             if input.just_pressed(KeyCode::Return) {

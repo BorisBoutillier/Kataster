@@ -1,11 +1,5 @@
 use crate::prelude::*;
 use bevy::utils::Duration;
-use bevy_rapier2d::physics::RigidBodyHandleComponent;
-use bevy_rapier2d::rapier::{
-    dynamics::{RigidBodyBuilder, RigidBodySet},
-    geometry::ColliderBuilder,
-    //        math::Point,
-};
 use rand::{thread_rng, Rng};
 
 pub const WINDOW_WIDTH: u32 = 1280;
@@ -13,6 +7,13 @@ pub const WINDOW_HEIGHT: u32 = 800;
 pub const CAMERA_SCALE: f32 = 0.1;
 pub const ARENA_WIDTH: f32 = WINDOW_WIDTH as f32 * CAMERA_SCALE;
 pub const ARENA_HEIGHT: f32 = WINDOW_HEIGHT as f32 * CAMERA_SCALE;
+
+#[derive(PhysicsLayer)]
+pub enum ArenaLayer {
+    Player,
+    World,
+    Laser,
+}
 
 #[derive(Debug)]
 pub struct Arena {
@@ -42,28 +43,32 @@ pub fn spawn_asteroid_event(
             AsteroidSize::Medium => (runstate.meteor_med_handle.clone(), 4.3 / 2.0),
             AsteroidSize::Small => (runstate.meteor_small_handle.clone(), 2.8 / 2.0),
         };
-        let mut entity_builder = commands.spawn_bundle(SpriteBundle {
-            transform: Transform {
-                translation: Vec3::new(event.x, event.y, -5.0),
-                scale: Vec3::splat(1.0 / 10.0),
+        commands
+            .spawn_bundle(SpriteBundle {
+                transform: Transform {
+                    translation: Vec3::new(event.x, event.y, -5.0),
+                    scale: Vec3::splat(1.0 / 10.0),
+                    ..Default::default()
+                },
+                material: sprite_handle.clone(),
                 ..Default::default()
-            },
-            material: sprite_handle.clone(),
-            ..Default::default()
-        });
-        entity_builder
+            })
             .insert(Asteroid { size: event.size })
             .insert(Damage { value: 1 })
             .insert(ForState {
                 states: vec![AppState::Game],
-            });
-        let body = RigidBodyBuilder::new_dynamic()
-            .translation(event.x, event.y)
-            .linvel(event.vx, event.vy)
-            .angvel(event.angvel)
-            .user_data(entity_builder.id().to_bits() as u128);
-        let collider = ColliderBuilder::ball(radius).friction(-0.3);
-        entity_builder.insert_bundle((body, collider));
+            })
+            .insert(RigidBody::Dynamic)
+            .insert(CollisionShape::Sphere { radius })
+            .insert(Velocity {
+                linear: Vec3::new(event.vx, event.vy, 0.0),
+                angular: AxisAngle::new(Vec3::Z, event.angvel),
+            })
+            .insert(
+                CollisionLayers::none()
+                    .with_group(ArenaLayer::World)
+                    .with_masks(&[ArenaLayer::Player, ArenaLayer::World, ArenaLayer::Laser]),
+            );
     }
 }
 
@@ -115,34 +120,31 @@ pub fn arena_asteroids(
     }
 }
 
-pub fn position_system(mut bodies: ResMut<RigidBodySet>, query: Query<&RigidBodyHandleComponent>) {
-    for body_handle in &mut query.iter() {
-        let body = bodies.get_mut(body_handle.handle()).unwrap();
-        let mut x = body.position().translation.vector.x;
-        let mut y = body.position().translation.vector.y;
+pub fn position_system(mut query: Query<(&Velocity, &mut Transform)>) {
+    for (velocity, mut transform) in query.iter_mut() {
+        let mut x = transform.translation.x;
+        let mut y = transform.translation.y;
         let mut updated = false;
         // Wrap around screen edges
         let half_width = ARENA_WIDTH / 2.0;
         let half_height = ARENA_HEIGHT / 2.0;
-        if x < -half_width && body.linvel().x < 0.0 {
+        if x < -half_width && velocity.linear.x < 0.0 {
             x = half_width;
             updated = true;
-        } else if x > half_width && body.linvel().x > 0.0 {
+        } else if x > half_width && velocity.linear.x > 0.0 {
             x = -half_width;
             updated = true;
         }
-        if y < -half_height && body.linvel().y < 0.0 {
+        if y < -half_height && velocity.linear.y < 0.0 {
             y = half_height;
             updated = true;
-        } else if y > half_height && body.linvel().y > 0.0 {
+        } else if y > half_height && velocity.linear.y > 0.0 {
             y = -half_height;
             updated = true;
         }
         if updated {
-            let mut new_position = *body.position();
-            new_position.translation.vector.x = x;
-            new_position.translation.vector.y = y;
-            body.set_position(new_position, false);
+            transform.translation.x = x;
+            transform.translation.y = y;
         }
     }
 }
