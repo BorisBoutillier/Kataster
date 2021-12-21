@@ -34,7 +34,6 @@ pub fn start_menu(
                             font: runstate.font_handle.clone(),
                             font_size: 100.0,
                             color: Color::rgb_u8(0x00, 0xAA, 0xAA),
-                            ..Default::default()
                         },
                         TextAlignment::default(),
                     ),
@@ -54,7 +53,6 @@ pub fn start_menu(
                             font: runstate.font_handle.clone(),
                             font_size: 50.0,
                             color: Color::rgb_u8(0x00, 0x44, 0x44),
-                            ..Default::default()
                         },
                         TextAlignment::default(),
                     ),
@@ -99,7 +97,6 @@ pub fn gameover_menu(
                             font: runstate.font_handle.clone(),
                             font_size: 100.0,
                             color: Color::rgb_u8(0xAA, 0x22, 0x22),
-                            ..Default::default()
                         },
                         TextAlignment::default(),
                     ),
@@ -119,7 +116,6 @@ pub fn gameover_menu(
                             font: runstate.font_handle.clone(),
                             font_size: 50.0,
                             color: Color::rgb_u8(0x88, 0x22, 0x22),
-                            ..Default::default()
                         },
                         TextAlignment::default(),
                     ),
@@ -164,7 +160,6 @@ pub fn pause_menu(
                             font: runstate.font_handle.clone(),
                             font_size: 100.0,
                             color: Color::rgb_u8(0xF8, 0xE4, 0x73),
-                            ..Default::default()
                         },
                         TextAlignment::default(),
                     ),
@@ -227,7 +222,6 @@ pub fn game_ui_spawn(
                             font: runstate.font_handle.clone(),
                             font_size: 50.0,
                             color: Color::rgb_u8(0x00, 0xAA, 0xAA),
-                            ..Default::default()
                         },
                         TextAlignment::default(),
                     ),
