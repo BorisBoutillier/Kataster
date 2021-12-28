@@ -5,11 +5,12 @@ authors = ["Boris Boutillier <boris.boutillier@gmail.com>"]
 edition = "2021"
 
 [dependencies]
-bevy = "0.5.0"
-#bevy = { path = "/home/boris/work/gits/bevy"}
+#bevy = "0.5.0"
+bevy = { path = "/home/boris/work/rust/gits/bevy"}
 #bevy = { git = "https://github.com/bevyengine/bevy"}
 rand = "0.7.3"
-heron = { version = "0.12.1", features = ["2d"] }
+heron = { path = "/home/boris/work/rust/gits/heron-jrxb", features=["2d"]}
+#heron = { version = "0.12.1", features = ["2d"] }
 
 
 # Ensure crates reference the same versions

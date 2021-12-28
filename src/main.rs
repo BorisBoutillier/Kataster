@@ -24,7 +24,7 @@ mod prelude {
 use crate::prelude::*;
 
 fn main() {
-    App::build()
+    App::new()
         .insert_resource(WindowDescriptor {
             title: "Kataster".to_string(),
             width: WINDOW_WIDTH as f32,
@@ -89,11 +89,7 @@ fn main() {
 
 /// UiCamera and Camera2d are spawn once and for all.
 /// Despawning them does not seem to be the way to go in bevy.
-pub fn setup(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-) {
+pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let mut camera = OrthographicCameraBundle::new_2d();
     camera.transform = Transform {
         scale: Vec3::splat(CAMERA_SCALE),
@@ -101,15 +97,14 @@ pub fn setup(
     };
     commands.spawn_bundle(camera);
     commands.spawn_bundle(UiCameraBundle::default());
-    let texture_handle = asset_server.load("pexels-francesco-ungaro-998641.png");
     commands.spawn_bundle(SpriteBundle {
         transform: Transform {
             translation: Vec3::new(0.0, 0.0, -10.0),
             scale: Vec3::splat(CAMERA_SCALE),
             ..Default::default()
         },
-        material: materials.add(texture_handle.into()),
+        texture: asset_server.load("pexels-francesco-ungaro-998641.png"),
         ..Default::default()
     });
-    commands.insert_resource(RunState::new(&asset_server, materials));
+    commands.insert_resource(RunState::new(&asset_server));
 }

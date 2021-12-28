@@ -23,13 +23,12 @@ pub fn setup_arena(
     commands: Commands,
     mut runstate: ResMut<RunState>,
     asset_server: Res<AssetServer>,
-    materials: ResMut<Assets<ColorMaterial>>,
 ) {
     runstate.arena = Some(Arena {
         asteroid_spawn_timer: Timer::from_seconds(5.0, false),
     });
     runstate.score = Some(0);
-    spawn_player(commands, runstate, asset_server, materials);
+    spawn_player(commands, runstate, asset_server);
 }
 
 pub fn spawn_asteroid_event(
@@ -50,7 +49,7 @@ pub fn spawn_asteroid_event(
                     scale: Vec3::splat(1.0 / 10.0),
                     ..Default::default()
                 },
-                material: sprite_handle.clone(),
+                texture: sprite_handle.clone(),
                 ..Default::default()
             })
             .insert(Asteroid { size: event.size })

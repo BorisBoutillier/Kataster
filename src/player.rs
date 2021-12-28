@@ -7,16 +7,14 @@ pub fn spawn_player(
     mut commands: Commands,
     mut runstate: ResMut<RunState>,
     asset_server: Res<AssetServer>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    let texture_handle = asset_server.load("playerShip2_red.png");
     let mut player_entity_builder = commands.spawn_bundle(SpriteBundle {
         transform: Transform {
             translation: Vec3::new(0.0, 0.0, -5.0),
             scale: Vec3::splat(1.0 / 37.0),
             ..Default::default()
         },
-        material: materials.add(texture_handle.into()),
+        texture: asset_server.load("playerShip2_red.png"),
         ..Default::default()
     });
     player_entity_builder

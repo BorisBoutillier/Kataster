@@ -14,7 +14,7 @@ pub fn spawn_laser(
                 rotation: transform.rotation,
                 scale: Vec3::splat(1.0 / 18.0),
             },
-            material: runstate.laser_texture_handle.clone(),
+            texture: runstate.laser_texture_handle.clone(),
             ..Default::default()
         })
         .insert(Laser {

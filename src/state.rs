@@ -1,6 +1,7 @@
 use crate::prelude::*;
 
 /// Component to tag an entity as only needed in one state
+#[derive(Component)]
 pub struct ForState<T> {
     pub states: Vec<T>,
 }
@@ -26,28 +27,25 @@ pub struct RunState {
     pub score: Option<u32>,
     // Store the most used asset handles
     pub font_handle: Handle<Font>,
-    pub laser_texture_handle: Handle<ColorMaterial>,
+    pub laser_texture_handle: Handle<Image>,
     pub laser_audio_handle: Handle<AudioSource>,
-    pub meteor_big_handle: Handle<ColorMaterial>,
-    pub meteor_med_handle: Handle<ColorMaterial>,
-    pub meteor_small_handle: Handle<ColorMaterial>,
+    pub meteor_big_handle: Handle<Image>,
+    pub meteor_med_handle: Handle<Image>,
+    pub meteor_small_handle: Handle<Image>,
 }
 
 impl RunState {
-    pub fn new(
-        asset_server: &AssetServer,
-        mut materials: ResMut<Assets<ColorMaterial>>,
-    ) -> RunState {
+    pub fn new(asset_server: &AssetServer) -> RunState {
         RunState {
             player: None,
             arena: None,
             score: None,
             font_handle: asset_server.load("kenvector_future.ttf"),
-            laser_texture_handle: materials.add(asset_server.load("laserRed07.png").into()),
-            laser_audio_handle: asset_server.load("sfx_laser1.mp3"),
-            meteor_big_handle: materials.add(asset_server.load("meteorBrown_big1.png").into()),
-            meteor_med_handle: materials.add(asset_server.load("meteorBrown_med1.png").into()),
-            meteor_small_handle: materials.add(asset_server.load("meteorBrown_small1.png").into()),
+            laser_texture_handle: asset_server.load("laserRed07.png"),
+            laser_audio_handle: asset_server.load("sfx_laser1.ogg"),
+            meteor_big_handle: asset_server.load("meteorBrown_big1.png"),
+            meteor_med_handle: asset_server.load("meteorBrown_med1.png"),
+            meteor_small_handle: asset_server.load("meteorBrown_small1.png"),
         }
     }
 }

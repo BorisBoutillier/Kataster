@@ -1,5 +1,6 @@
 use crate::prelude::*;
 
+#[derive(Component)]
 pub struct Explosion {
     timer: Timer,
     start_scale: f32,
@@ -9,26 +10,24 @@ pub fn spawn_explosion_event(
     mut commands: Commands,
     mut event_reader: EventReader<ExplosionSpawnEvent>,
     asset_server: Res<AssetServer>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
     audio: Res<Audio>,
 ) {
     for event in event_reader.iter() {
         let (texture_name, sound_name, start_scale, end_scale, duration) = match event.kind {
             ExplosionKind::ShipDead => (
                 "explosion01.png",
-                "Explosion_ship.mp3",
+                "Explosion_ship.ogg",
                 0.1 / 15.0,
                 0.5 / 15.0,
                 1.5,
             ),
             ExplosionKind::ShipContact => {
-                ("flash00.png", "Explosion.mp3", 0.05 / 15.0, 0.1 / 15.0, 0.5)
+                ("flash00.png", "Explosion.ogg", 0.05 / 15.0, 0.1 / 15.0, 0.5)
             }
             ExplosionKind::LaserOnAsteroid => {
-                ("flash00.png", "Explosion.mp3", 0.1 / 15.0, 0.15 / 15.0, 0.5)
+                ("flash00.png", "Explosion.ogg", 0.1 / 15.0, 0.15 / 15.0, 0.5)
             }
         };
-        let texture_handle = asset_server.load(texture_name);
         commands
             .spawn_bundle(SpriteBundle {
                 transform: Transform {
@@ -36,7 +35,7 @@ pub fn spawn_explosion_event(
                     scale: Vec3::splat(start_scale),
                     ..Default::default()
                 },
-                material: materials.add(texture_handle.into()),
+                texture: asset_server.load(texture_name),
                 ..Default::default()
             })
             .insert(Explosion {

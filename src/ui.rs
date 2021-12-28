@@ -1,12 +1,9 @@
 use crate::prelude::*;
 
+#[derive(Component)]
 pub struct DrawBlinkTimer(pub Timer);
 
-pub fn start_menu(
-    mut commands: Commands,
-    runstate: ResMut<RunState>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-) {
+pub fn start_menu(mut commands: Commands, runstate: ResMut<RunState>) {
     commands
         .spawn_bundle(NodeBundle {
             style: Style {
@@ -16,7 +13,7 @@ pub fn start_menu(
                 flex_direction: FlexDirection::ColumnReverse,
                 ..Default::default()
             },
-            material: materials.add(Color::NONE.into()),
+            color: Color::NONE.into(),
             ..Default::default()
         })
         .insert(ForState {
@@ -65,11 +62,7 @@ pub fn start_menu(
         });
 }
 
-pub fn gameover_menu(
-    mut commands: Commands,
-    runstate: ResMut<RunState>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-) {
+pub fn gameover_menu(mut commands: Commands, runstate: ResMut<RunState>) {
     commands
         .spawn_bundle(NodeBundle {
             style: Style {
@@ -79,7 +72,7 @@ pub fn gameover_menu(
                 flex_direction: FlexDirection::ColumnReverse,
                 ..Default::default()
             },
-            material: materials.add(Color::NONE.into()),
+            color: Color::NONE.into(),
             ..Default::default()
         })
         .insert(ForState {
@@ -128,11 +121,7 @@ pub fn gameover_menu(
         });
 }
 
-pub fn pause_menu(
-    mut commands: Commands,
-    runstate: ResMut<RunState>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-) {
+pub fn pause_menu(mut commands: Commands, runstate: ResMut<RunState>) {
     commands
         .spawn_bundle(NodeBundle {
             style: Style {
@@ -142,7 +131,7 @@ pub fn pause_menu(
                 justify_content: JustifyContent::Center,
                 ..Default::default()
             },
-            material: materials.add(Color::NONE.into()),
+            color: Color::NONE.into(),
             ..Default::default()
         })
         .insert(ForState {
@@ -172,11 +161,14 @@ pub fn pause_menu(
         });
 }
 
-pub fn draw_blink_system(time: Res<Time>, mut query: Query<(&mut DrawBlinkTimer, &mut Visible)>) {
-    for (mut timer, mut visible) in query.iter_mut() {
+pub fn draw_blink_system(
+    time: Res<Time>,
+    mut query: Query<(&mut DrawBlinkTimer, &mut Visibility)>,
+) {
+    for (mut timer, mut visibility) in query.iter_mut() {
         timer.0.tick(time.delta());
         if timer.0.finished() {
-            visible.is_visible = !visible.is_visible;
+            visibility.is_visible = !visibility.is_visible;
         }
     }
 }
@@ -185,7 +177,6 @@ pub fn game_ui_spawn(
     mut commands: Commands,
     runstate: ResMut<RunState>,
     asset_server: Res<AssetServer>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     commands
         .spawn_bundle(NodeBundle {
@@ -197,7 +188,7 @@ pub fn game_ui_spawn(
                 flex_direction: FlexDirection::Row,
                 ..Default::default()
             },
-            material: materials.add(Color::NONE.into()),
+            color: Color::NONE.into(),
             ..Default::default()
         })
         .insert(ForState {
@@ -244,7 +235,7 @@ pub fn game_ui_spawn(
                 flex_direction: FlexDirection::Row,
                 ..Default::default()
             },
-            material: materials.add(Color::NONE.into()),
+            color: Color::NONE.into(),
             ..Default::default()
         })
         .insert(ForState {
@@ -263,7 +254,7 @@ pub fn game_ui_spawn(
                             },
                             ..Default::default()
                         },
-                        material: materials.add(asset_server.load("playerLife1_red.png").into()),
+                        image: asset_server.load("playerLife1_red.png").into(),
                         ..Default::default()
                     })
                     .insert(ForState {
@@ -284,7 +275,7 @@ pub fn score_ui_system(runstate: Res<RunState>, mut query: Query<&mut Text, With
 pub fn life_ui_system(
     runstate: Res<RunState>,
     ship_query: Query<&Ship>,
-    mut uilife_query: Query<(&mut Visible, &UiLife)>,
+    mut uilife_query: Query<(&mut Visibility, &UiLife)>,
 ) {
     let mut life = 0;
     if let Some(player) = runstate.player {
@@ -292,7 +283,7 @@ pub fn life_ui_system(
             life = ship.life;
         }
     }
-    for (mut visible, uilife) in uilife_query.iter_mut() {
-        visible.is_visible = life >= uilife.min;
+    for (mut visibility, uilife) in uilife_query.iter_mut() {
+        visibility.is_visible = life >= uilife.min;
     }
 }

@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+#[derive(Component)]
 pub struct Ship {
     /// Ship rotation speed in rad/s
     pub rotation_speed: f32,
@@ -11,7 +12,9 @@ pub struct Ship {
     pub cannon_timer: Timer,
 }
 
+#[derive(Component)]
 pub struct UiScore {}
+#[derive(Component)]
 pub struct UiLife {
     pub min: u32,
 }
@@ -41,12 +44,15 @@ pub enum AsteroidSize {
     Medium,
     Small,
 }
+#[derive(Component)]
 pub struct Asteroid {
     pub size: AsteroidSize,
 }
+#[derive(Component)]
 pub struct Laser {
     pub despawn_timer: Timer,
 }
+#[derive(Component)]
 pub struct Damage {
     pub value: u32,
 }
