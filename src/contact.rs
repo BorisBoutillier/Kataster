@@ -66,13 +66,14 @@ pub fn contact_system(
                             _ => panic!(),
                         };
                         let mut rng = thread_rng();
-                        for _ in 0..rng.gen_range(1u8, 4u8) {
+                        for _ in 0..rng.gen_range(1..4u8) {
                             let x =
-                                asteroid_transform.translation.x + rng.gen_range(-radius, radius);
+                                asteroid_transform.translation.x + rng.gen_range(-radius..radius);
                             let y =
-                                asteroid_transform.translation.y + rng.gen_range(-radius, radius);
-                            let vx = rng.gen_range(-ARENA_WIDTH / radius, ARENA_WIDTH / radius);
-                            let vy = rng.gen_range(-ARENA_HEIGHT / radius, ARENA_HEIGHT / radius);
+                                asteroid_transform.translation.y + rng.gen_range(-radius..radius);
+                            let vx = rng.gen_range((-ARENA_WIDTH / radius)..(ARENA_WIDTH / radius));
+                            let vy =
+                                rng.gen_range((-ARENA_HEIGHT / radius)..(ARENA_HEIGHT / radius));
                             asteroid_spawn_events.send(AsteroidSpawnEvent {
                                 size,
                                 x,

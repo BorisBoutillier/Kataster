@@ -92,20 +92,20 @@ pub fn arena_asteroids(
                     ));
                 let mut rng = thread_rng();
                 // 0: Top , 1:Left
-                let side = rng.gen_range(0, 2);
+                let side = rng.gen_range(0..2u8);
                 let (x, y) = match side {
                     0 => (
-                        rng.gen_range(-ARENA_WIDTH / 2.0, ARENA_WIDTH / 2.0),
+                        rng.gen_range((-ARENA_WIDTH / 2.0)..(ARENA_WIDTH / 2.0)),
                         ARENA_HEIGHT / 2.0,
                     ),
                     _ => (
                         -ARENA_WIDTH / 2.0,
-                        rng.gen_range(-ARENA_HEIGHT / 2.0, ARENA_HEIGHT / 2.0),
+                        rng.gen_range((-ARENA_HEIGHT / 2.0)..(ARENA_HEIGHT / 2.0)),
                     ),
                 };
-                let vx = rng.gen_range(-ARENA_WIDTH / 4.0, ARENA_WIDTH / 4.0);
-                let vy = rng.gen_range(-ARENA_HEIGHT / 4.0, ARENA_HEIGHT / 4.0);
-                let angvel = rng.gen_range(-10.0, 10.0);
+                let vx = rng.gen_range((-ARENA_WIDTH / 4.0)..(ARENA_WIDTH / 4.0));
+                let vy = rng.gen_range((-ARENA_HEIGHT / 4.0)..(ARENA_HEIGHT / 4.0));
+                let angvel = rng.gen_range(-10.0..10.0);
                 asteroid_spawn_events.send(AsteroidSpawnEvent {
                     size: AsteroidSize::Big,
                     x,
