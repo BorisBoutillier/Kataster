@@ -1,5 +1,6 @@
 #![allow(clippy::too_many_arguments)]
 mod arena;
+mod background;
 mod components;
 mod contact;
 mod explosion;
@@ -10,6 +11,7 @@ mod ui;
 
 mod prelude {
     pub use crate::arena::*;
+    pub use crate::background::*;
     pub use crate::components::*;
     pub use crate::contact::*;
     pub use crate::explosion::*;
@@ -19,6 +21,7 @@ mod prelude {
     pub use crate::ui::*;
     pub use bevy::prelude::*;
     pub use heron::prelude::*;
+    pub use rand::{thread_rng, Rng};
 }
 
 use crate::prelude::*;
@@ -31,11 +34,12 @@ fn main() {
             height: WINDOW_HEIGHT as f32,
             ..Default::default()
         })
-        .insert_resource(ClearColor(Color::rgb_u8(5, 5, 10)))
+        .insert_resource(ClearColor(Color::rgb_u8(0, 0, 0)))
         .add_event::<AsteroidSpawnEvent>()
         .add_event::<ExplosionSpawnEvent>()
         .add_plugins(DefaultPlugins)
         .add_plugin(PhysicsPlugin::default())
+        .add_plugin(BackgroundPlugin {})
         .add_state(AppState::StartMenu)
         .add_system_set(
             SystemSet::on_enter(AppState::StartMenu)
@@ -97,14 +101,5 @@ pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     };
     commands.spawn_bundle(camera);
     commands.spawn_bundle(UiCameraBundle::default());
-    commands.spawn_bundle(SpriteBundle {
-        transform: Transform {
-            translation: Vec3::new(0.0, 0.0, -10.0),
-            scale: Vec3::splat(CAMERA_SCALE),
-            ..Default::default()
-        },
-        texture: asset_server.load("pexels-francesco-ungaro-998641.png"),
-        ..Default::default()
-    });
     commands.insert_resource(RunState::new(&asset_server));
 }

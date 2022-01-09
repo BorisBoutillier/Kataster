@@ -1,6 +1,5 @@
 use crate::prelude::*;
 
-use rand::{thread_rng, Rng};
 enum Contacts {
     ShipAsteroid(Entity, Entity),
     LaserAsteroid(Entity, Entity),
