@@ -43,51 +43,49 @@ fn main() {
         .add_state(AppState::StartMenu)
         .add_system_set(
             SystemSet::on_enter(AppState::StartMenu)
-                .with_system(start_menu.system())
-                .with_system(appstate_enter_despawn.system()),
+                .with_system(start_menu)
+                .with_system(appstate_enter_despawn),
         )
         .add_system_set(
             SystemSet::on_enter(AppState::Game)
-                .with_system(setup_arena.system())
-                .with_system(game_ui_spawn.system())
-                .with_system(appstate_enter_despawn.system()),
+                .with_system(setup_arena)
+                .with_system(game_ui_spawn)
+                .with_system(appstate_enter_despawn),
         )
         .add_system_set(
             SystemSet::on_update(AppState::Game)
-                .with_system(position_system.system())
-                .with_system(player_dampening_system.system())
-                .with_system(ship_cannon_system.system())
-                .with_system(despawn_laser_system.system())
-                .with_system(contact_system.system())
-                .with_system(arena_asteroids.system())
-                .with_system(spawn_asteroid_event.system())
-                .with_system(score_ui_system.system())
-                .with_system(life_ui_system.system()),
+                .with_system(position_system)
+                .with_system(player_dampening_system)
+                .with_system(ship_cannon_system)
+                .with_system(contact_system)
+                .with_system(despawn_laser_system)
+                .with_system(arena_asteroids)
+                .with_system(spawn_asteroid_event)
+                .with_system(score_ui_system)
+                .with_system(life_ui_system),
         )
         .add_state(AppGameState::Invalid)
         .add_system_set(
             SystemSet::on_enter(AppGameState::Pause)
-                .with_system(pause_menu.system())
-                .with_system(appgamestate_enter_despawn.system()),
+                .with_system(pause_menu)
+                .with_system(appgamestate_enter_despawn),
         )
         .add_system_set(
             SystemSet::on_enter(AppGameState::GameOver)
-                .with_system(gameover_menu.system())
-                .with_system(appgamestate_enter_despawn.system()),
+                .with_system(gameover_menu)
+                .with_system(appgamestate_enter_despawn),
         )
         .add_system_set(
-            SystemSet::on_enter(AppGameState::Invalid)
-                .with_system(appgamestate_enter_despawn.system()),
+            SystemSet::on_enter(AppGameState::Invalid).with_system(appgamestate_enter_despawn),
         )
         .add_system_set(
-            SystemSet::on_enter(AppGameState::Game)
-                .with_system(appgamestate_enter_despawn.system()),
+            SystemSet::on_enter(AppGameState::Game).with_system(appgamestate_enter_despawn),
         )
-        .add_system(user_input_system.system())
-        .add_system(handle_explosion.system())
-        .add_system(draw_blink_system.system())
-        .add_system(spawn_explosion_event.system())
-        .add_startup_system(setup.system())
+        .add_system(user_input_system)
+        .add_system(handle_explosion)
+        .add_system(draw_blink_system)
+        .add_system(spawn_explosion_event)
+        .add_startup_system(setup)
         .run();
 }
 
