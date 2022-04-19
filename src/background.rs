@@ -24,8 +24,8 @@ pub struct BackgroundPlugin;
 impl Plugin for BackgroundPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(Material2dPlugin::<BackgroundMaterial>::default())
-            .add_startup_system(spawn_background.system())
-            .add_system(update_background_material.system());
+            .add_startup_system(spawn_background)
+            .add_system(update_background_material);
     }
 }
 

@@ -26,6 +26,9 @@ mod prelude {
 
 use crate::prelude::*;
 
+#[derive(SystemLabel, Clone, Hash, Debug, PartialEq, Eq)]
+struct DespawnLaserLabel;
+
 fn main() {
     App::new()
         .insert_resource(WindowDescriptor {
@@ -37,6 +40,7 @@ fn main() {
         .insert_resource(ClearColor(Color::rgb_u8(0, 0, 0)))
         .add_event::<AsteroidSpawnEvent>()
         .add_event::<ExplosionSpawnEvent>()
+        .add_event::<LaserDespawnEvent>()
         .add_plugins(DefaultPlugins)
         .add_plugin(PhysicsPlugin::default())
         .add_plugin(BackgroundPlugin {})
@@ -57,12 +61,13 @@ fn main() {
                 .with_system(position_system)
                 .with_system(player_dampening_system)
                 .with_system(ship_cannon_system)
-                .with_system(contact_system)
-                .with_system(despawn_laser_system)
+                .with_system(laser_timeout_system.label(DespawnLaserLabel))
+                .with_system(contact_system.label(DespawnLaserLabel))
                 .with_system(arena_asteroids)
                 .with_system(spawn_asteroid_event)
                 .with_system(score_ui_system)
-                .with_system(life_ui_system),
+                .with_system(life_ui_system)
+                .with_system(despawn_laser_system.after(DespawnLaserLabel)),
         )
         .add_state(AppGameState::Invalid)
         .add_system_set(

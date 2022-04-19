@@ -37,9 +37,9 @@ pub fn spawn_laser(
     audio.play(runstate.laser_audio_handle.clone());
 }
 
-pub fn despawn_laser_system(
-    mut commands: Commands,
+pub fn laser_timeout_system(
     gamestate: Res<State<AppGameState>>,
+    mut laser_despawn_events: EventWriter<LaserDespawnEvent>,
     time: Res<Time>,
     mut query: Query<(Entity, &mut Laser)>,
 ) {
@@ -47,8 +47,17 @@ pub fn despawn_laser_system(
         for (entity, mut laser) in query.iter_mut() {
             laser.despawn_timer.tick(time.delta());
             if laser.despawn_timer.finished() {
-                commands.entity(entity).despawn();
+                laser_despawn_events.send(LaserDespawnEvent(entity));
             }
         }
+    }
+}
+
+pub fn despawn_laser_system(
+    mut commands: Commands,
+    mut event_reader: EventReader<LaserDespawnEvent>,
+) {
+    for event in event_reader.iter() {
+        commands.entity(event.0).despawn();
     }
 }

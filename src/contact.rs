@@ -10,6 +10,7 @@ pub fn contact_system(
     mut gamestate: ResMut<State<AppGameState>>,
     mut asteroid_spawn_events: EventWriter<AsteroidSpawnEvent>,
     mut explosion_spawn_events: EventWriter<ExplosionSpawnEvent>,
+    mut laser_despawn_events: EventWriter<LaserDespawnEvent>,
     mut runstate: ResMut<RunState>,
     mut events: EventReader<CollisionEvent>,
     damages: Query<&Damage>,
@@ -84,7 +85,7 @@ pub fn contact_system(
                         }
                     }
                 }
-                commands.entity(e1).despawn();
+                laser_despawn_events.send(LaserDespawnEvent(e1));
                 commands.entity(e2).despawn();
             }
             Contacts::ShipAsteroid(e1, e2) => {

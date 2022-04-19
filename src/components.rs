@@ -52,6 +52,9 @@ pub struct Asteroid {
 pub struct Laser {
     pub despawn_timer: Timer,
 }
+
+pub struct LaserDespawnEvent(pub Entity);
+
 #[derive(Component)]
 pub struct Damage {
     pub value: u32,
