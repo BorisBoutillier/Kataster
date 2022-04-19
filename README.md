@@ -6,7 +6,7 @@ It will remain a simple demonstration game.
 
 ![](media/Kataster_demo.gif)
 
-## Main crates
+## Main dependencies
 
 | crate | version |
 |-------|-------|
