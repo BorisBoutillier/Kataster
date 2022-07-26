@@ -21,6 +21,7 @@ mod prelude {
     pub use crate::ui::*;
     pub use bevy::prelude::*;
     pub use heron::prelude::*;
+    pub use leafwing_input_manager::prelude::*;
     pub use rand::{thread_rng, Rng};
 }
 
@@ -44,6 +45,8 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(PhysicsPlugin::default())
         .add_plugin(BackgroundPlugin {})
+        .add_plugin(InputManagerPlugin::<PlayerAction>::default())
+        .add_plugin(InputManagerPlugin::<MenuAction>::default())
         .add_state(AppState::StartMenu)
         .add_system_set(
             SystemSet::on_enter(AppState::StartMenu)
@@ -58,6 +61,7 @@ fn main() {
         )
         .add_system_set(
             SystemSet::on_update(AppState::Game)
+                .with_system(ship_input_system)
                 .with_system(position_system)
                 .with_system(player_dampening_system)
                 .with_system(ship_cannon_system)
@@ -86,7 +90,7 @@ fn main() {
         .add_system_set(
             SystemSet::on_enter(AppGameState::Game).with_system(appgamestate_enter_despawn),
         )
-        .add_system(user_input_system)
+        .add_system(ui_input_system)
         .add_system(handle_explosion)
         .add_system(draw_blink_system)
         .add_system(spawn_explosion_event)
@@ -95,7 +99,7 @@ fn main() {
 }
 
 /// UiCamera and Camera2d are spawn once and for all.
-/// Despawning them does not seem to be the way to go in bevy.
+/// MenuAction InputMap and ActionState are added as global resource to handle Menu interaction
 pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let mut camera = OrthographicCameraBundle::new_2d();
     camera.transform = Transform {
@@ -105,4 +109,13 @@ pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn_bundle(camera);
     commands.spawn_bundle(UiCameraBundle::default());
     commands.insert_resource(RunState::new(&asset_server));
+    //
+    // Insert MenuAction resources
+    commands.insert_resource(InputMap::<MenuAction>::new([
+        (KeyCode::Return, MenuAction::Accept),
+        (KeyCode::Escape, MenuAction::PauseUnpause),
+        (KeyCode::Back, MenuAction::ExitToMenu),
+        (KeyCode::Escape, MenuAction::Quit),
+    ]));
+    commands.insert_resource(ActionState::<MenuAction>::default());
 }

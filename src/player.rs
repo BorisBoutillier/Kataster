@@ -1,13 +1,34 @@
 use crate::prelude::*;
-use bevy::app::AppExit;
 
 pub const START_LIFE: u32 = 3;
+
+// Actions are divided in two enums
+// One for pure Player Ship actions, during effective gameplay, added on the player entity itself.
+// One for Menu actions, added as a global resource
+
+#[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug)]
+pub enum PlayerAction {
+    Forward,
+    RotateLeft,
+    RotateRight,
+    Fire,
+}
 
 pub fn spawn_player(
     mut commands: Commands,
     mut runstate: ResMut<RunState>,
     asset_server: Res<AssetServer>,
 ) {
+    // For player actions, allow both keyboard WASD and Arrows to control the ship
+    let input_map = InputMap::new([
+        (KeyCode::W, PlayerAction::Forward),
+        (KeyCode::Up, PlayerAction::Forward),
+        (KeyCode::A, PlayerAction::RotateLeft),
+        (KeyCode::Left, PlayerAction::RotateLeft),
+        (KeyCode::D, PlayerAction::RotateRight),
+        (KeyCode::Right, PlayerAction::RotateRight),
+        (KeyCode::Space, PlayerAction::Fire),
+    ]);
     let mut player_entity_builder = commands.spawn_bundle(SpriteBundle {
         transform: Transform {
             translation: Vec3::new(0.0, 0.0, -5.0),
@@ -35,7 +56,11 @@ pub fn spawn_player(
             CollisionLayers::none()
                 .with_group(ArenaLayer::Player)
                 .with_mask(ArenaLayer::World),
-        );
+        )
+        .insert_bundle(InputManagerBundle::<PlayerAction> {
+            action_state: ActionState::default(),
+            input_map,
+        });
     let player_entity = player_entity_builder.id();
     runstate.player = Some(player_entity);
 
@@ -79,76 +104,42 @@ pub fn ship_cannon_system(time: Res<Time>, mut ship: Query<&mut Ship>) {
     }
 }
 
-pub fn user_input_system(
+pub fn ship_input_system(
     commands: Commands,
     audio: Res<Audio>,
-    mut state: ResMut<State<AppState>>,
-    mut gamestate: ResMut<State<AppGameState>>,
+    gamestate: Res<State<AppGameState>>,
     runstate: ResMut<RunState>,
-    input: Res<Input<KeyCode>>,
-    mut physics_time: ResMut<PhysicsTime>,
-    mut app_exit_events: EventWriter<AppExit>,
+    action_state_query: Query<&ActionState<PlayerAction>>,
     mut query: Query<(&mut Acceleration, &mut Velocity, &Transform, &mut Ship)>,
 ) {
-    if state.current() != &AppState::StartMenu && input.just_pressed(KeyCode::Back) {
-        state.set(AppState::StartMenu).unwrap();
-        gamestate.set(AppGameState::Invalid).unwrap();
-        physics_time.resume();
-    }
-    if state.current() == &AppState::Game {
-        if gamestate.current() == &AppGameState::Game {
-            let player = runstate.player.unwrap();
-            let mut rotation = 0;
-            let mut thrust = 0;
-            if input.pressed(KeyCode::W) {
-                thrust += 1
-            }
-            if input.pressed(KeyCode::A) {
-                rotation += 1
-            }
-            if input.pressed(KeyCode::D) {
-                rotation -= 1
-            }
-            if let Ok((mut acceleration, mut velocity, transform, ship)) = query.get_mut(player) {
+    if gamestate.current() == &AppGameState::Game {
+        let player = runstate.player.unwrap();
+        if let Ok(action_state) = action_state_query.get(player) {
+            let thrust = if action_state.pressed(PlayerAction::Forward) {
+                1
+            } else {
+                0
+            };
+            let rotation = if action_state.pressed(PlayerAction::RotateLeft) {
+                1
+            } else if action_state.pressed(PlayerAction::RotateRight) {
+                -1
+            } else {
+                0
+            };
+            let fire = action_state.pressed(PlayerAction::Fire);
+            if let Ok((mut acceleration, mut velocity, transform, mut ship)) = query.get_mut(player)
+            {
                 if rotation != 0 {
                     velocity.angular =
                         AxisAngle::new(Vec3::Z, rotation as f32 * ship.rotation_speed);
                 }
                 acceleration.linear = transform.rotation * (Vec3::Y * thrust as f32 * ship.thrust);
-            }
-            if input.pressed(KeyCode::Space) {
-                if let Ok((_, _, transform, mut ship)) = query.get_mut(player) {
-                    if ship.cannon_timer.finished() {
-                        spawn_laser(commands, transform, &runstate, audio);
-                        ship.cannon_timer.reset();
-                    }
+                if fire && ship.cannon_timer.finished() {
+                    spawn_laser(commands, transform, &runstate, audio);
+                    ship.cannon_timer.reset();
                 }
             }
-            if input.just_pressed(KeyCode::Escape) {
-                gamestate.set(AppGameState::Pause).unwrap();
-                physics_time.pause();
-            }
-        } else if gamestate.current() == &AppGameState::Pause {
-            if input.just_pressed(KeyCode::Escape) {
-                gamestate.set(AppGameState::Game).unwrap();
-                physics_time.resume();
-            }
-        } else if gamestate.current() == &AppGameState::GameOver {
-            if input.just_pressed(KeyCode::Return) {
-                state.set(AppState::StartMenu).unwrap();
-                gamestate.set(AppGameState::Invalid).unwrap();
-            }
-            if input.just_pressed(KeyCode::Escape) {
-                app_exit_events.send(AppExit);
-            }
-        }
-    } else if state.current() == &AppState::StartMenu {
-        if input.just_pressed(KeyCode::Return) {
-            state.set(AppState::Game).unwrap();
-            gamestate.set(AppGameState::Game).unwrap();
-        }
-        if input.just_pressed(KeyCode::Escape) {
-            app_exit_events.send(AppExit);
         }
     }
 }

@@ -3,8 +3,14 @@ name = "kataster"
 version = "0.6.0"
 authors = ["Boris Boutillier <boris.boutillier@gmail.com>"]
 edition = "2021"
+repository = "https://github.com/Bobox214/Kataster"
+license = "MIT OR Apache-2.0"
+
+[profile.dev]
+opt-level = 3
 
 [dependencies]
 bevy = "0.7"
+leafwing-input-manager = "0.4"
 rand = "0.8"
 heron = { version = "3.0.0" , features=["2d"]}

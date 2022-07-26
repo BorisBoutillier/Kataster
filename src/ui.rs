@@ -1,7 +1,24 @@
+use bevy::app::AppExit;
+
 use crate::prelude::*;
 
 #[derive(Component)]
 pub struct DrawBlinkTimer(pub Timer);
+
+// List of user actions associated to menu/ui interaction
+#[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug)]
+pub enum MenuAction {
+    // Starts the game when in the start screen
+    // Go to the start screen when in the game over screen
+    Accept,
+    // During gameplay, pause the game.
+    // Also unpause the game when in the pause screen.
+    PauseUnpause,
+    // During gameplay, directly exit to the initial screen.
+    ExitToMenu,
+    // During non-gameplay screens, quit the game
+    Quit,
+}
 
 pub fn start_menu(mut commands: Commands, runstate: ResMut<RunState>) {
     commands
@@ -285,5 +302,50 @@ pub fn life_ui_system(
     }
     for (mut visibility, uilife) in uilife_query.iter_mut() {
         visibility.is_visible = life >= uilife.min;
+    }
+}
+
+pub fn ui_input_system(
+    mut state: ResMut<State<AppState>>,
+    mut gamestate: ResMut<State<AppGameState>>,
+    menu_action_state: Res<ActionState<MenuAction>>,
+    mut physics_time: ResMut<PhysicsTime>,
+    mut app_exit_events: EventWriter<AppExit>,
+) {
+    if state.current() != &AppState::StartMenu
+        && menu_action_state.just_pressed(MenuAction::ExitToMenu)
+    {
+        state.set(AppState::StartMenu).unwrap();
+        gamestate.set(AppGameState::Invalid).unwrap();
+        physics_time.resume();
+    }
+    if state.current() == &AppState::Game {
+        if gamestate.current() == &AppGameState::Game {
+            if menu_action_state.just_pressed(MenuAction::PauseUnpause) {
+                gamestate.set(AppGameState::Pause).unwrap();
+                physics_time.pause();
+            }
+        } else if gamestate.current() == &AppGameState::Pause {
+            if menu_action_state.just_pressed(MenuAction::PauseUnpause) {
+                gamestate.set(AppGameState::Game).unwrap();
+                physics_time.resume();
+            }
+        } else if gamestate.current() == &AppGameState::GameOver {
+            if menu_action_state.just_pressed(MenuAction::Accept) {
+                state.set(AppState::StartMenu).unwrap();
+                gamestate.set(AppGameState::Invalid).unwrap();
+            }
+            if menu_action_state.just_pressed(MenuAction::Quit) {
+                app_exit_events.send(AppExit);
+            }
+        }
+    } else if state.current() == &AppState::StartMenu {
+        if menu_action_state.just_pressed(MenuAction::Accept) {
+            state.set(AppState::Game).unwrap();
+            gamestate.set(AppGameState::Game).unwrap();
+        }
+        if menu_action_state.just_pressed(MenuAction::Quit) {
+            app_exit_events.send(AppExit);
+        }
     }
 }
