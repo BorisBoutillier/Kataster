@@ -51,13 +51,17 @@ fn spawn_background(
 }
 
 // Currently the time is passed through our BackgroundMaterial
-// So we need to use its time attribute
+// So we need to update its time attribute apart if we are 'paused' for better UX
 fn update_background_material(
+    state: Res<State<AppState>>,
+    gamestate: Res<State<AppGameState>>,
     time: Res<Time>,
     mut background_materials: ResMut<Assets<BackgroundMaterial>>,
 ) {
-    for (_id, mut background_material) in background_materials.iter_mut() {
-        background_material.time += time.delta_seconds();
+    if state.current() != &AppState::Game || gamestate.current() != &AppGameState::Pause {
+        for (_id, mut background_material) in background_materials.iter_mut() {
+            background_material.time += time.delta_seconds();
+        }
     }
 }
 
