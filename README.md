@@ -1,7 +1,9 @@
 # Kataster
-A single screen simple space shooter developped in Rust with Bevy and Heron (powered by rapier)`.
+A minimalist single screen space shooter developped in Rust with Bevy and Rapier.
 
-It will remain a simple demonstration game.
+This is a 'super-example' or 'micro-game' for the Bevy engine, that can be used by beginners to get some starting points for their own game.
+
+It includes use of game states, menu UI , HUD UI, collision detection, pause/resume, and a shader background.
 
 
 ![](media/Kataster_demo.gif)
@@ -10,8 +12,8 @@ It will remain a simple demonstration game.
 
 | crate | version |
 |-------|-------|
-| bevy  | 0.7   |
-| heron | 3.0.0 |
+| bevy  | 0.8   |
+| bevy_rapier2d | 0.16 |
 
 
 ## References
