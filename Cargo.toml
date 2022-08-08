@@ -10,7 +10,7 @@ license = "MIT OR Apache-2.0"
 opt-level = 3
 
 [dependencies]
-bevy = "0.7"
-leafwing-input-manager = "0.4"
+bevy = "0.8"
+leafwing-input-manager = "0.5"
 rand = "0.8"
-heron = { version = "3.0.0" , features=["2d"]}
+bevy_rapier2d = "0.16"

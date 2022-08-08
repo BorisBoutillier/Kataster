@@ -1,19 +1,7 @@
-use bevy::render::render_resource::std140::{AsStd140, Std140};
-use bevy::render::render_resource::{
-    BindGroupEntry, BindGroupLayoutEntry, BindingType, BufferBindingType, BufferSize, ShaderStages,
-};
-use bevy::sprite::{Material2dPipeline, Material2dPlugin};
+use bevy::render::render_resource::{AsBindGroup, ShaderRef};
+use bevy::sprite::Material2dPlugin;
 use bevy::{
-    ecs::system::{lifetimeless::SRes, SystemParamItem},
     reflect::TypeUuid,
-    render::{
-        render_asset::{PrepareAssetError, RenderAsset},
-        render_resource::{
-            BindGroup, BindGroupDescriptor, BindGroupLayout, BindGroupLayoutDescriptor, Buffer,
-            BufferInitDescriptor, BufferUsages,
-        },
-        renderer::RenderDevice,
-    },
     sprite::{Material2d, MaterialMesh2dBundle},
 };
 
@@ -65,75 +53,17 @@ fn update_background_material(
     }
 }
 
-#[derive(Component, Debug, Clone, TypeUuid)]
+#[derive(AsBindGroup, Debug, Clone, TypeUuid)]
 #[uuid = "d1776d38-712a-11ec-90d6-0242ac120003"]
 struct BackgroundMaterial {
+    #[uniform(0)]
     time: f32,
 }
-
-#[derive(Clone)]
-struct GpuBackgroundMaterial {
-    _buffer: Buffer,
-    bind_group: BindGroup,
-}
-
-impl RenderAsset for BackgroundMaterial {
-    type ExtractedAsset = BackgroundMaterial;
-    type PreparedAsset = GpuBackgroundMaterial;
-    type Param = (SRes<RenderDevice>, SRes<Material2dPipeline<Self>>);
-    fn extract_asset(&self) -> Self::ExtractedAsset {
-        self.clone()
-    }
-
-    fn prepare_asset(
-        extracted_asset: Self::ExtractedAsset,
-        (render_device, material_pipeline): &mut SystemParamItem<Self::Param>,
-    ) -> Result<Self::PreparedAsset, PrepareAssetError<Self::ExtractedAsset>> {
-        let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
-            contents: extracted_asset.time.as_std140().as_bytes(),
-            label: None,
-            usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
-        });
-        let bind_group = render_device.create_bind_group(&BindGroupDescriptor {
-            entries: &[BindGroupEntry {
-                binding: 0,
-                resource: buffer.as_entire_binding(),
-            }],
-            label: None,
-            layout: &material_pipeline.material2d_layout,
-        });
-
-        Ok(GpuBackgroundMaterial {
-            _buffer: buffer,
-            bind_group,
-        })
-    }
-}
 impl Material2d for BackgroundMaterial {
-    fn vertex_shader(asset_server: &AssetServer) -> Option<Handle<Shader>> {
-        Some(asset_server.load("background.wgsl"))
+    fn vertex_shader() -> ShaderRef {
+        "background.wgsl".into()
     }
-    fn fragment_shader(asset_server: &AssetServer) -> Option<Handle<Shader>> {
-        Some(asset_server.load("background.wgsl"))
-    }
-
-    fn bind_group(render_asset: &<Self as RenderAsset>::PreparedAsset) -> &BindGroup {
-        &render_asset.bind_group
-    }
-
-    fn bind_group_layout(render_device: &RenderDevice) -> BindGroupLayout {
-        render_device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-            entries: &[BindGroupLayoutEntry {
-                binding: 0,
-                visibility: ShaderStages::FRAGMENT,
-                ty: BindingType::Buffer {
-                    ty: BufferBindingType::Uniform,
-                    has_dynamic_offset: false,
-                    min_binding_size: BufferSize::new(f32::std140_size_static() as u64),
-                },
-                count: None,
-            }],
-            label: None,
-        })
+    fn fragment_shader() -> ShaderRef {
+        "background.wgsl".into()
     }
 }

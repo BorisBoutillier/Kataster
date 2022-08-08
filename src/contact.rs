@@ -19,23 +19,28 @@ pub fn contact_system(
     asteroids: Query<(&Velocity, &Transform, &Asteroid)>,
 ) {
     let mut contacts = vec![];
-    for event in events.iter().filter(|e| e.is_started()) {
-        let (e1, e2) = event.rigid_body_entities();
-        if ships.get_component::<Ship>(e1).is_ok() && damages.get_component::<Damage>(e2).is_ok() {
-            contacts.push(Contacts::ShipAsteroid(e1, e2));
-        }
-        if ships.get_component::<Ship>(e2).is_ok() && damages.get_component::<Damage>(e1).is_ok() {
-            contacts.push(Contacts::ShipAsteroid(e2, e1));
-        }
-        if asteroids.get_component::<Asteroid>(e2).is_ok()
-            && lasers.get_component::<Laser>(e1).is_ok()
-        {
-            contacts.push(Contacts::LaserAsteroid(e1, e2));
-        }
-        if asteroids.get_component::<Asteroid>(e1).is_ok()
-            && lasers.get_component::<Laser>(e2).is_ok()
-        {
-            contacts.push(Contacts::LaserAsteroid(e2, e1));
+    for event in events.iter() {
+        if let CollisionEvent::Started(e1, e2, _flags) = event {
+            if ships.get_component::<Ship>(*e1).is_ok()
+                && damages.get_component::<Damage>(*e2).is_ok()
+            {
+                contacts.push(Contacts::ShipAsteroid(*e1, *e2));
+            }
+            if ships.get_component::<Ship>(*e2).is_ok()
+                && damages.get_component::<Damage>(*e1).is_ok()
+            {
+                contacts.push(Contacts::ShipAsteroid(*e2, *e1));
+            }
+            if asteroids.get_component::<Asteroid>(*e2).is_ok()
+                && lasers.get_component::<Laser>(*e1).is_ok()
+            {
+                contacts.push(Contacts::LaserAsteroid(*e1, *e2));
+            }
+            if asteroids.get_component::<Asteroid>(*e1).is_ok()
+                && lasers.get_component::<Laser>(*e2).is_ok()
+            {
+                contacts.push(Contacts::LaserAsteroid(*e2, *e1));
+            }
         }
     }
     for contact in contacts.into_iter() {
@@ -80,7 +85,7 @@ pub fn contact_system(
                                 y,
                                 vx,
                                 vy,
-                                angvel: asteroid_velocity.angular.axis().z,
+                                angvel: asteroid_velocity.angvel,
                             });
                         }
                     }

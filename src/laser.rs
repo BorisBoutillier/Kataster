@@ -24,16 +24,10 @@ pub fn spawn_laser(
             states: vec![AppState::Game],
         })
         .insert(RigidBody::Dynamic)
-        .insert(CollisionShape::Cuboid {
-            half_extends: Vec3::new(0.25, 1.0, 0.0),
-            border_radius: None,
-        })
-        .insert(Velocity::from_linear(Vec3::new(v.x, v.y, 0.0)))
-        .insert(
-            CollisionLayers::none()
-                .with_group(ArenaLayer::Laser)
-                .with_mask(ArenaLayer::World),
-        );
+        .insert(Collider::cuboid(0.25 * 10.0, 1.0 * 10.0))
+        .insert(Velocity::linear(Vec2::new(v.x, v.y)))
+        .insert(Sensor)
+        .insert(ActiveEvents::COLLISION_EVENTS);
     audio.play(runstate.laser_audio_handle.clone());
 }
 

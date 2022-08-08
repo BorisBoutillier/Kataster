@@ -41,7 +41,7 @@ pub fn spawn_player(
     player_entity_builder
         .insert(Ship {
             rotation_speed: 3.0,
-            thrust: 60.0,
+            thrust: 6.0,
             life: START_LIFE,
             cannon_timer: Timer::from_seconds(0.2, false),
         })
@@ -49,41 +49,16 @@ pub fn spawn_player(
             states: vec![AppState::Game],
         })
         .insert(RigidBody::Dynamic)
-        .insert(CollisionShape::Sphere { radius: 1.0 })
-        .insert(Acceleration::from_linear(Vec3::ZERO))
-        .insert(Velocity::from_linear(Vec3::ZERO))
-        .insert(
-            CollisionLayers::none()
-                .with_group(ArenaLayer::Player)
-                .with_mask(ArenaLayer::World),
-        )
+        .insert(Collider::ball(5.0 * 10.0))
+        .insert(ExternalImpulse::default())
+        .insert(Velocity::linear(Vec2::ZERO))
+        .insert(ActiveEvents::COLLISION_EVENTS)
         .insert_bundle(InputManagerBundle::<PlayerAction> {
             action_state: ActionState::default(),
             input_map,
         });
     let player_entity = player_entity_builder.id();
     runstate.player = Some(player_entity);
-
-    // Helper points to visualize some points in space for Collider
-    //commands
-    //    .spawn_bundle(SpriteComponents {
-    //        translation: Translation::new(1.2, -1.0, 2.0),
-    //        material: materials.add(texture_handle.into()),
-    //        scale: Scale(0.001),
-    //        ..Default::default()
-    //    })
-    //    .spawn_bundle(SpriteComponents {
-    //        translation: Translation::new(0.0, 1.0, 2.0),
-    //        material: materials.add(texture_handle.into()),
-    //        scale: Scale(0.001),
-    //        ..Default::default()
-    //    })
-    //    .spawn_bundle(SpriteComponents {
-    //        translation: Translation::new(-1.2, -1.0, 2.0),
-    //        material: materials.add(texture_handle.into()),
-    //        scale: Scale(0.001),
-    //        ..Default::default()
-    //    });
 }
 
 pub fn player_dampening_system(
@@ -93,8 +68,8 @@ pub fn player_dampening_system(
 ) {
     if let Ok(mut velocity) = query.get_component_mut::<Velocity>(runstate.player.unwrap()) {
         let elapsed = time.delta_seconds();
-        velocity.angular *= 0.1f32.powf(elapsed);
-        velocity.linear *= 0.4f32.powf(elapsed);
+        velocity.angvel *= 0.1f32.powf(elapsed);
+        velocity.linvel *= 0.4f32.powf(elapsed);
     }
 }
 
@@ -110,15 +85,15 @@ pub fn ship_input_system(
     gamestate: Res<State<AppGameState>>,
     runstate: ResMut<RunState>,
     action_state_query: Query<&ActionState<PlayerAction>>,
-    mut query: Query<(&mut Acceleration, &mut Velocity, &Transform, &mut Ship)>,
+    mut query: Query<(&mut ExternalImpulse, &mut Velocity, &Transform, &mut Ship)>,
 ) {
     if gamestate.current() == &AppGameState::Game {
         let player = runstate.player.unwrap();
         if let Ok(action_state) = action_state_query.get(player) {
             let thrust = if action_state.pressed(PlayerAction::Forward) {
-                1
+                1.0
             } else {
-                0
+                0.0
             };
             let rotation = if action_state.pressed(PlayerAction::RotateLeft) {
                 1
@@ -128,13 +103,12 @@ pub fn ship_input_system(
                 0
             };
             let fire = action_state.pressed(PlayerAction::Fire);
-            if let Ok((mut acceleration, mut velocity, transform, mut ship)) = query.get_mut(player)
-            {
+            if let Ok((mut impulse, mut velocity, transform, mut ship)) = query.get_mut(player) {
                 if rotation != 0 {
-                    velocity.angular =
-                        AxisAngle::new(Vec3::Z, rotation as f32 * ship.rotation_speed);
+                    velocity.angvel = rotation as f32 * ship.rotation_speed;
                 }
-                acceleration.linear = transform.rotation * (Vec3::Y * thrust as f32 * ship.thrust);
+                impulse.impulse =
+                    (transform.rotation * (Vec3::Y * thrust * ship.thrust)).truncate();
                 if fire && ship.cannon_timer.finished() {
                     spawn_laser(commands, transform, &runstate, audio);
                     ship.cannon_timer.reset();

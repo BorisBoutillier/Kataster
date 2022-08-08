@@ -20,7 +20,7 @@ mod prelude {
     pub use crate::state::*;
     pub use crate::ui::*;
     pub use bevy::prelude::*;
-    pub use heron::prelude::*;
+    pub use bevy_rapier2d::prelude::*;
     pub use leafwing_input_manager::prelude::*;
     pub use rand::{thread_rng, Rng};
 }
@@ -43,7 +43,8 @@ fn main() {
         .add_event::<ExplosionSpawnEvent>()
         .add_event::<LaserDespawnEvent>()
         .add_plugins(DefaultPlugins)
-        .add_plugin(PhysicsPlugin::default())
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(1.0))
+        //.add_plugin(RapierDebugRenderPlugin::default())
         .add_plugin(BackgroundPlugin {})
         .add_plugin(InputManagerPlugin::<PlayerAction>::default())
         .add_plugin(InputManagerPlugin::<MenuAction>::default())
@@ -98,18 +99,26 @@ fn main() {
         .run();
 }
 
-/// UiCamera and Camera2d are spawn once and for all.
+/// Camera for both 2D and UI is spawn once and for all.
 /// MenuAction InputMap and ActionState are added as global resource to handle Menu interaction
-pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let mut camera = OrthographicCameraBundle::new_2d();
-    camera.transform = Transform {
-        scale: Vec3::splat(CAMERA_SCALE),
+/// Rapier configuration is updated to remove gravity
+pub fn setup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut rapier_configuration: ResMut<RapierConfiguration>,
+) {
+    // Camera
+    commands.spawn_bundle(Camera2dBundle {
+        transform: Transform {
+            scale: Vec3::splat(CAMERA_SCALE),
+            ..Default::default()
+        },
         ..Default::default()
-    };
-    commands.spawn_bundle(camera);
-    commands.spawn_bundle(UiCameraBundle::default());
+    });
+
+    // RunState
     commands.insert_resource(RunState::new(&asset_server));
-    //
+
     // Insert MenuAction resources
     commands.insert_resource(InputMap::<MenuAction>::new([
         (KeyCode::Return, MenuAction::Accept),
@@ -118,4 +127,7 @@ pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         (KeyCode::Escape, MenuAction::Quit),
     ]));
     commands.insert_resource(ActionState::<MenuAction>::default());
+
+    // Rapier configuration
+    rapier_configuration.gravity = Vec2::ZERO;
 }

@@ -42,14 +42,13 @@ pub fn start_menu(mut commands: Commands, runstate: ResMut<RunState>) {
                     style: Style {
                         ..Default::default()
                     },
-                    text: Text::with_section(
+                    text: Text::from_section(
                         "Kataster",
                         TextStyle {
                             font: runstate.font_handle.clone(),
                             font_size: 100.0,
                             color: Color::rgb_u8(0x00, 0xAA, 0xAA),
                         },
-                        TextAlignment::default(),
                     ),
                     ..Default::default()
                 })
@@ -61,14 +60,13 @@ pub fn start_menu(mut commands: Commands, runstate: ResMut<RunState>) {
                     style: Style {
                         ..Default::default()
                     },
-                    text: Text::with_section(
+                    text: Text::from_section(
                         "enter",
                         TextStyle {
                             font: runstate.font_handle.clone(),
                             font_size: 50.0,
                             color: Color::rgb_u8(0x00, 0x44, 0x44),
                         },
-                        TextAlignment::default(),
                     ),
                     ..Default::default()
                 })
@@ -101,14 +99,13 @@ pub fn gameover_menu(mut commands: Commands, runstate: ResMut<RunState>) {
                     style: Style {
                         ..Default::default()
                     },
-                    text: Text::with_section(
+                    text: Text::from_section(
                         "Game Over",
                         TextStyle {
                             font: runstate.font_handle.clone(),
                             font_size: 100.0,
                             color: Color::rgb_u8(0xAA, 0x22, 0x22),
                         },
-                        TextAlignment::default(),
                     ),
                     ..Default::default()
                 })
@@ -120,14 +117,13 @@ pub fn gameover_menu(mut commands: Commands, runstate: ResMut<RunState>) {
                     style: Style {
                         ..Default::default()
                     },
-                    text: Text::with_section(
+                    text: Text::from_section(
                         "enter",
                         TextStyle {
                             font: runstate.font_handle.clone(),
                             font_size: 50.0,
                             color: Color::rgb_u8(0x88, 0x22, 0x22),
                         },
-                        TextAlignment::default(),
                     ),
                     ..Default::default()
                 })
@@ -160,14 +156,13 @@ pub fn pause_menu(mut commands: Commands, runstate: ResMut<RunState>) {
                     style: Style {
                         ..Default::default()
                     },
-                    text: Text::with_section(
+                    text: Text::from_section(
                         "pause",
                         TextStyle {
                             font: runstate.font_handle.clone(),
                             font_size: 100.0,
                             color: Color::rgb_u8(0xF8, 0xE4, 0x73),
                         },
-                        TextAlignment::default(),
                     ),
                     ..Default::default()
                 })
@@ -216,7 +211,7 @@ pub fn game_ui_spawn(
                 .spawn_bundle(TextBundle {
                     style: Style {
                         justify_content: JustifyContent::FlexEnd,
-                        margin: Rect {
+                        margin: UiRect {
                             left: Val::Px(10.0),
                             right: Val::Px(10.0),
                             top: Val::Px(10.0),
@@ -224,14 +219,13 @@ pub fn game_ui_spawn(
                         },
                         ..Default::default()
                     },
-                    text: Text::with_section(
+                    text: Text::from_section(
                         "0",
                         TextStyle {
                             font: runstate.font_handle.clone(),
                             font_size: 50.0,
                             color: Color::rgb_u8(0x00, 0xAA, 0xAA),
                         },
-                        TextAlignment::default(),
                     ),
                     ..Default::default()
                 })
@@ -263,7 +257,7 @@ pub fn game_ui_spawn(
                 parent
                     .spawn_bundle(ImageBundle {
                         style: Style {
-                            margin: Rect {
+                            margin: UiRect {
                                 left: Val::Px(10.0),
                                 right: Val::Px(10.0),
                                 top: Val::Px(10.0),
@@ -309,7 +303,7 @@ pub fn ui_input_system(
     mut state: ResMut<State<AppState>>,
     mut gamestate: ResMut<State<AppGameState>>,
     menu_action_state: Res<ActionState<MenuAction>>,
-    mut physics_time: ResMut<PhysicsTime>,
+    mut rapier_configuration: ResMut<RapierConfiguration>,
     mut app_exit_events: EventWriter<AppExit>,
 ) {
     if state.current() != &AppState::StartMenu
@@ -317,18 +311,18 @@ pub fn ui_input_system(
     {
         state.set(AppState::StartMenu).unwrap();
         gamestate.set(AppGameState::Invalid).unwrap();
-        physics_time.resume();
+        rapier_configuration.physics_pipeline_active = true;
     }
     if state.current() == &AppState::Game {
         if gamestate.current() == &AppGameState::Game {
             if menu_action_state.just_pressed(MenuAction::PauseUnpause) {
                 gamestate.set(AppGameState::Pause).unwrap();
-                physics_time.pause();
+                rapier_configuration.physics_pipeline_active = false;
             }
         } else if gamestate.current() == &AppGameState::Pause {
             if menu_action_state.just_pressed(MenuAction::PauseUnpause) {
                 gamestate.set(AppGameState::Game).unwrap();
-                physics_time.resume();
+                rapier_configuration.physics_pipeline_active = true;
             }
         } else if gamestate.current() == &AppGameState::GameOver {
             if menu_action_state.just_pressed(MenuAction::Accept) {
