@@ -1,6 +1,6 @@
 [package]
 name = "kataster"
-version = "0.6.0"
+version = "0.8.0"
 authors = ["Boris Boutillier <boris.boutillier@gmail.com>"]
 edition = "2021"
 repository = "https://github.com/Bobox214/Kataster"
