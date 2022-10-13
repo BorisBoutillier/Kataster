@@ -20,6 +20,7 @@ mod prelude {
     pub use crate::state::*;
     pub use crate::ui::*;
     pub use bevy::prelude::*;
+    pub use bevy_hanabi::prelude::*;
     pub use bevy_rapier2d::prelude::*;
     pub use leafwing_input_manager::prelude::*;
     pub use rand::{thread_rng, Rng};
@@ -48,6 +49,7 @@ fn main() {
         .add_plugin(BackgroundPlugin {})
         .add_plugin(InputManagerPlugin::<PlayerAction>::default())
         .add_plugin(InputManagerPlugin::<MenuAction>::default())
+        .add_plugin(HanabiPlugin)
         .add_state(AppState::StartMenu)
         .add_system_set(
             SystemSet::on_enter(AppState::StartMenu)

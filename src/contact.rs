@@ -108,7 +108,7 @@ pub fn contact_system(
                         x: player_translation.x,
                         y: player_translation.y,
                     });
-                    commands.entity(e1).despawn();
+                    commands.entity(e1).despawn_recursive();
                     //runstate.gamestate.transit_to(GameState::GameOver);
                     gamestate.set(AppGameState::GameOver).unwrap();
                 } else {
