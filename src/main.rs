@@ -5,6 +5,7 @@ mod components;
 mod contact;
 mod explosion;
 mod laser;
+mod particle_effects;
 mod player;
 mod state;
 mod ui;
@@ -20,7 +21,6 @@ mod prelude {
     pub use crate::state::*;
     pub use crate::ui::*;
     pub use bevy::prelude::*;
-    pub use bevy_hanabi::prelude::*;
     pub use bevy_rapier2d::prelude::*;
     pub use leafwing_input_manager::prelude::*;
     pub use rand::{thread_rng, Rng};
@@ -47,9 +47,9 @@ fn main() {
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(1.0))
         //.add_plugin(RapierDebugRenderPlugin::default())
         .add_plugin(BackgroundPlugin {})
+        .add_plugin(particle_effects::ParticleEffectsPlugin)
         .add_plugin(InputManagerPlugin::<PlayerAction>::default())
         .add_plugin(InputManagerPlugin::<MenuAction>::default())
-        .add_plugin(HanabiPlugin)
         .add_state(AppState::StartMenu)
         .add_system_set(
             SystemSet::on_enter(AppState::StartMenu)

@@ -15,13 +15,12 @@ pub fn setup_arena(
     commands: Commands,
     mut runstate: ResMut<RunState>,
     asset_server: Res<AssetServer>,
-    effects: ResMut<Assets<EffectAsset>>,
 ) {
     runstate.arena = Some(Arena {
         asteroid_spawn_timer: Timer::from_seconds(5.0, false),
     });
     runstate.score = Some(0);
-    spawn_player(commands, runstate, asset_server, effects);
+    spawn_player(commands, runstate, asset_server);
 }
 
 pub fn spawn_asteroid_event(
