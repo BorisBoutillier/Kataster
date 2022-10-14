@@ -57,7 +57,7 @@ pub fn appstate_enter_despawn(
 ) {
     for (entity, for_state) in &mut query.iter() {
         if !for_state.states.contains(state.current()) {
-            commands.entity(entity).despawn();
+            commands.entity(entity).despawn_recursive();
         }
     }
 }
@@ -69,7 +69,7 @@ pub fn appgamestate_enter_despawn(
 ) {
     for (entity, for_state) in &mut query.iter() {
         if !for_state.states.contains(state.current()) {
-            commands.entity(entity).despawn();
+            commands.entity(entity).despawn_recursive();
         }
     }
 }
