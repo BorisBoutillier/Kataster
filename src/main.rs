@@ -32,23 +32,33 @@ use crate::prelude::*;
 struct DespawnLaserLabel;
 
 fn main() {
-    App::new()
-        .insert_resource(WindowDescriptor {
-            title: "Kataster".to_string(),
-            width: WINDOW_WIDTH as f32,
-            height: WINDOW_HEIGHT as f32,
-            ..Default::default()
-        })
-        .insert_resource(ClearColor(Color::rgb_u8(0, 0, 0)))
+    let mut app = App::new();
+
+    app.insert_resource(WindowDescriptor {
+        title: "Kataster".to_string(),
+        width: WINDOW_WIDTH as f32,
+        height: WINDOW_HEIGHT as f32,
+        ..Default::default()
+    })
+    .add_plugins(DefaultPlugins);
+
+    // These two plugins are currently not supported on the web
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        app.add_plugin(BackgroundPlugin {})
+            .add_plugin(particle_effects::ParticleEffectsPlugin);
+    }
+
+    // Enable Rapier debug renders when compile in debug mode.
+    #[cfg(debug_assertions)]
+    app.add_plugin(RapierDebugRenderPlugin::default());
+
+    app.insert_resource(ClearColor(Color::rgb_u8(0, 0, 0)))
         .add_event::<AsteroidSpawnEvent>()
         .add_event::<ExplosionSpawnEvent>()
         .add_event::<LaserDespawnEvent>()
-        .add_plugins(DefaultPlugins)
-        .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(1.0))
-        //.add_plugin(RapierDebugRenderPlugin::default())
-        .add_plugin(BackgroundPlugin {})
-        .add_plugin(particle_effects::ParticleEffectsPlugin)
-        .add_plugin(InputManagerPlugin::<PlayerAction>::default())
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(1.0));
+    app.add_plugin(InputManagerPlugin::<PlayerAction>::default())
         .add_plugin(InputManagerPlugin::<MenuAction>::default())
         .add_state(AppState::StartMenu)
         .add_system_set(
