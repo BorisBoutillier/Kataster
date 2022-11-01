@@ -11,7 +11,7 @@ opt-level = 3
 
 [dependencies]
 bevy = "0.8"
-leafwing-input-manager = "0.5"
+leafwing-input-manager = "0.6.1"
 rand = "0.8"
-bevy_rapier2d = "0.16"
-bevy_hanabi = "0.4.0"
+bevy_rapier2d = "0.18"
+bevy_hanabi = "0.4.1"

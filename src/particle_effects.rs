@@ -21,7 +21,6 @@ fn add_thrust_particles_to_ship(
     added_ships: Query<Entity, Added<Ship>>,
 ) {
     for ship_entity in added_ships.iter() {
-        println!("Added!");
         // For Ship exhaust, we store a particle effects on the player
         let mut gradient = Gradient::new();
         gradient.add_key(0.0, Vec4::new(0.5, 0.4, 0.7, 0.8));
