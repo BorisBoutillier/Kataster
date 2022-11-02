@@ -66,8 +66,8 @@ pub fn contact_system(
                     });
                     if asteroid.size != AsteroidSize::Small {
                         let (size, radius) = match asteroid.size {
-                            AsteroidSize::Big => (AsteroidSize::Medium, 5.0),
-                            AsteroidSize::Medium => (AsteroidSize::Small, 2.0),
+                            AsteroidSize::Big => (AsteroidSize::Medium, 10.0),
+                            AsteroidSize::Medium => (AsteroidSize::Small, 4.0),
                             _ => panic!(),
                         };
                         let mut rng = thread_rng();
