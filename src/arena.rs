@@ -3,7 +3,7 @@ use bevy::utils::Duration;
 
 pub const WINDOW_WIDTH: u32 = 1280;
 pub const WINDOW_HEIGHT: u32 = 800;
-pub const CAMERA_SCALE: f32 = 0.1;
+pub const CAMERA_SCALE: f32 = 1.;
 pub const ARENA_WIDTH: f32 = WINDOW_WIDTH as f32 * CAMERA_SCALE;
 pub const ARENA_HEIGHT: f32 = WINDOW_HEIGHT as f32 * CAMERA_SCALE;
 
@@ -30,15 +30,15 @@ pub fn spawn_asteroid_event(
 ) {
     for event in event_reader.iter() {
         let (sprite_handle, radius) = match event.size {
-            AsteroidSize::Big => (runstate.meteor_big_handle.clone(), 10.1 / 2.0),
-            AsteroidSize::Medium => (runstate.meteor_med_handle.clone(), 4.3 / 2.0),
-            AsteroidSize::Small => (runstate.meteor_small_handle.clone(), 2.8 / 2.0),
+            AsteroidSize::Big => (runstate.meteor_big_handle.clone(), 101. / 2.0),
+            AsteroidSize::Medium => (runstate.meteor_med_handle.clone(), 43. / 2.0),
+            AsteroidSize::Small => (runstate.meteor_small_handle.clone(), 28. / 2.0),
         };
         commands
             .spawn_bundle(SpriteBundle {
+                // No custom size, the sprite png, are already at our game size.
                 transform: Transform {
                     translation: Vec3::new(event.x, event.y, -5.0),
-                    scale: Vec3::splat(1.0 / 10.0),
                     ..Default::default()
                 },
                 texture: sprite_handle.clone(),
@@ -50,7 +50,7 @@ pub fn spawn_asteroid_event(
                 states: vec![AppState::Game],
             })
             .insert(RigidBody::Dynamic)
-            .insert(Collider::ball(radius * 10.0))
+            .insert(Collider::ball(radius))
             .insert(ActiveEvents::COLLISION_EVENTS)
             .insert(Velocity {
                 linvel: Vec2::new(event.vx, event.vy),

@@ -13,26 +13,37 @@ pub fn spawn_explosion_event(
     audio: Res<Audio>,
 ) {
     for event in event_reader.iter() {
-        let (texture_name, sound_name, start_scale, end_scale, duration) = match event.kind {
+        let (texture_name, sound_name, start_size, end_scale, duration) = match event.kind {
             ExplosionKind::ShipDead => (
                 "explosion01.png",
                 "Explosion_ship.ogg",
-                0.1 / 15.0,
-                0.5 / 15.0,
+                Vec2::new(42., 39.),
+                5.,
                 1.5,
             ),
-            ExplosionKind::ShipContact => {
-                ("flash00.png", "Explosion.ogg", 0.05 / 15.0, 0.1 / 15.0, 0.5)
-            }
-            ExplosionKind::LaserOnAsteroid => {
-                ("flash00.png", "Explosion.ogg", 0.1 / 15.0, 0.15 / 15.0, 0.5)
-            }
+            ExplosionKind::ShipContact => (
+                "explosion01.png",
+                "Explosion.ogg",
+                Vec2::new(42., 39.),
+                2.,
+                0.5,
+            ),
+            ExplosionKind::LaserOnAsteroid => (
+                "flash00.png",
+                "Explosion.ogg",
+                Vec2::new(36., 32.),
+                1.5,
+                0.5,
+            ),
         };
         commands
             .spawn_bundle(SpriteBundle {
+                sprite: Sprite {
+                    custom_size: Some(start_size),
+                    ..Default::default()
+                },
                 transform: Transform {
                     translation: Vec3::new(event.x, event.y, -1.0),
-                    scale: Vec3::splat(start_scale),
                     ..Default::default()
                 },
                 texture: asset_server.load(texture_name),
@@ -40,7 +51,7 @@ pub fn spawn_explosion_event(
             })
             .insert(Explosion {
                 timer: Timer::from_seconds(duration, false),
-                start_scale,
+                start_scale: 1.,
                 end_scale,
             })
             .insert(ForState {

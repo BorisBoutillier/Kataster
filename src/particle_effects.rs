@@ -22,6 +22,8 @@ fn add_thrust_particles_to_ship(
 ) {
     for ship_entity in added_ships.iter() {
         // For Ship exhaust, we store a particle effects on the player
+
+        // Gradient for particle color evolution
         let mut gradient = Gradient::new();
         gradient.add_key(0.0, Vec4::new(0.5, 0.4, 0.7, 0.8));
         gradient.add_key(0.5, Vec4::new(1.0, 0.8, 0.0, 0.8));
@@ -37,9 +39,9 @@ fn add_thrust_particles_to_ship(
             }
             .init(ParticleLifetimeModifier { lifetime: 0.1 })
             .init(PositionCone3dModifier {
-                height: -5.0,
-                base_radius: 5.,
-                top_radius: 3.0,
+                height: -50.0,
+                base_radius: 50.,
+                top_radius: 30.0,
                 speed: Value::Uniform((100.0, 400.0)),
                 dimension: ShapeDimension::Volume,
             })

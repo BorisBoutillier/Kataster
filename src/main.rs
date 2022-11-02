@@ -57,7 +57,7 @@ fn main() {
         .add_event::<AsteroidSpawnEvent>()
         .add_event::<ExplosionSpawnEvent>()
         .add_event::<LaserDespawnEvent>()
-        .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(1.0));
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(10.0));
     app.add_plugin(InputManagerPlugin::<PlayerAction>::default())
         .add_plugin(InputManagerPlugin::<MenuAction>::default())
         .add_state(AppState::StartMenu)

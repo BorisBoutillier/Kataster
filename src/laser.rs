@@ -6,13 +6,17 @@ pub fn spawn_laser(
     runstate: &RunState,
     audio: Res<Audio>,
 ) {
-    let v = transform.rotation * Vec3::Y * 50.0;
+    let v = transform.rotation * Vec3::Y * 500.0;
     commands
         .spawn_bundle(SpriteBundle {
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(5., 20.0)),
+                ..Default::default()
+            },
             transform: Transform {
                 translation: Vec3::new(transform.translation.x, transform.translation.y, -4.0),
                 rotation: transform.rotation,
-                scale: Vec3::splat(1.0 / 18.0),
+                ..Default::default()
             },
             texture: runstate.laser_texture_handle.clone(),
             ..Default::default()
@@ -24,7 +28,7 @@ pub fn spawn_laser(
             states: vec![AppState::Game],
         })
         .insert(RigidBody::Dynamic)
-        .insert(Collider::cuboid(0.25 * 10.0, 1.0 * 10.0))
+        .insert(Collider::cuboid(2.5, 10.0))
         .insert(Velocity::linear(Vec2::new(v.x, v.y)))
         .insert(Sensor)
         .insert(ActiveEvents::COLLISION_EVENTS);

@@ -34,9 +34,12 @@ pub fn spawn_player(
         (KeyCode::Space, PlayerAction::Fire),
     ]);
     let mut player_entity_builder = commands.spawn_bundle(SpriteBundle {
+        sprite: Sprite {
+            custom_size: Some(Vec2::new(30., 20.)),
+            ..Default::default()
+        },
         transform: Transform {
             translation: Vec3::new(0.0, 0.0, -5.0),
-            scale: Vec3::splat(1.0 / 37.0),
             ..Default::default()
         },
         texture: asset_server.load("playerShip2_red.png"),
@@ -45,7 +48,7 @@ pub fn spawn_player(
     player_entity_builder
         .insert(Ship {
             rotation_speed: 3.0,
-            thrust: 6.0,
+            thrust: 60.0,
             life: START_LIFE,
             cannon_timer: Timer::from_seconds(0.2, false),
         })
@@ -53,7 +56,7 @@ pub fn spawn_player(
             states: vec![AppState::Game],
         })
         .insert(RigidBody::Dynamic)
-        .insert(Collider::ball(5.0 * 10.0))
+        .insert(Collider::ball(13.5))
         .insert(ExternalImpulse::default())
         .insert(Velocity::linear(Vec2::ZERO))
         .insert(ActiveEvents::COLLISION_EVENTS)
