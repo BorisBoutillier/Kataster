@@ -16,6 +16,26 @@ pub enum AsteroidSize {
     Medium,
     Small,
 }
+impl AsteroidSize {
+    // Score marked when destroying an asteroid of this size
+    pub fn score(&self) -> u32 {
+        match self {
+            AsteroidSize::Big => 40,
+            AsteroidSize::Medium => 20,
+            AsteroidSize::Small => 10,
+        }
+    }
+
+    // Defines for each if the asteroid is splitted on destruction
+    // And the spawned sub-asteroid size and radius of spawning.
+    pub fn split(&self) -> Option<(AsteroidSize, f32)> {
+        match self {
+            AsteroidSize::Big => Some((AsteroidSize::Medium, 10.0)),
+            AsteroidSize::Medium => Some((AsteroidSize::Small, 5.0)),
+            AsteroidSize::Small => None,
+        }
+    }
+}
 #[derive(Component)]
 pub struct Asteroid {
     pub size: AsteroidSize,

@@ -50,26 +50,14 @@ pub fn contact_system(
                 let asteroid = asteroids.get_component::<Asteroid>(e2).unwrap();
                 let asteroid_transform = asteroids.get_component::<Transform>(e2).unwrap();
                 let asteroid_velocity = asteroids.get_component::<Velocity>(e2).unwrap();
-                runstate.score = runstate.score.map(|score| {
-                    score
-                        + match asteroid.size {
-                            AsteroidSize::Small => 40,
-                            AsteroidSize::Medium => 20,
-                            AsteroidSize::Big => 10,
-                        }
-                });
+                runstate.score = runstate.score.map(|score| score + asteroid.size.score());
                 {
                     explosion_spawn_events.send(ExplosionSpawnEvent {
                         kind: ExplosionKind::LaserOnAsteroid,
                         x: laser_transform.translation.x,
                         y: laser_transform.translation.y,
                     });
-                    if asteroid.size != AsteroidSize::Small {
-                        let (size, radius) = match asteroid.size {
-                            AsteroidSize::Big => (AsteroidSize::Medium, 10.0),
-                            AsteroidSize::Medium => (AsteroidSize::Small, 4.0),
-                            _ => panic!(),
-                        };
+                    if let Some((size, radius)) = asteroid.size.split() {
                         let mut rng = thread_rng();
                         for _ in 0..rng.gen_range(1..4u8) {
                             let x =
