@@ -53,13 +53,13 @@ fn main() {
     #[cfg(debug_assertions)]
     app.add_plugin(RapierDebugRenderPlugin::default());
 
+    app.add_plugin(PlayerShipPlugin);
     app.insert_resource(ClearColor(Color::rgb_u8(0, 0, 0)))
         .add_event::<AsteroidSpawnEvent>()
         .add_event::<ExplosionSpawnEvent>()
         .add_event::<LaserDespawnEvent>()
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(10.0));
-    app.add_plugin(InputManagerPlugin::<PlayerAction>::default())
-        .add_plugin(InputManagerPlugin::<MenuAction>::default())
+    app.add_plugin(InputManagerPlugin::<MenuAction>::default())
         .add_state(AppState::StartMenu)
         .add_system_set(
             SystemSet::on_enter(AppState::StartMenu)
@@ -74,10 +74,7 @@ fn main() {
         )
         .add_system_set(
             SystemSet::on_update(AppState::Game)
-                .with_system(ship_input_system)
                 .with_system(position_system)
-                .with_system(player_dampening_system)
-                .with_system(ship_cannon_system)
                 .with_system(laser_timeout_system.label(DespawnLaserLabel))
                 .with_system(contact_system.label(DespawnLaserLabel))
                 .with_system(arena_asteroids)

@@ -1,10 +1,17 @@
 use crate::prelude::*;
 
+pub struct LaserDespawnEvent(pub Entity);
+
+#[derive(Component)]
+pub struct Laser {
+    pub despawn_timer: Timer,
+}
+
 pub fn spawn_laser(
-    mut commands: Commands,
+    commands: &mut Commands,
     transform: &Transform,
     runstate: &RunState,
-    audio: Res<Audio>,
+    audio: &Res<Audio>,
 ) {
     let v = transform.rotation * Vec3::Y * 500.0;
     commands

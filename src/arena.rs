@@ -11,16 +11,11 @@ pub const ARENA_HEIGHT: f32 = WINDOW_HEIGHT as f32 * CAMERA_SCALE;
 pub struct Arena {
     pub asteroid_spawn_timer: Timer,
 }
-pub fn setup_arena(
-    commands: Commands,
-    mut runstate: ResMut<RunState>,
-    asset_server: Res<AssetServer>,
-) {
+pub fn setup_arena(mut runstate: ResMut<RunState>) {
     runstate.arena = Some(Arena {
         asteroid_spawn_timer: Timer::from_seconds(5.0, false),
     });
     runstate.score = Some(0);
-    spawn_player(commands, runstate, asset_server);
 }
 
 pub fn spawn_asteroid_event(

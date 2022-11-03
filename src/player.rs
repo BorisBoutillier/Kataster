@@ -5,7 +5,6 @@ pub const START_LIFE: u32 = 3;
 // Actions are divided in two enums
 // One for pure Player Ship actions, during effective gameplay, added on the player entity itself.
 // One for Menu actions, added as a global resource
-
 #[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug)]
 pub enum PlayerAction {
     Forward,
@@ -14,11 +13,38 @@ pub enum PlayerAction {
     Fire,
 }
 
+#[derive(Component)]
+pub struct Ship {
+    /// Ship rotation speed in rad/s
+    pub rotation_speed: f32,
+    /// Ship thrust N
+    pub thrust: f32,
+    /// Ship life points
+    pub life: u32,
+    /// Cannon auto-fire timer
+    pub cannon_timer: Timer,
+}
+
+pub struct PlayerShipPlugin;
+
+impl Plugin for PlayerShipPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_plugin(InputManagerPlugin::<PlayerAction>::default())
+            .add_system_set(SystemSet::on_enter(AppState::Game).with_system(spawn_ship))
+            .add_system_set(
+                SystemSet::on_update(AppState::Game)
+                    .with_system(ship_input_system)
+                    .with_system(ship_dampening_system)
+                    .with_system(ship_cannon_system),
+            );
+    }
+}
+
 // Tag component to update the exhaust particle effect with speed.
 #[derive(Component)]
 pub struct ExhaustEffect;
 
-pub fn spawn_player(
+pub fn spawn_ship(
     mut commands: Commands,
     mut runstate: ResMut<RunState>,
     asset_server: Res<AssetServer>,
@@ -68,12 +94,8 @@ pub fn spawn_player(
     runstate.player = Some(player_entity);
 }
 
-pub fn player_dampening_system(
-    time: Res<Time>,
-    runstate: Res<RunState>,
-    mut query: Query<&mut Velocity>,
-) {
-    if let Ok(mut velocity) = query.get_component_mut::<Velocity>(runstate.player.unwrap()) {
+pub fn ship_dampening_system(time: Res<Time>, mut query: Query<&mut Velocity, With<Ship>>) {
+    for mut velocity in query.iter_mut() {
         let elapsed = time.delta_seconds();
         velocity.angvel *= 0.1f32.powf(elapsed);
         velocity.linvel *= 0.4f32.powf(elapsed);
@@ -87,16 +109,20 @@ pub fn ship_cannon_system(time: Res<Time>, mut ship: Query<&mut Ship>) {
 }
 
 pub fn ship_input_system(
-    commands: Commands,
+    mut commands: Commands,
     audio: Res<Audio>,
     gamestate: Res<State<AppGameState>>,
     runstate: ResMut<RunState>,
-    action_state_query: Query<&ActionState<PlayerAction>>,
-    mut query: Query<(&mut ExternalImpulse, &mut Velocity, &Transform, &mut Ship)>,
+    mut query: Query<(
+        &ActionState<PlayerAction>,
+        &mut ExternalImpulse,
+        &mut Velocity,
+        &Transform,
+        &mut Ship,
+    )>,
 ) {
     if gamestate.current() == &AppGameState::Game {
-        let player = runstate.player.unwrap();
-        if let Ok(action_state) = action_state_query.get(player) {
+        for (action_state, mut impulse, mut velocity, transform, mut ship) in query.iter_mut() {
             let thrust = if action_state.pressed(PlayerAction::Forward) {
                 1.0
             } else {
@@ -110,17 +136,14 @@ pub fn ship_input_system(
                 0
             };
             let fire = action_state.pressed(PlayerAction::Fire);
-            if let Ok((mut impulse, mut velocity, transform, mut ship)) = query.get_mut(player) {
-                if rotation != 0 {
-                    velocity.angvel = rotation as f32 * ship.rotation_speed;
-                }
-                impulse.impulse =
-                    (transform.rotation * (Vec3::Y * thrust * ship.thrust)).truncate();
+            if rotation != 0 {
+                velocity.angvel = rotation as f32 * ship.rotation_speed;
+            }
+            impulse.impulse = (transform.rotation * (Vec3::Y * thrust * ship.thrust)).truncate();
 
-                if fire && ship.cannon_timer.finished() {
-                    spawn_laser(commands, transform, &runstate, audio);
-                    ship.cannon_timer.reset();
-                }
+            if fire && ship.cannon_timer.finished() {
+                spawn_laser(&mut commands, transform, &runstate, &audio);
+                ship.cannon_timer.reset();
             }
         }
     }
