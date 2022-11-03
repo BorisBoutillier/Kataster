@@ -39,22 +39,22 @@ fn add_thrust_particles_to_ship(
             }
             .init(ParticleLifetimeModifier { lifetime: 0.1 })
             .init(PositionCone3dModifier {
-                height: -50.0,
-                base_radius: 50.,
-                top_radius: 30.0,
+                height: -5.0,
+                base_radius: 2.,
+                top_radius: 1.,
                 speed: Value::Uniform((100.0, 400.0)),
                 dimension: ShapeDimension::Volume,
             })
             .render(ColorOverLifetimeModifier { gradient })
             .render(SizeOverLifetimeModifier {
-                gradient: Gradient::constant(Vec2::splat(0.2)),
+                gradient: Gradient::constant(Vec2::splat(2.)),
             }),
         );
         commands.entity(ship_entity).add_children(|parent| {
             parent
                 .spawn_bundle(ParticleEffectBundle {
                     effect: ParticleEffect::new(effect),
-                    transform: Transform::from_translation(Vec3::new(0.0, -30.0, 0.0)),
+                    transform: Transform::from_translation(Vec3::new(0.0, -3.0, 0.0)),
                     ..Default::default()
                 })
                 .insert(ExhaustEffect);
