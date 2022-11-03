@@ -28,9 +28,6 @@ mod prelude {
 
 use crate::prelude::*;
 
-#[derive(SystemLabel, Clone, Hash, Debug, PartialEq, Eq)]
-struct DespawnLaserLabel;
-
 fn main() {
     let mut app = App::new();
 
@@ -54,10 +51,10 @@ fn main() {
     app.add_plugin(RapierDebugRenderPlugin::default());
 
     app.add_plugin(PlayerShipPlugin);
+    app.add_plugin(LaserPlugin);
     app.insert_resource(ClearColor(Color::rgb_u8(0, 0, 0)))
         .add_event::<AsteroidSpawnEvent>()
         .add_event::<ExplosionSpawnEvent>()
-        .add_event::<LaserDespawnEvent>()
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(10.0));
     app.add_plugin(InputManagerPlugin::<MenuAction>::default())
         .add_state(AppState::StartMenu)
@@ -75,13 +72,11 @@ fn main() {
         .add_system_set(
             SystemSet::on_update(AppState::Game)
                 .with_system(position_system)
-                .with_system(laser_timeout_system.label(DespawnLaserLabel))
-                .with_system(contact_system.label(DespawnLaserLabel))
+                .with_system(contact_system.label(CanDespawnLaserLabel))
                 .with_system(arena_asteroids)
                 .with_system(spawn_asteroid_event)
                 .with_system(score_ui_system)
-                .with_system(life_ui_system)
-                .with_system(despawn_laser_system.after(DespawnLaserLabel)),
+                .with_system(life_ui_system),
         )
         .add_state(AppGameState::Invalid)
         .add_system_set(

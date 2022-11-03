@@ -65,8 +65,8 @@ pub fn arena_asteroids(
         let arena = runstate.arena.as_mut().unwrap();
         arena.asteroid_spawn_timer.tick(time.delta());
         if arena.asteroid_spawn_timer.finished() {
-            let n_asteroid = asteroids.iter().count();
             arena.asteroid_spawn_timer.reset();
+            let n_asteroid = asteroids.iter().count();
             if n_asteroid < 20 {
                 arena
                     .asteroid_spawn_timer

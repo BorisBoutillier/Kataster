@@ -33,7 +33,7 @@ impl Plugin for PlayerShipPlugin {
             .add_system_set(SystemSet::on_enter(AppState::Game).with_system(spawn_ship))
             .add_system_set(
                 SystemSet::on_update(AppState::Game)
-                    .with_system(ship_input_system)
+                    .with_system(ship_input_system.label(CanSpawnLaserLabel))
                     .with_system(ship_dampening_system)
                     .with_system(ship_cannon_system),
             );
@@ -109,10 +109,8 @@ pub fn ship_cannon_system(time: Res<Time>, mut ship: Query<&mut Ship>) {
 }
 
 pub fn ship_input_system(
-    mut commands: Commands,
-    audio: Res<Audio>,
     gamestate: Res<State<AppGameState>>,
-    runstate: ResMut<RunState>,
+    mut laser_spawn_events: EventWriter<LaserSpawnEvent>,
     mut query: Query<(
         &ActionState<PlayerAction>,
         &mut ExternalImpulse,
@@ -142,7 +140,10 @@ pub fn ship_input_system(
             impulse.impulse = (transform.rotation * (Vec3::Y * thrust * ship.thrust)).truncate();
 
             if fire && ship.cannon_timer.finished() {
-                spawn_laser(&mut commands, transform, &runstate, &audio);
+                laser_spawn_events.send(LaserSpawnEvent {
+                    transform: *transform,
+                    velocity: *velocity,
+                });
                 ship.cannon_timer.reset();
             }
         }
