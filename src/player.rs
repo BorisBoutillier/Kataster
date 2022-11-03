@@ -23,6 +23,8 @@ pub struct Ship {
     pub life: u32,
     /// Cannon auto-fire timer
     pub cannon_timer: Timer,
+    /// Id of the controlling player. 1 or 2
+    pub player_id: u32,
 }
 
 pub struct PlayerShipPlugin;
@@ -44,11 +46,7 @@ impl Plugin for PlayerShipPlugin {
 #[derive(Component)]
 pub struct ExhaustEffect;
 
-pub fn spawn_ship(
-    mut commands: Commands,
-    mut runstate: ResMut<RunState>,
-    asset_server: Res<AssetServer>,
-) {
+pub fn spawn_ship(mut commands: Commands, asset_server: Res<AssetServer>) {
     // For player actions, allow both keyboard WASD and Arrows to control the ship
     let input_map = InputMap::new([
         (KeyCode::W, PlayerAction::Forward),
@@ -59,24 +57,25 @@ pub fn spawn_ship(
         (KeyCode::Right, PlayerAction::RotateRight),
         (KeyCode::Space, PlayerAction::Fire),
     ]);
-    let mut player_entity_builder = commands.spawn_bundle(SpriteBundle {
-        sprite: Sprite {
-            custom_size: Some(Vec2::new(30., 20.)),
+    commands
+        .spawn_bundle(SpriteBundle {
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(30., 20.)),
+                ..Default::default()
+            },
+            transform: Transform {
+                translation: Vec3::new(0.0, 0.0, -5.0),
+                ..Default::default()
+            },
+            texture: asset_server.load("playerShip2_red.png"),
             ..Default::default()
-        },
-        transform: Transform {
-            translation: Vec3::new(0.0, 0.0, -5.0),
-            ..Default::default()
-        },
-        texture: asset_server.load("playerShip2_red.png"),
-        ..Default::default()
-    });
-    player_entity_builder
+        })
         .insert(Ship {
             rotation_speed: 3.0,
             thrust: 60.0,
             life: START_LIFE,
             cannon_timer: Timer::from_seconds(0.2, false),
+            player_id: 1,
         })
         .insert(ForState {
             states: vec![AppState::Game],
@@ -90,8 +89,6 @@ pub fn spawn_ship(
             action_state: ActionState::default(),
             input_map,
         });
-    let player_entity = player_entity_builder.id();
-    runstate.player = Some(player_entity);
 }
 
 pub fn ship_dampening_system(time: Res<Time>, mut query: Query<&mut Velocity, With<Ship>>) {

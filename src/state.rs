@@ -22,7 +22,6 @@ pub enum AppGameState {
 
 #[derive(Debug)]
 pub struct RunState {
-    pub player: Option<Entity>,
     pub arena: Option<Arena>,
     pub score: Option<u32>,
     // Store the most used asset handles
@@ -37,7 +36,6 @@ pub struct RunState {
 impl RunState {
     pub fn new(asset_server: &AssetServer) -> RunState {
         RunState {
-            player: None,
             arena: None,
             score: None,
             font_handle: asset_server.load("kenvector_future.ttf"),

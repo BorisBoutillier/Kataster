@@ -284,13 +284,12 @@ pub fn score_ui_system(runstate: Res<RunState>, mut query: Query<&mut Text, With
     }
 }
 pub fn life_ui_system(
-    runstate: Res<RunState>,
     ship_query: Query<&Ship>,
     mut uilife_query: Query<(&mut Visibility, &UiLife)>,
 ) {
     let mut life = 0;
-    if let Some(player) = runstate.player {
-        if let Ok(ship) = ship_query.get_component::<Ship>(player) {
+    for ship in ship_query.iter() {
+        if ship.player_id == 1 {
             life = ship.life;
         }
     }
