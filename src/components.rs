@@ -18,24 +18,6 @@ pub struct ExplosionSpawnEvent {
     pub y: f32,
 }
 
-pub struct AsteroidSpawnEvent {
-    pub size: AsteroidSize,
-    pub x: f32,
-    pub y: f32,
-    pub vx: f32,
-    pub vy: f32,
-    pub angvel: f32,
-}
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum AsteroidSize {
-    Big,
-    Medium,
-    Small,
-}
-#[derive(Component)]
-pub struct Asteroid {
-    pub size: AsteroidSize,
-}
 #[derive(Component)]
 pub struct Damage {
     pub value: u32,

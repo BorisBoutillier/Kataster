@@ -1,5 +1,6 @@
 #![allow(clippy::too_many_arguments)]
 mod arena;
+mod asteroid;
 mod background;
 mod components;
 mod contact;
@@ -12,6 +13,7 @@ mod ui;
 
 mod prelude {
     pub use crate::arena::*;
+    pub use crate::asteroid::*;
     pub use crate::background::*;
     pub use crate::components::*;
     pub use crate::contact::*;
@@ -52,8 +54,8 @@ fn main() {
 
     app.add_plugin(PlayerShipPlugin);
     app.add_plugin(LaserPlugin);
+    app.add_plugin(AsteroidPlugin);
     app.insert_resource(ClearColor(Color::rgb_u8(0, 0, 0)))
-        .add_event::<AsteroidSpawnEvent>()
         .add_event::<ExplosionSpawnEvent>()
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(10.0));
     app.add_plugin(InputManagerPlugin::<MenuAction>::default())
@@ -73,8 +75,6 @@ fn main() {
             SystemSet::on_update(AppState::Game)
                 .with_system(position_system)
                 .with_system(contact_system.label(CanDespawnLaserLabel))
-                .with_system(arena_asteroids)
-                .with_system(spawn_asteroid_event)
                 .with_system(score_ui_system)
                 .with_system(life_ui_system),
         )
