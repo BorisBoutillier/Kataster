@@ -33,19 +33,23 @@ use crate::prelude::*;
 fn main() {
     let mut app = App::new();
 
-    app.insert_resource(WindowDescriptor {
-        title: "Kataster".to_string(),
-        width: WINDOW_WIDTH as f32,
-        height: WINDOW_HEIGHT as f32,
+    app.add_plugins(DefaultPlugins.set(WindowPlugin {
+        window: WindowDescriptor {
+            title: "Kataster".to_string(),
+            width: WINDOW_WIDTH as f32,
+            height: WINDOW_HEIGHT as f32,
+            ..Default::default()
+        },
         ..Default::default()
-    })
-    .add_plugins(DefaultPlugins);
+    }));
 
     // These two plugins are currently not supported on the web
     #[cfg(not(target_arch = "wasm32"))]
     {
-        app.add_plugin(BackgroundPlugin {})
-            .add_plugin(particle_effects::ParticleEffectsPlugin);
+        app.add_plugin(BackgroundPlugin {});
+        // FIXME: Hanabi currently does not support a game state without any particle effect
+        // to be reactivated when issue is checked with hanabi
+        //app.add_plugin(particle_effects::ParticleEffectsPlugin);
     }
 
     // Enable Rapier debug renders when compile in debug mode.
@@ -112,7 +116,7 @@ pub fn setup(
     mut rapier_configuration: ResMut<RapierConfiguration>,
 ) {
     // Camera
-    commands.spawn_bundle(Camera2dBundle {
+    commands.spawn(Camera2dBundle {
         transform: Transform {
             scale: Vec3::splat(CAMERA_SCALE),
             ..Default::default()

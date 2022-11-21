@@ -12,7 +12,7 @@ pub struct Arena {
 }
 pub fn setup_arena(mut runstate: ResMut<RunState>) {
     runstate.arena = Some(Arena {
-        asteroid_spawn_timer: Timer::from_seconds(5.0, false),
+        asteroid_spawn_timer: Timer::from_seconds(5.0, TimerMode::Once),
     });
     runstate.score = Some(0);
 }

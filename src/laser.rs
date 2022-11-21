@@ -44,8 +44,8 @@ pub fn spawn_laser(
             (spawn_event.velocity.linvel * Vec2::Y)
                 + (transform.rotation * Vec3::Y * 500.0).truncate(),
         );
-        commands
-            .spawn_bundle(SpriteBundle {
+        commands.spawn((
+            SpriteBundle {
                 sprite: Sprite {
                     custom_size: Some(Vec2::new(5., 20.0)),
                     ..Default::default()
@@ -57,18 +57,19 @@ pub fn spawn_laser(
                 },
                 texture: runstate.laser_texture_handle.clone(),
                 ..Default::default()
-            })
-            .insert(Laser {
-                despawn_timer: Timer::from_seconds(2.0, false),
-            })
-            .insert(ForState {
+            },
+            Laser {
+                despawn_timer: Timer::from_seconds(2.0, TimerMode::Once),
+            },
+            ForState {
                 states: vec![AppState::Game],
-            })
-            .insert(RigidBody::Dynamic)
-            .insert(Collider::cuboid(2.5, 10.0))
-            .insert(velocity)
-            .insert(Sensor)
-            .insert(ActiveEvents::COLLISION_EVENTS);
+            },
+            RigidBody::Dynamic,
+            Collider::cuboid(2.5, 10.0),
+            velocity,
+            Sensor,
+            ActiveEvents::COLLISION_EVENTS,
+        ));
         audio.play(runstate.laser_audio_handle.clone());
     }
 }

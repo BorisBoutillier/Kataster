@@ -64,8 +64,8 @@ pub fn spawn_asteroid_event(
             AsteroidSize::Medium => (runstate.meteor_med_handle.clone(), 43. / 2.0),
             AsteroidSize::Small => (runstate.meteor_small_handle.clone(), 28. / 2.0),
         };
-        commands
-            .spawn_bundle(SpriteBundle {
+        commands.spawn((
+            SpriteBundle {
                 // No custom size, the sprite png, are already at our game size.
                 transform: Transform {
                     translation: Vec3::new(event.x, event.y, -5.0),
@@ -73,19 +73,20 @@ pub fn spawn_asteroid_event(
                 },
                 texture: sprite_handle.clone(),
                 ..Default::default()
-            })
-            .insert(Asteroid { size: event.size })
-            .insert(Damage { value: 1 })
-            .insert(ForState {
+            },
+            Asteroid { size: event.size },
+            Damage { value: 1 },
+            ForState {
                 states: vec![AppState::Game],
-            })
-            .insert(RigidBody::Dynamic)
-            .insert(Collider::ball(radius))
-            .insert(ActiveEvents::COLLISION_EVENTS)
-            .insert(Velocity {
+            },
+            RigidBody::Dynamic,
+            Collider::ball(radius),
+            ActiveEvents::COLLISION_EVENTS,
+            Velocity {
                 linvel: Vec2::new(event.vx, event.vy),
                 angvel: event.angvel,
-            });
+            },
+        ));
     }
 }
 

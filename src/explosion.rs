@@ -36,8 +36,8 @@ pub fn spawn_explosion_event(
                 0.5,
             ),
         };
-        commands
-            .spawn_bundle(SpriteBundle {
+        commands.spawn((
+            SpriteBundle {
                 sprite: Sprite {
                     custom_size: Some(start_size),
                     ..Default::default()
@@ -48,15 +48,16 @@ pub fn spawn_explosion_event(
                 },
                 texture: asset_server.load(texture_name),
                 ..Default::default()
-            })
-            .insert(Explosion {
-                timer: Timer::from_seconds(duration, false),
+            },
+            Explosion {
+                timer: Timer::from_seconds(duration, TimerMode::Once),
                 start_scale: 1.,
                 end_scale,
-            })
-            .insert(ForState {
+            },
+            ForState {
                 states: vec![AppState::Game],
-            });
+            },
+        ));
         let sound = asset_server.load(sound_name);
         audio.play(sound);
     }

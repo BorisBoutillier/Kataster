@@ -26,7 +26,7 @@ fn spawn_background(
     // Choose a random f32 for start_time, to have different background
     let mut rng = thread_rng();
     let start_time = rng.gen_range(0.0..100.0f32);
-    commands.spawn_bundle(MaterialMesh2dBundle {
+    commands.spawn(MaterialMesh2dBundle {
         mesh: meshes.add(Mesh::from(shape::Quad::default())).into(),
         transform: Transform {
             translation: Vec3::new(0.0, 0.0, -10.0),

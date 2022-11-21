@@ -51,13 +51,14 @@ fn add_thrust_particles_to_ship(
             }),
         );
         commands.entity(ship_entity).add_children(|parent| {
-            parent
-                .spawn_bundle(ParticleEffectBundle {
+            parent.spawn((
+                ParticleEffectBundle {
                     effect: ParticleEffect::new(effect),
                     transform: Transform::from_translation(Vec3::new(0.0, -3.0, 0.0)),
                     ..Default::default()
-                })
-                .insert(ExhaustEffect);
+                },
+                ExhaustEffect,
+            ));
         });
     }
 }

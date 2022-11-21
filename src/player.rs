@@ -57,8 +57,8 @@ pub fn spawn_ship(mut commands: Commands, asset_server: Res<AssetServer>) {
         (KeyCode::Right, PlayerAction::RotateRight),
         (KeyCode::Space, PlayerAction::Fire),
     ]);
-    commands
-        .spawn_bundle(SpriteBundle {
+    commands.spawn((
+        SpriteBundle {
             sprite: Sprite {
                 custom_size: Some(Vec2::new(30., 20.)),
                 ..Default::default()
@@ -69,26 +69,27 @@ pub fn spawn_ship(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
             texture: asset_server.load("playerShip2_red.png"),
             ..Default::default()
-        })
-        .insert(Ship {
+        },
+        Ship {
             rotation_speed: 3.0,
             thrust: 60.0,
             life: START_LIFE,
-            cannon_timer: Timer::from_seconds(0.2, false),
+            cannon_timer: Timer::from_seconds(0.2, TimerMode::Once),
             player_id: 1,
-        })
-        .insert(ForState {
+        },
+        ForState {
             states: vec![AppState::Game],
-        })
-        .insert(RigidBody::Dynamic)
-        .insert(Collider::ball(13.5))
-        .insert(ExternalImpulse::default())
-        .insert(Velocity::linear(Vec2::ZERO))
-        .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert_bundle(InputManagerBundle::<PlayerAction> {
+        },
+        RigidBody::Dynamic,
+        Collider::ball(13.5),
+        ExternalImpulse::default(),
+        Velocity::linear(Vec2::ZERO),
+        ActiveEvents::COLLISION_EVENTS,
+        InputManagerBundle::<PlayerAction> {
             action_state: ActionState::default(),
             input_map,
-        });
+        },
+    ));
 }
 
 pub fn ship_dampening_system(time: Res<Time>, mut query: Query<&mut Velocity, With<Ship>>) {

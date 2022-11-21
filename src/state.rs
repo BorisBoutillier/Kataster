@@ -20,7 +20,7 @@ pub enum AppGameState {
     GameOver,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Resource)]
 pub struct RunState {
     pub arena: Option<Arena>,
     pub score: Option<u32>,

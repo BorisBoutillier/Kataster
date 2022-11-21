@@ -22,23 +22,24 @@ pub enum MenuAction {
 
 pub fn start_menu(mut commands: Commands, runstate: ResMut<RunState>) {
     commands
-        .spawn_bundle(NodeBundle {
-            style: Style {
-                size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
-                align_items: AlignItems::Center,
-                justify_content: JustifyContent::Center,
-                flex_direction: FlexDirection::ColumnReverse,
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::Center,
+                    flex_direction: FlexDirection::Column,
+                    ..Default::default()
+                },
                 ..Default::default()
             },
-            color: Color::NONE.into(),
-            ..Default::default()
-        })
-        .insert(ForState {
-            states: vec![AppState::StartMenu],
-        })
+            ForState {
+                states: vec![AppState::StartMenu],
+            },
+        ))
         .with_children(|parent| {
-            parent
-                .spawn_bundle(TextBundle {
+            parent.spawn((
+                TextBundle {
                     style: Style {
                         ..Default::default()
                     },
@@ -51,12 +52,13 @@ pub fn start_menu(mut commands: Commands, runstate: ResMut<RunState>) {
                         },
                     ),
                     ..Default::default()
-                })
-                .insert(ForState {
+                },
+                ForState {
                     states: vec![AppState::StartMenu],
-                });
-            parent
-                .spawn_bundle(TextBundle {
+                },
+            ));
+            parent.spawn((
+                TextBundle {
                     style: Style {
                         ..Default::default()
                     },
@@ -69,33 +71,35 @@ pub fn start_menu(mut commands: Commands, runstate: ResMut<RunState>) {
                         },
                     ),
                     ..Default::default()
-                })
-                .insert(DrawBlinkTimer(Timer::from_seconds(0.5, true)))
-                .insert(ForState {
+                },
+                DrawBlinkTimer(Timer::from_seconds(0.5, TimerMode::Repeating)),
+                ForState {
                     states: vec![AppState::StartMenu],
-                });
+                },
+            ));
         });
 }
 
 pub fn gameover_menu(mut commands: Commands, runstate: ResMut<RunState>) {
     commands
-        .spawn_bundle(NodeBundle {
-            style: Style {
-                size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
-                align_items: AlignItems::Center,
-                justify_content: JustifyContent::Center,
-                flex_direction: FlexDirection::ColumnReverse,
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::Center,
+                    flex_direction: FlexDirection::Column,
+                    ..Default::default()
+                },
                 ..Default::default()
             },
-            color: Color::NONE.into(),
-            ..Default::default()
-        })
-        .insert(ForState {
-            states: vec![AppGameState::GameOver],
-        })
+            ForState {
+                states: vec![AppGameState::GameOver],
+            },
+        ))
         .with_children(|parent| {
-            parent
-                .spawn_bundle(TextBundle {
+            parent.spawn((
+                TextBundle {
                     style: Style {
                         ..Default::default()
                     },
@@ -108,12 +112,13 @@ pub fn gameover_menu(mut commands: Commands, runstate: ResMut<RunState>) {
                         },
                     ),
                     ..Default::default()
-                })
-                .insert(ForState {
+                },
+                ForState {
                     states: vec![AppGameState::GameOver],
-                });
-            parent
-                .spawn_bundle(TextBundle {
+                },
+            ));
+            parent.spawn((
+                TextBundle {
                     style: Style {
                         ..Default::default()
                     },
@@ -126,33 +131,35 @@ pub fn gameover_menu(mut commands: Commands, runstate: ResMut<RunState>) {
                         },
                     ),
                     ..Default::default()
-                })
-                .insert(DrawBlinkTimer(Timer::from_seconds(0.5, true)))
-                .insert(ForState {
+                },
+                DrawBlinkTimer(Timer::from_seconds(0.5, TimerMode::Repeating)),
+                ForState {
                     states: vec![AppGameState::GameOver],
-                });
+                },
+            ));
         });
 }
 
 pub fn pause_menu(mut commands: Commands, runstate: ResMut<RunState>) {
     commands
-        .spawn_bundle(NodeBundle {
-            style: Style {
-                position_type: PositionType::Absolute,
-                size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
-                align_items: AlignItems::Center,
-                justify_content: JustifyContent::Center,
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    position_type: PositionType::Absolute,
+                    size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::Center,
+                    ..Default::default()
+                },
                 ..Default::default()
             },
-            color: Color::NONE.into(),
-            ..Default::default()
-        })
-        .insert(ForState {
-            states: vec![AppGameState::Pause],
-        })
+            ForState {
+                states: vec![AppGameState::Pause],
+            },
+        ))
         .with_children(|parent| {
-            parent
-                .spawn_bundle(TextBundle {
+            parent.spawn((
+                TextBundle {
                     style: Style {
                         ..Default::default()
                     },
@@ -165,11 +172,12 @@ pub fn pause_menu(mut commands: Commands, runstate: ResMut<RunState>) {
                         },
                     ),
                     ..Default::default()
-                })
-                .insert(DrawBlinkTimer(Timer::from_seconds(0.5, true)))
-                .insert(ForState {
+                },
+                DrawBlinkTimer(Timer::from_seconds(0.5, TimerMode::Repeating)),
+                ForState {
                     states: vec![AppGameState::Pause],
-                });
+                },
+            ));
         });
 }
 
@@ -191,24 +199,25 @@ pub fn game_ui_spawn(
     asset_server: Res<AssetServer>,
 ) {
     commands
-        .spawn_bundle(NodeBundle {
-            style: Style {
-                position_type: PositionType::Absolute,
-                size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
-                align_items: AlignItems::FlexEnd,
-                justify_content: JustifyContent::FlexEnd,
-                flex_direction: FlexDirection::Row,
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    position_type: PositionType::Absolute,
+                    size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+                    align_items: AlignItems::FlexStart,
+                    justify_content: JustifyContent::FlexEnd,
+                    flex_direction: FlexDirection::Row,
+                    ..Default::default()
+                },
                 ..Default::default()
             },
-            color: Color::NONE.into(),
-            ..Default::default()
-        })
-        .insert(ForState {
-            states: vec![AppState::Game],
-        })
+            ForState {
+                states: vec![AppState::Game],
+            },
+        ))
         .with_children(|parent| {
-            parent
-                .spawn_bundle(TextBundle {
+            parent.spawn((
+                TextBundle {
                     style: Style {
                         justify_content: JustifyContent::FlexEnd,
                         margin: UiRect {
@@ -228,34 +237,36 @@ pub fn game_ui_spawn(
                         },
                     ),
                     ..Default::default()
-                })
-                .insert(ForState {
+                },
+                ForState {
                     states: vec![AppState::Game],
-                })
-                .insert(UiScore {});
+                },
+                UiScore {},
+            ));
         });
     // Life counters
     // Not kept in 'GameOver' state, simplifying last counter removal.
     commands
-        .spawn_bundle(NodeBundle {
-            style: Style {
-                position_type: PositionType::Absolute,
-                size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
-                align_items: AlignItems::FlexEnd,
-                justify_content: JustifyContent::FlexStart,
-                flex_direction: FlexDirection::Row,
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    position_type: PositionType::Absolute,
+                    size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+                    align_items: AlignItems::FlexStart,
+                    justify_content: JustifyContent::FlexStart,
+                    flex_direction: FlexDirection::Row,
+                    ..Default::default()
+                },
                 ..Default::default()
             },
-            color: Color::NONE.into(),
-            ..Default::default()
-        })
-        .insert(ForState {
-            states: vec![AppState::Game],
-        })
+            ForState {
+                states: vec![AppState::Game],
+            },
+        ))
         .with_children(|parent| {
             for i in 1..(START_LIFE + 1) {
-                parent
-                    .spawn_bundle(ImageBundle {
+                parent.spawn((
+                    ImageBundle {
                         style: Style {
                             margin: UiRect {
                                 left: Val::Px(10.0),
@@ -267,11 +278,12 @@ pub fn game_ui_spawn(
                         },
                         image: asset_server.load("playerLife1_red.png").into(),
                         ..Default::default()
-                    })
-                    .insert(ForState {
+                    },
+                    ForState {
                         states: vec![AppState::Game],
-                    })
-                    .insert(UiLife { min: i });
+                    },
+                    UiLife { min: i },
+                ));
             }
         });
 }
