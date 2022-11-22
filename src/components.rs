@@ -1,12 +1,5 @@
 use bevy::prelude::*;
 
-#[derive(Component)]
-pub struct UiScore {}
-#[derive(Component)]
-pub struct UiLife {
-    pub min: u32,
-}
-
 pub enum ExplosionKind {
     ShipDead,
     ShipContact,
