@@ -1,5 +1,6 @@
 #![allow(clippy::too_many_arguments)]
 mod arena;
+mod assets;
 mod asteroid;
 mod background;
 mod components;
@@ -14,6 +15,7 @@ mod state;
 
 mod prelude {
     pub use crate::arena::*;
+    pub use crate::assets::*;
     pub use crate::asteroid::*;
     pub use crate::background::*;
     pub use crate::components::*;
@@ -66,11 +68,12 @@ fn main() {
     app.add_plugin(HudPlugin);
     app.add_plugin(MenuPlugin);
     app.add_plugin(StatesPlugin);
+    app.add_plugin(AssetsPlugin);
 
     app.add_event::<ExplosionSpawnEvent>();
     app.add_state(AppState::StartMenu)
         .add_state(AppGameState::Invalid)
-        .add_system_set(SystemSet::on_enter(AppState::Game).with_system(setup_arena))
+        .add_system_set(SystemSet::on_enter(AppState::Game).with_system(spawn_arena))
         .add_system_set(
             SystemSet::on_update(AppState::Game)
                 .with_system(position_system)
@@ -85,11 +88,7 @@ fn main() {
 /// Camera for both 2D and UI is spawn once and for all.
 /// MenuAction InputMap and ActionState are added as global resource to handle Menu interaction
 /// Rapier configuration is updated to remove gravity
-pub fn setup(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut rapier_configuration: ResMut<RapierConfiguration>,
-) {
+pub fn setup(mut commands: Commands, mut rapier_configuration: ResMut<RapierConfiguration>) {
     // Camera
     commands.spawn(Camera2dBundle {
         transform: Transform {
@@ -98,9 +97,6 @@ pub fn setup(
         },
         ..Default::default()
     });
-
-    // RunState
-    commands.insert_resource(RunState::new(&asset_server));
 
     // Insert MenuAction resources
     commands.insert_resource(InputMap::<MenuAction>::new([

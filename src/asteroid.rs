@@ -56,13 +56,13 @@ impl Plugin for AsteroidPlugin {
 pub fn spawn_asteroid_event(
     mut commands: Commands,
     mut event_reader: EventReader<AsteroidSpawnEvent>,
-    runstate: Res<RunState>,
+    handles: Res<GameAssets>,
 ) {
     for event in event_reader.iter() {
         let (sprite_handle, radius) = match event.size {
-            AsteroidSize::Big => (runstate.meteor_big_handle.clone(), 101. / 2.0),
-            AsteroidSize::Medium => (runstate.meteor_med_handle.clone(), 43. / 2.0),
-            AsteroidSize::Small => (runstate.meteor_small_handle.clone(), 28. / 2.0),
+            AsteroidSize::Big => (handles.meteor_big.clone(), 101. / 2.0),
+            AsteroidSize::Medium => (handles.meteor_med.clone(), 43. / 2.0),
+            AsteroidSize::Small => (handles.meteor_small.clone(), 28. / 2.0),
         };
         commands.spawn((
             SpriteBundle {
@@ -93,22 +93,20 @@ pub fn spawn_asteroid_event(
 pub fn arena_asteroids(
     time: Res<Time>,
     gamestate: Res<State<AppGameState>>,
-    mut runstate: ResMut<RunState>,
+    mut arena: ResMut<Arena>,
     mut asteroid_spawn_events: EventWriter<AsteroidSpawnEvent>,
     asteroids: Query<&Asteroid>,
 ) {
     if gamestate.current() == &AppGameState::Game {
-        let arena = runstate.arena.as_mut().unwrap();
         arena.asteroid_spawn_timer.tick(time.delta());
         if arena.asteroid_spawn_timer.finished() {
             arena.asteroid_spawn_timer.reset();
             let n_asteroid = asteroids.iter().count();
             if n_asteroid < 20 {
-                arena
-                    .asteroid_spawn_timer
-                    .set_duration(Duration::from_secs_f32(
-                        (0.8 * arena.asteroid_spawn_timer.duration().as_secs_f32()).max(0.1),
-                    ));
+                let duration = Duration::from_secs_f32(
+                    (0.8 * arena.asteroid_spawn_timer.duration().as_secs_f32()).max(0.1),
+                );
+                arena.asteroid_spawn_timer.set_duration(duration);
                 let mut rng = thread_rng();
                 // 0: Top , 1:Left
                 let side = rng.gen_range(0..2u8);

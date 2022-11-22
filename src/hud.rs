@@ -21,7 +21,7 @@ impl Plugin for HudPlugin {
 
 pub fn hud_spawn(
     mut commands: Commands,
-    runstate: ResMut<RunState>,
+    handles: ResMut<GameAssets>,
     asset_server: Res<AssetServer>,
 ) {
     commands
@@ -57,7 +57,7 @@ pub fn hud_spawn(
                     text: Text::from_section(
                         "0",
                         TextStyle {
-                            font: runstate.font_handle.clone(),
+                            font: handles.font.clone(),
                             font_size: 50.0,
                             color: Color::rgb_u8(0x00, 0xAA, 0xAA),
                         },
@@ -114,10 +114,10 @@ pub fn hud_spawn(
         });
 }
 
-pub fn hud_score_system(runstate: Res<RunState>, mut query: Query<&mut Text, With<UiScore>>) {
-    if runstate.is_changed() {
+pub fn hud_score_system(arena: Res<Arena>, mut query: Query<&mut Text, With<UiScore>>) {
+    if arena.is_changed() {
         for mut text in query.iter_mut() {
-            text.sections[0].value = format!("{}", runstate.score.unwrap());
+            text.sections[0].value = format!("{}", arena.score);
         }
     }
 }

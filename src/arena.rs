@@ -6,15 +6,16 @@ pub const CAMERA_SCALE: f32 = 1.;
 pub const ARENA_WIDTH: f32 = WINDOW_WIDTH as f32 * CAMERA_SCALE;
 pub const ARENA_HEIGHT: f32 = WINDOW_HEIGHT as f32 * CAMERA_SCALE;
 
-#[derive(Debug)]
+#[derive(Debug, Resource)]
 pub struct Arena {
     pub asteroid_spawn_timer: Timer,
+    pub score: u32,
 }
-pub fn setup_arena(mut runstate: ResMut<RunState>) {
-    runstate.arena = Some(Arena {
+pub fn spawn_arena(mut commands: Commands) {
+    commands.insert_resource(Arena {
         asteroid_spawn_timer: Timer::from_seconds(5.0, TimerMode::Once),
+        score: 0,
     });
-    runstate.score = Some(0);
 }
 
 pub fn position_system(mut query: Query<(&Velocity, &mut Transform)>) {

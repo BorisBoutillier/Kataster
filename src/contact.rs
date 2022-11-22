@@ -11,7 +11,7 @@ pub fn contact_system(
     mut asteroid_spawn_events: EventWriter<AsteroidSpawnEvent>,
     mut explosion_spawn_events: EventWriter<ExplosionSpawnEvent>,
     mut laser_despawn_events: EventWriter<LaserDespawnEvent>,
-    mut runstate: ResMut<RunState>,
+    mut arena: ResMut<Arena>,
     mut events: EventReader<CollisionEvent>,
     damages: Query<&Damage>,
     mut ships: Query<(&Transform, &mut Ship)>,
@@ -50,7 +50,7 @@ pub fn contact_system(
                 let asteroid = asteroids.get_component::<Asteroid>(e2).unwrap();
                 let asteroid_transform = asteroids.get_component::<Transform>(e2).unwrap();
                 let asteroid_velocity = asteroids.get_component::<Velocity>(e2).unwrap();
-                runstate.score = runstate.score.map(|score| score + asteroid.size.score());
+                arena.score += asteroid.size.score();
                 {
                     explosion_spawn_events.send(ExplosionSpawnEvent {
                         kind: ExplosionKind::LaserOnAsteroid,
@@ -97,7 +97,6 @@ pub fn contact_system(
                         y: player_translation.y,
                     });
                     commands.entity(e1).despawn_recursive();
-                    //runstate.gamestate.transit_to(GameState::GameOver);
                     gamestate.set(AppGameState::GameOver).unwrap();
                 } else {
                     explosion_spawn_events.send(ExplosionSpawnEvent {

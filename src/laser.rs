@@ -35,7 +35,7 @@ impl Plugin for LaserPlugin {
 pub fn spawn_laser(
     mut commands: Commands,
     mut laser_spawn_events: EventReader<LaserSpawnEvent>,
-    runstate: Res<RunState>,
+    handles: Res<GameAssets>,
     audio: Res<Audio>,
 ) {
     for spawn_event in laser_spawn_events.iter() {
@@ -55,7 +55,7 @@ pub fn spawn_laser(
                     rotation: transform.rotation,
                     ..Default::default()
                 },
-                texture: runstate.laser_texture_handle.clone(),
+                texture: handles.laser_texture.clone(),
                 ..Default::default()
             },
             Laser {
@@ -70,7 +70,7 @@ pub fn spawn_laser(
             Sensor,
             ActiveEvents::COLLISION_EVENTS,
         ));
-        audio.play(runstate.laser_audio_handle.clone());
+        audio.play(handles.laser_audio.clone());
     }
 }
 

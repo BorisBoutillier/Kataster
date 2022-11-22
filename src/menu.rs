@@ -31,7 +31,7 @@ impl Plugin for MenuPlugin {
     }
 }
 
-pub fn start_menu(mut commands: Commands, runstate: ResMut<RunState>) {
+pub fn start_menu(mut commands: Commands, assets: ResMut<GameAssets>) {
     commands
         .spawn((
             NodeBundle {
@@ -57,7 +57,7 @@ pub fn start_menu(mut commands: Commands, runstate: ResMut<RunState>) {
                     text: Text::from_section(
                         "Kataster",
                         TextStyle {
-                            font: runstate.font_handle.clone(),
+                            font: assets.font.clone(),
                             font_size: 100.0,
                             color: Color::rgb_u8(0x00, 0xAA, 0xAA),
                         },
@@ -76,7 +76,7 @@ pub fn start_menu(mut commands: Commands, runstate: ResMut<RunState>) {
                     text: Text::from_section(
                         "enter",
                         TextStyle {
-                            font: runstate.font_handle.clone(),
+                            font: assets.font.clone(),
                             font_size: 50.0,
                             color: Color::rgb_u8(0x00, 0x44, 0x44),
                         },
@@ -91,7 +91,7 @@ pub fn start_menu(mut commands: Commands, runstate: ResMut<RunState>) {
         });
 }
 
-pub fn gameover_menu(mut commands: Commands, runstate: ResMut<RunState>) {
+pub fn gameover_menu(mut commands: Commands, assets: ResMut<GameAssets>) {
     commands
         .spawn((
             NodeBundle {
@@ -117,7 +117,7 @@ pub fn gameover_menu(mut commands: Commands, runstate: ResMut<RunState>) {
                     text: Text::from_section(
                         "Game Over",
                         TextStyle {
-                            font: runstate.font_handle.clone(),
+                            font: assets.font.clone(),
                             font_size: 100.0,
                             color: Color::rgb_u8(0xAA, 0x22, 0x22),
                         },
@@ -136,7 +136,7 @@ pub fn gameover_menu(mut commands: Commands, runstate: ResMut<RunState>) {
                     text: Text::from_section(
                         "enter",
                         TextStyle {
-                            font: runstate.font_handle.clone(),
+                            font: assets.font.clone(),
                             font_size: 50.0,
                             color: Color::rgb_u8(0x88, 0x22, 0x22),
                         },
@@ -151,7 +151,7 @@ pub fn gameover_menu(mut commands: Commands, runstate: ResMut<RunState>) {
         });
 }
 
-pub fn pause_menu(mut commands: Commands, runstate: ResMut<RunState>) {
+pub fn pause_menu(mut commands: Commands, assets: ResMut<GameAssets>) {
     commands
         .spawn((
             NodeBundle {
@@ -177,7 +177,7 @@ pub fn pause_menu(mut commands: Commands, runstate: ResMut<RunState>) {
                     text: Text::from_section(
                         "pause",
                         TextStyle {
-                            font: runstate.font_handle.clone(),
+                            font: assets.font.clone(),
                             font_size: 100.0,
                             color: Color::rgb_u8(0xF8, 0xE4, 0x73),
                         },
