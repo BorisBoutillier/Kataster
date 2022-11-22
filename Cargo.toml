@@ -14,4 +14,5 @@ bevy = "0.9"
 leafwing-input-manager = "0.7"
 rand = "0.8"
 bevy_rapier2d = "0.19"
-bevy_hanabi = { version="0.5", features=["2d"] }
+# Hanabi git main needed for an unreleased fix
+bevy_hanabi = { git="https://github.com/djeedai/bevy_hanabi", features=["2d"] }

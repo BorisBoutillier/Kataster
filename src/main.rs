@@ -47,9 +47,7 @@ fn main() {
     #[cfg(not(target_arch = "wasm32"))]
     {
         app.add_plugin(BackgroundPlugin {});
-        // FIXME: Hanabi currently does not support a game state without any particle effect
-        // to be reactivated when issue is checked with hanabi
-        //app.add_plugin(particle_effects::ParticleEffectsPlugin);
+        app.add_plugin(particle_effects::ParticleEffectsPlugin);
     }
 
     // Enable Rapier debug renders when compile in debug mode.
