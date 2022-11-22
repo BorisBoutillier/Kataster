@@ -27,8 +27,20 @@ impl Plugin for MenuPlugin {
             .add_system_set(SystemSet::on_enter(AppGameState::Pause).with_system(pause_menu))
             .add_system_set(SystemSet::on_enter(AppGameState::GameOver).with_system(gameover_menu))
             .add_system(menu_input_system)
-            .add_system(menu_blink_system);
+            .add_system(menu_blink_system)
+            .add_startup_system(setup);
     }
+}
+
+pub fn setup(mut commands: Commands) {
+    // Insert MenuAction resources
+    commands.insert_resource(InputMap::<MenuAction>::new([
+        (KeyCode::Return, MenuAction::Accept),
+        (KeyCode::Escape, MenuAction::PauseUnpause),
+        (KeyCode::Back, MenuAction::ExitToMenu),
+        (KeyCode::Escape, MenuAction::Quit),
+    ]));
+    commands.insert_resource(ActionState::<MenuAction>::default());
 }
 
 pub fn start_menu(mut commands: Commands, assets: ResMut<GameAssets>) {

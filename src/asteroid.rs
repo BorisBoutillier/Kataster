@@ -68,7 +68,7 @@ pub fn spawn_asteroid_event(
             SpriteBundle {
                 // No custom size, the sprite png, are already at our game size.
                 transform: Transform {
-                    translation: Vec3::new(event.x, event.y, -5.0),
+                    translation: Vec3::new(event.x, event.y, 1.0),
                     ..Default::default()
                 },
                 texture: sprite_handle.clone(),

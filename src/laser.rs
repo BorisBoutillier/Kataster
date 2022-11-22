@@ -51,7 +51,7 @@ pub fn spawn_laser(
                     ..Default::default()
                 },
                 transform: Transform {
-                    translation: Vec3::new(transform.translation.x, transform.translation.y, -4.0),
+                    translation: Vec3::new(transform.translation.x, transform.translation.y, 2.0),
                     rotation: transform.rotation,
                     ..Default::default()
                 },

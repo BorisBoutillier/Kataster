@@ -41,8 +41,8 @@ fn main() {
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
         window: WindowDescriptor {
             title: "Kataster".to_string(),
-            width: WINDOW_WIDTH as f32,
-            height: WINDOW_HEIGHT as f32,
+            width: ARENA_WIDTH,
+            height: ARENA_HEIGHT,
             ..Default::default()
         },
         ..Default::default()
@@ -51,7 +51,7 @@ fn main() {
     // These two plugins are currently not supported on the web
     #[cfg(not(target_arch = "wasm32"))]
     {
-        app.add_plugin(BackgroundPlugin {});
+        app.add_plugin(BackgroundPlugin);
         app.add_plugin(particle_effects::ParticleEffectsPlugin);
     }
 
@@ -62,51 +62,24 @@ fn main() {
     app.add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(10.0));
     app.add_plugin(InputManagerPlugin::<MenuAction>::default());
 
-    app.add_plugin(PlayerShipPlugin);
-    app.add_plugin(LaserPlugin);
-    app.add_plugin(AsteroidPlugin);
-    app.add_plugin(HudPlugin);
-    app.add_plugin(MenuPlugin);
-    app.add_plugin(StatesPlugin);
-    app.add_plugin(AssetsPlugin);
+    app.add_plugin(AssetsPlugin)
+        .add_plugin(ArenaPlugin)
+        .add_plugin(PlayerShipPlugin)
+        .add_plugin(LaserPlugin)
+        .add_plugin(AsteroidPlugin)
+        .add_plugin(HudPlugin)
+        .add_plugin(MenuPlugin)
+        .add_plugin(StatesPlugin)
+        .add_plugin(ContactPlugin)
+        .add_plugin(ExplosionPlugin);
 
-    app.add_event::<ExplosionSpawnEvent>();
     app.add_state(AppState::StartMenu)
-        .add_state(AppGameState::Invalid)
-        .add_system_set(SystemSet::on_enter(AppState::Game).with_system(spawn_arena))
-        .add_system_set(
-            SystemSet::on_update(AppState::Game)
-                .with_system(position_system)
-                .with_system(contact_system.label(CanDespawnLaserLabel)),
-        )
-        .add_system(handle_explosion)
-        .add_system(spawn_explosion_event)
-        .add_startup_system(setup)
-        .run();
+        .add_state(AppGameState::Invalid);
+
+    app.add_startup_system(setup_camera);
+    app.run();
 }
 
-/// Camera for both 2D and UI is spawn once and for all.
-/// MenuAction InputMap and ActionState are added as global resource to handle Menu interaction
-/// Rapier configuration is updated to remove gravity
-pub fn setup(mut commands: Commands, mut rapier_configuration: ResMut<RapierConfiguration>) {
-    // Camera
-    commands.spawn(Camera2dBundle {
-        transform: Transform {
-            scale: Vec3::splat(CAMERA_SCALE),
-            ..Default::default()
-        },
-        ..Default::default()
-    });
-
-    // Insert MenuAction resources
-    commands.insert_resource(InputMap::<MenuAction>::new([
-        (KeyCode::Return, MenuAction::Accept),
-        (KeyCode::Escape, MenuAction::PauseUnpause),
-        (KeyCode::Back, MenuAction::ExitToMenu),
-        (KeyCode::Escape, MenuAction::Quit),
-    ]));
-    commands.insert_resource(ActionState::<MenuAction>::default());
-
-    // Rapier configuration
-    rapier_configuration.gravity = Vec2::ZERO;
+pub fn setup_camera(mut commands: Commands) {
+    commands.spawn(Camera2dBundle::default());
 }

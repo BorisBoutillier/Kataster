@@ -1,14 +1,36 @@
 use crate::prelude::*;
 
+pub enum ExplosionKind {
+    ShipDead,
+    ShipContact,
+    LaserOnAsteroid,
+}
+pub struct SpawnExplosionEvent {
+    pub kind: ExplosionKind,
+    pub x: f32,
+    pub y: f32,
+}
+
 #[derive(Component)]
 pub struct Explosion {
     timer: Timer,
     start_scale: f32,
     end_scale: f32,
 }
-pub fn spawn_explosion_event(
+
+pub struct ExplosionPlugin;
+
+impl Plugin for ExplosionPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_event::<SpawnExplosionEvent>()
+            .add_system(animate_explosion)
+            .add_system(catch_explosion_event);
+    }
+}
+
+fn catch_explosion_event(
     mut commands: Commands,
-    mut event_reader: EventReader<ExplosionSpawnEvent>,
+    mut event_reader: EventReader<SpawnExplosionEvent>,
     asset_server: Res<AssetServer>,
     audio: Res<Audio>,
 ) {
@@ -43,7 +65,7 @@ pub fn spawn_explosion_event(
                     ..Default::default()
                 },
                 transform: Transform {
-                    translation: Vec3::new(event.x, event.y, -1.0),
+                    translation: Vec3::new(event.x, event.y, 3.0),
                     ..Default::default()
                 },
                 texture: asset_server.load(texture_name),
@@ -63,7 +85,7 @@ pub fn spawn_explosion_event(
     }
 }
 
-pub fn handle_explosion(
+fn animate_explosion(
     mut commands: Commands,
     time: Res<Time>,
     mut query: Query<(Entity, &mut Transform, &mut Explosion)>,

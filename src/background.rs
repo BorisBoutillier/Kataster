@@ -25,7 +25,7 @@ fn spawn_background(
     commands.spawn(MaterialMesh2dBundle {
         mesh: meshes.add(Mesh::from(shape::Quad::default())).into(),
         transform: Transform {
-            translation: Vec3::new(0.0, 0.0, -10.0),
+            translation: Vec3::new(0.0, 0.0, 0.0),
             scale: Vec3::new(ARENA_WIDTH, ARENA_HEIGHT, 1.0),
             ..Default::default()
         },

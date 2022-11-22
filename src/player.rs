@@ -64,7 +64,7 @@ pub fn spawn_ship(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ..Default::default()
             },
             transform: Transform {
-                translation: Vec3::new(0.0, 0.0, -5.0),
+                translation: Vec3::new(0.0, 0.0, 1.0),
                 ..Default::default()
             },
             texture: asset_server.load("playerShip2_red.png"),

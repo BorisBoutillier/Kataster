@@ -5,11 +5,22 @@ enum Contacts {
     LaserAsteroid(Entity, Entity),
 }
 
+pub struct ContactPlugin;
+
+impl Plugin for ContactPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_system_set(
+            SystemSet::on_update(AppState::Game)
+                .with_system(contact_system.label(CanDespawnLaserLabel)),
+        );
+    }
+}
+
 pub fn contact_system(
     mut commands: Commands,
     mut gamestate: ResMut<State<AppGameState>>,
     mut asteroid_spawn_events: EventWriter<AsteroidSpawnEvent>,
-    mut explosion_spawn_events: EventWriter<ExplosionSpawnEvent>,
+    mut explosion_spawn_events: EventWriter<SpawnExplosionEvent>,
     mut laser_despawn_events: EventWriter<LaserDespawnEvent>,
     mut arena: ResMut<Arena>,
     mut events: EventReader<CollisionEvent>,
@@ -52,7 +63,7 @@ pub fn contact_system(
                 let asteroid_velocity = asteroids.get_component::<Velocity>(e2).unwrap();
                 arena.score += asteroid.size.score();
                 {
-                    explosion_spawn_events.send(ExplosionSpawnEvent {
+                    explosion_spawn_events.send(SpawnExplosionEvent {
                         kind: ExplosionKind::LaserOnAsteroid,
                         x: laser_transform.translation.x,
                         y: laser_transform.translation.y,
@@ -91,7 +102,7 @@ pub fn contact_system(
                     ship.life = 0;
                 }
                 if ship.life == 0 {
-                    explosion_spawn_events.send(ExplosionSpawnEvent {
+                    explosion_spawn_events.send(SpawnExplosionEvent {
                         kind: ExplosionKind::ShipDead,
                         x: player_translation.x,
                         y: player_translation.y,
@@ -99,7 +110,7 @@ pub fn contact_system(
                     commands.entity(e1).despawn_recursive();
                     gamestate.set(AppGameState::GameOver).unwrap();
                 } else {
-                    explosion_spawn_events.send(ExplosionSpawnEvent {
+                    explosion_spawn_events.send(SpawnExplosionEvent {
                         kind: ExplosionKind::ShipContact,
                         x: player_translation.x,
                         y: player_translation.y,

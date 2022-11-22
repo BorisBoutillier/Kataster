@@ -1,24 +1,34 @@
 use crate::prelude::*;
 
-pub const WINDOW_WIDTH: u32 = 1280;
-pub const WINDOW_HEIGHT: u32 = 800;
-pub const CAMERA_SCALE: f32 = 1.;
-pub const ARENA_WIDTH: f32 = WINDOW_WIDTH as f32 * CAMERA_SCALE;
-pub const ARENA_HEIGHT: f32 = WINDOW_HEIGHT as f32 * CAMERA_SCALE;
+pub const ARENA_WIDTH: f32 = 1280.0;
+pub const ARENA_HEIGHT: f32 = 800.0;
 
 #[derive(Debug, Resource)]
 pub struct Arena {
     pub asteroid_spawn_timer: Timer,
     pub score: u32,
 }
-pub fn spawn_arena(mut commands: Commands) {
+
+pub struct ArenaPlugin;
+
+impl Plugin for ArenaPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_system_set(SystemSet::on_enter(AppState::Game).with_system(spawn_arena))
+            .add_system_set(SystemSet::on_update(AppState::Game).with_system(movement));
+    }
+}
+
+fn spawn_arena(mut commands: Commands, mut rapier_configuration: ResMut<RapierConfiguration>) {
     commands.insert_resource(Arena {
         asteroid_spawn_timer: Timer::from_seconds(5.0, TimerMode::Once),
         score: 0,
     });
+
+    // Rapier configuration without gravity
+    rapier_configuration.gravity = Vec2::ZERO;
 }
 
-pub fn position_system(mut query: Query<(&Velocity, &mut Transform)>) {
+fn movement(mut query: Query<(&Velocity, &mut Transform)>) {
     for (velocity, mut transform) in query.iter_mut() {
         let mut x = transform.translation.x;
         let mut y = transform.translation.y;
