@@ -65,34 +65,16 @@ fn main() {
     app.add_plugin(AsteroidPlugin);
     app.add_plugin(HudPlugin);
     app.add_plugin(MenuPlugin);
+    app.add_plugin(StatesPlugin);
 
     app.add_event::<ExplosionSpawnEvent>();
     app.add_state(AppState::StartMenu)
         .add_state(AppGameState::Invalid)
-        .add_system_set(
-            SystemSet::on_enter(AppState::StartMenu).with_system(appstate_enter_despawn),
-        )
-        .add_system_set(
-            SystemSet::on_enter(AppState::Game)
-                .with_system(setup_arena)
-                .with_system(appstate_enter_despawn),
-        )
+        .add_system_set(SystemSet::on_enter(AppState::Game).with_system(setup_arena))
         .add_system_set(
             SystemSet::on_update(AppState::Game)
                 .with_system(position_system)
                 .with_system(contact_system.label(CanDespawnLaserLabel)),
-        )
-        .add_system_set(
-            SystemSet::on_enter(AppGameState::Pause).with_system(appgamestate_enter_despawn),
-        )
-        .add_system_set(
-            SystemSet::on_enter(AppGameState::GameOver).with_system(appgamestate_enter_despawn),
-        )
-        .add_system_set(
-            SystemSet::on_enter(AppGameState::Invalid).with_system(appgamestate_enter_despawn),
-        )
-        .add_system_set(
-            SystemSet::on_enter(AppGameState::Game).with_system(appgamestate_enter_despawn),
         )
         .add_system(handle_explosion)
         .add_system(spawn_explosion_event)

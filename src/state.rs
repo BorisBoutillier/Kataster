@@ -1,16 +1,21 @@
+use bevy::ecs::schedule::StateData;
+
 use crate::prelude::*;
 
-/// Component to tag an entity as only needed in one state
+/// Component to tag an entity as only needed in some of the states
 #[derive(Component)]
 pub struct ForState<T> {
     pub states: Vec<T>,
 }
 
+// Main state enum, differianting, Menu from Game 'scenes'
 #[derive(Debug, Copy, Clone, Hash, Eq, PartialEq)]
 pub enum AppState {
     StartMenu,
     Game,
 }
+
+// Game state enum, differianting several phase of the game
 #[derive(Debug, Copy, Clone, Hash, Eq, PartialEq)]
 pub enum AppGameState {
     /// Invalid used when AppState is NOT Game
@@ -48,22 +53,34 @@ impl RunState {
     }
 }
 
-pub fn appstate_enter_despawn(
-    mut commands: Commands,
-    state: Res<State<AppState>>,
-    query: Query<(Entity, &ForState<AppState>)>,
-) {
-    for (entity, for_state) in &mut query.iter() {
-        if !for_state.states.contains(state.current()) {
-            commands.entity(entity).despawn_recursive();
+pub struct StatesPlugin;
+
+impl Plugin for StatesPlugin {
+    fn build(&self, app: &mut App) {
+        for state in [AppState::StartMenu, AppState::Game].into_iter() {
+            app.add_system_set(
+                SystemSet::on_enter(state).with_system(state_enter_despawn::<AppState>),
+            );
+        }
+        for state in [
+            AppGameState::Invalid,
+            AppGameState::Game,
+            AppGameState::Pause,
+            AppGameState::GameOver,
+        ]
+        .into_iter()
+        {
+            app.add_system_set(
+                SystemSet::on_enter(state).with_system(state_enter_despawn::<AppGameState>),
+            );
         }
     }
 }
 
-pub fn appgamestate_enter_despawn(
+pub fn state_enter_despawn<T: StateData>(
     mut commands: Commands,
-    state: ResMut<State<AppGameState>>,
-    query: Query<(Entity, &ForState<AppGameState>)>,
+    state: ResMut<State<T>>,
+    query: Query<(Entity, &ForState<T>)>,
 ) {
     for (entity, for_state) in &mut query.iter() {
         if !for_state.states.contains(state.current()) {
