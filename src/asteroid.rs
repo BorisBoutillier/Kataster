@@ -10,6 +10,11 @@ pub struct AsteroidSpawnEvent {
     pub angvel: f32,
 }
 
+pub struct LaserAsteroidContactEvent {
+    pub laser: Entity,
+    pub asteroid: Entity,
+}
+
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum AsteroidSize {
     Big,
@@ -45,11 +50,14 @@ pub struct AsteroidPlugin;
 
 impl Plugin for AsteroidPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<AsteroidSpawnEvent>().add_system_set(
-            SystemSet::on_update(AppState::Game)
-                .with_system(arena_asteroids)
-                .with_system(spawn_asteroid_event),
-        );
+        app.add_event::<AsteroidSpawnEvent>()
+            .add_event::<LaserAsteroidContactEvent>()
+            .add_system_set(
+                SystemSet::on_update(AppState::Game)
+                    .with_system(arena_asteroids)
+                    .with_system(spawn_asteroid_event)
+                    .with_system(asteroid_damage.after(ContactLabel)),
+            );
     }
 }
 
@@ -133,5 +141,48 @@ pub fn arena_asteroids(
                 });
             }
         }
+    }
+}
+
+fn asteroid_damage(
+    mut commands: Commands,
+    mut arena: ResMut<Arena>,
+    mut laser_asteroid_contact_events: EventReader<LaserAsteroidContactEvent>,
+    mut explosion_spawn_events: EventWriter<SpawnExplosionEvent>,
+    mut asteroid_spawn_events: EventWriter<AsteroidSpawnEvent>,
+    transforms: Query<&Transform>,
+    asteroids: Query<(&Asteroid, &Transform, &Velocity)>,
+) {
+    for event in laser_asteroid_contact_events.iter() {
+        let laser_transform = transforms.get(event.laser).unwrap();
+        let (asteroid, asteroid_transform, asteroid_velocity) =
+            asteroids.get(event.asteroid).unwrap();
+        arena.score += asteroid.size.score();
+        {
+            explosion_spawn_events.send(SpawnExplosionEvent {
+                kind: ExplosionKind::LaserOnAsteroid,
+                x: laser_transform.translation.x,
+                y: laser_transform.translation.y,
+            });
+            if let Some((size, radius)) = asteroid.size.split() {
+                let mut rng = thread_rng();
+                for _ in 0..rng.gen_range(1..4u8) {
+                    let x = asteroid_transform.translation.x + rng.gen_range(-radius..radius);
+                    let y = asteroid_transform.translation.y + rng.gen_range(-radius..radius);
+                    let vx = rng.gen_range((-ARENA_WIDTH / radius)..(ARENA_WIDTH / radius));
+                    let vy = rng.gen_range((-ARENA_HEIGHT / radius)..(ARENA_HEIGHT / radius));
+                    asteroid_spawn_events.send(AsteroidSpawnEvent {
+                        size,
+                        x,
+                        y,
+                        vx,
+                        vy,
+                        angvel: asteroid_velocity.angvel,
+                    });
+                }
+            }
+        }
+        commands.entity(event.laser).despawn();
+        commands.entity(event.asteroid).despawn();
     }
 }

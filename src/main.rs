@@ -3,14 +3,13 @@ mod arena;
 mod assets;
 mod asteroid;
 mod background;
-mod components;
 mod contact;
 mod explosion;
 mod hud;
 mod laser;
 mod menu;
 mod particle_effects;
-mod player;
+mod player_ship;
 mod state;
 
 mod prelude {
@@ -18,13 +17,12 @@ mod prelude {
     pub use crate::assets::*;
     pub use crate::asteroid::*;
     pub use crate::background::*;
-    pub use crate::components::*;
     pub use crate::contact::*;
     pub use crate::explosion::*;
     pub use crate::hud::*;
     pub use crate::laser::*;
     pub use crate::menu::*;
-    pub use crate::player::*;
+    pub use crate::player_ship::*;
     pub use crate::state::*;
     pub use bevy::prelude::*;
     pub use bevy_rapier2d::prelude::*;

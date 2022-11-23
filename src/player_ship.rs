@@ -27,17 +27,29 @@ pub struct Ship {
     pub player_id: u32,
 }
 
+#[derive(Component, Clone, Copy)]
+pub struct Damage {
+    pub value: u32,
+}
+
+pub struct ShipAsteroidContactEvent {
+    pub ship: Entity,
+    pub asteroid: Entity,
+}
+
 pub struct PlayerShipPlugin;
 
 impl Plugin for PlayerShipPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(InputManagerPlugin::<PlayerAction>::default())
+        app.add_plugin(InputManagerPlugin::<PlayerAction>::default());
+        app.add_event::<ShipAsteroidContactEvent>()
             .add_system_set(SystemSet::on_enter(AppState::Game).with_system(spawn_ship))
             .add_system_set(
                 SystemSet::on_update(AppState::Game)
-                    .with_system(ship_input_system.label(CanSpawnLaserLabel))
+                    .with_system(ship_input_system)
                     .with_system(ship_dampening_system)
-                    .with_system(ship_cannon_system),
+                    .with_system(ship_cannon_system)
+                    .with_system(ship_damage.after(ContactLabel)),
             );
     }
 }
@@ -144,6 +156,36 @@ pub fn ship_input_system(
                 });
                 ship.cannon_timer.reset();
             }
+        }
+    }
+}
+
+fn ship_damage(
+    mut commands: Commands,
+    mut gamestate: ResMut<State<AppGameState>>,
+    mut ship_asteroid_contact_events: EventReader<ShipAsteroidContactEvent>,
+    mut explosion_spawn_events: EventWriter<SpawnExplosionEvent>,
+    mut ships: Query<(&mut Ship, &Transform)>,
+) {
+    for event in ship_asteroid_contact_events.iter() {
+        let (mut ship, ship_transform) = ships
+            .get_mut(event.ship)
+            .expect("Ship referenced in event does not exist");
+        ship.life -= 1;
+        if ship.life == 0 {
+            explosion_spawn_events.send(SpawnExplosionEvent {
+                kind: ExplosionKind::ShipDead,
+                x: ship_transform.translation.x,
+                y: ship_transform.translation.y,
+            });
+            commands.entity(event.ship).despawn_recursive();
+            gamestate.set(AppGameState::GameOver).unwrap();
+        } else {
+            explosion_spawn_events.send(SpawnExplosionEvent {
+                kind: ExplosionKind::ShipContact,
+                x: ship_transform.translation.x,
+                y: ship_transform.translation.y,
+            });
         }
     }
 }

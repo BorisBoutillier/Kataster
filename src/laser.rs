@@ -8,11 +8,6 @@ pub struct LaserSpawnEvent {
     pub velocity: Velocity,
 }
 
-#[derive(SystemLabel, Clone, Hash, Debug, PartialEq, Eq)]
-pub struct CanDespawnLaserLabel;
-#[derive(SystemLabel, Clone, Hash, Debug, PartialEq, Eq)]
-pub struct CanSpawnLaserLabel;
-
 #[derive(Component)]
 pub struct Laser {
     pub despawn_timer: Timer,
@@ -25,10 +20,10 @@ impl Plugin for LaserPlugin {
             .add_event::<LaserSpawnEvent>()
             .add_system_set(
                 SystemSet::on_update(AppState::Game)
-                    .with_system(laser_timeout_system.label(CanDespawnLaserLabel))
-                    .with_system(spawn_laser.after(CanSpawnLaserLabel))
-                    .with_system(despawn_laser_system.after(CanDespawnLaserLabel)),
-            );
+                    .with_system(laser_timeout_system)
+                    .with_system(spawn_laser),
+            )
+            .add_system_to_stage(CoreStage::PostUpdate, laser_timeout_system);
     }
 }
 
@@ -75,26 +70,17 @@ pub fn spawn_laser(
 }
 
 pub fn laser_timeout_system(
-    gamestate: Res<State<AppGameState>>,
-    mut laser_despawn_events: EventWriter<LaserDespawnEvent>,
+    mut commands: Commands,
     time: Res<Time>,
+    gamestate: Res<State<AppGameState>>,
     mut query: Query<(Entity, &mut Laser)>,
 ) {
     if gamestate.current() == &AppGameState::Game {
         for (entity, mut laser) in query.iter_mut() {
             laser.despawn_timer.tick(time.delta());
             if laser.despawn_timer.finished() {
-                laser_despawn_events.send(LaserDespawnEvent(entity));
+                commands.entity(entity).despawn();
             }
         }
-    }
-}
-
-pub fn despawn_laser_system(
-    mut commands: Commands,
-    mut event_reader: EventReader<LaserDespawnEvent>,
-) {
-    for event in event_reader.iter() {
-        commands.entity(event.0).despawn();
     }
 }
