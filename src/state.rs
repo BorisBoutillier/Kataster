@@ -49,7 +49,7 @@ impl Plugin for StatesPlugin {
     }
 }
 
-pub fn state_enter_despawn<T: StateData>(
+fn state_enter_despawn<T: StateData>(
     mut commands: Commands,
     state: ResMut<State<T>>,
     query: Query<(Entity, &ForState<T>)>,

@@ -13,7 +13,7 @@ impl Plugin for ContactPlugin {
     }
 }
 
-pub fn contact_system(
+fn contact_system(
     mut collision_events: EventReader<CollisionEvent>,
     mut ship_asteroid_contact_events: EventWriter<ShipAsteroidContactEvent>,
     mut laser_asteroid_contact_events: EventWriter<LaserAsteroidContactEvent>,

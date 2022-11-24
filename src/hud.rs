@@ -19,11 +19,7 @@ impl Plugin for HudPlugin {
     }
 }
 
-pub fn hud_spawn(
-    mut commands: Commands,
-    handles: ResMut<GameAssets>,
-    asset_server: Res<AssetServer>,
-) {
+fn hud_spawn(mut commands: Commands, handles: ResMut<GameAssets>, asset_server: Res<AssetServer>) {
     commands
         .spawn((
             NodeBundle {
@@ -108,17 +104,14 @@ pub fn hud_spawn(
         });
 }
 
-pub fn hud_score_system(arena: Res<Arena>, mut query: Query<&mut Text, With<UiScore>>) {
+fn hud_score_system(arena: Res<Arena>, mut query: Query<&mut Text, With<UiScore>>) {
     if arena.is_changed() {
         for mut text in query.iter_mut() {
             text.sections[0].value = format!("{}", arena.score);
         }
     }
 }
-pub fn hud_life_system(
-    ship_query: Query<&Ship>,
-    mut uilife_query: Query<(&mut Visibility, &UiLife)>,
-) {
+fn hud_life_system(ship_query: Query<&Ship>, mut uilife_query: Query<(&mut Visibility, &UiLife)>) {
     let mut life = 0;
     for ship in ship_query.iter() {
         if ship.player_id == 1 {

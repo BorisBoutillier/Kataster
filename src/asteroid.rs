@@ -61,7 +61,7 @@ impl Plugin for AsteroidPlugin {
     }
 }
 
-pub fn spawn_asteroid_event(
+fn spawn_asteroid_event(
     mut commands: Commands,
     mut event_reader: EventReader<AsteroidSpawnEvent>,
     handles: Res<GameAssets>,
@@ -98,7 +98,7 @@ pub fn spawn_asteroid_event(
     }
 }
 
-pub fn arena_asteroids(
+fn arena_asteroids(
     time: Res<Time>,
     gamestate: Res<State<AppGameState>>,
     mut arena: ResMut<Arena>,

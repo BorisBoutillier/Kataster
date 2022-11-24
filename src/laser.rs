@@ -27,7 +27,7 @@ impl Plugin for LaserPlugin {
     }
 }
 
-pub fn spawn_laser(
+fn spawn_laser(
     mut commands: Commands,
     mut laser_spawn_events: EventReader<LaserSpawnEvent>,
     handles: Res<GameAssets>,
@@ -69,7 +69,7 @@ pub fn spawn_laser(
     }
 }
 
-pub fn laser_timeout_system(
+fn laser_timeout_system(
     mut commands: Commands,
     time: Res<Time>,
     gamestate: Res<State<AppGameState>>,

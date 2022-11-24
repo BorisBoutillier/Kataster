@@ -32,7 +32,7 @@ impl Plugin for MenuPlugin {
     }
 }
 
-pub fn setup(mut commands: Commands) {
+fn setup(mut commands: Commands) {
     // Insert MenuAction resources
     commands.insert_resource(InputMap::<MenuAction>::new([
         (KeyCode::Return, MenuAction::Accept),
@@ -43,7 +43,7 @@ pub fn setup(mut commands: Commands) {
     commands.insert_resource(ActionState::<MenuAction>::default());
 }
 
-pub fn start_menu(mut commands: Commands, assets: ResMut<GameAssets>) {
+fn start_menu(mut commands: Commands, assets: ResMut<GameAssets>) {
     commands
         .spawn((
             NodeBundle {
@@ -95,7 +95,7 @@ pub fn start_menu(mut commands: Commands, assets: ResMut<GameAssets>) {
         });
 }
 
-pub fn gameover_menu(mut commands: Commands, assets: ResMut<GameAssets>) {
+fn gameover_menu(mut commands: Commands, assets: ResMut<GameAssets>) {
     commands
         .spawn((
             NodeBundle {
@@ -147,7 +147,7 @@ pub fn gameover_menu(mut commands: Commands, assets: ResMut<GameAssets>) {
         });
 }
 
-pub fn pause_menu(mut commands: Commands, assets: ResMut<GameAssets>) {
+fn pause_menu(mut commands: Commands, assets: ResMut<GameAssets>) {
     commands
         .spawn((
             NodeBundle {
@@ -185,10 +185,7 @@ pub fn pause_menu(mut commands: Commands, assets: ResMut<GameAssets>) {
         });
 }
 
-pub fn menu_blink_system(
-    time: Res<Time>,
-    mut query: Query<(&mut DrawBlinkTimer, &mut Visibility)>,
-) {
+fn menu_blink_system(time: Res<Time>, mut query: Query<(&mut DrawBlinkTimer, &mut Visibility)>) {
     for (mut timer, mut visibility) in query.iter_mut() {
         timer.0.tick(time.delta());
         if timer.0.finished() {
@@ -197,7 +194,7 @@ pub fn menu_blink_system(
     }
 }
 
-pub fn menu_input_system(
+fn menu_input_system(
     mut state: ResMut<State<AppState>>,
     mut gamestate: ResMut<State<AppGameState>>,
     menu_action_state: Res<ActionState<MenuAction>>,
