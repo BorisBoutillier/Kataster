@@ -64,9 +64,6 @@ pub fn hud_spawn(
                     ),
                     ..Default::default()
                 },
-                ForState {
-                    states: vec![AppState::Game],
-                },
                 UiScore {},
             ));
         });
@@ -104,9 +101,6 @@ pub fn hud_spawn(
                         },
                         image: asset_server.load("playerLife1_red.png").into(),
                         ..Default::default()
-                    },
-                    ForState {
-                        states: vec![AppState::Game],
                     },
                     UiLife { min: i },
                 ));

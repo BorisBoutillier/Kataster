@@ -3,7 +3,7 @@ use bevy::ecs::schedule::StateData;
 use crate::prelude::*;
 
 /// Component to tag an entity as only needed in some of the states
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct ForState<T> {
     pub states: Vec<T>,
 }

@@ -61,25 +61,20 @@ pub fn start_menu(mut commands: Commands, assets: ResMut<GameAssets>) {
             },
         ))
         .with_children(|parent| {
-            parent.spawn((
-                TextBundle {
-                    style: Style {
-                        ..Default::default()
-                    },
-                    text: Text::from_section(
-                        "Kataster",
-                        TextStyle {
-                            font: assets.font.clone(),
-                            font_size: 100.0,
-                            color: Color::rgb_u8(0x00, 0xAA, 0xAA),
-                        },
-                    ),
+            parent.spawn((TextBundle {
+                style: Style {
                     ..Default::default()
                 },
-                ForState {
-                    states: vec![AppState::StartMenu],
-                },
-            ));
+                text: Text::from_section(
+                    "Kataster",
+                    TextStyle {
+                        font: assets.font.clone(),
+                        font_size: 100.0,
+                        color: Color::rgb_u8(0x00, 0xAA, 0xAA),
+                    },
+                ),
+                ..Default::default()
+            },));
             parent.spawn((
                 TextBundle {
                     style: Style {
@@ -96,9 +91,6 @@ pub fn start_menu(mut commands: Commands, assets: ResMut<GameAssets>) {
                     ..Default::default()
                 },
                 DrawBlinkTimer(Timer::from_seconds(0.5, TimerMode::Repeating)),
-                ForState {
-                    states: vec![AppState::StartMenu],
-                },
             ));
         });
 }
@@ -121,25 +113,20 @@ pub fn gameover_menu(mut commands: Commands, assets: ResMut<GameAssets>) {
             },
         ))
         .with_children(|parent| {
-            parent.spawn((
-                TextBundle {
-                    style: Style {
-                        ..Default::default()
-                    },
-                    text: Text::from_section(
-                        "Game Over",
-                        TextStyle {
-                            font: assets.font.clone(),
-                            font_size: 100.0,
-                            color: Color::rgb_u8(0xAA, 0x22, 0x22),
-                        },
-                    ),
+            parent.spawn((TextBundle {
+                style: Style {
                     ..Default::default()
                 },
-                ForState {
-                    states: vec![AppGameState::GameOver],
-                },
-            ));
+                text: Text::from_section(
+                    "Game Over",
+                    TextStyle {
+                        font: assets.font.clone(),
+                        font_size: 100.0,
+                        color: Color::rgb_u8(0xAA, 0x22, 0x22),
+                    },
+                ),
+                ..Default::default()
+            },));
             parent.spawn((
                 TextBundle {
                     style: Style {
@@ -156,9 +143,6 @@ pub fn gameover_menu(mut commands: Commands, assets: ResMut<GameAssets>) {
                     ..Default::default()
                 },
                 DrawBlinkTimer(Timer::from_seconds(0.5, TimerMode::Repeating)),
-                ForState {
-                    states: vec![AppGameState::GameOver],
-                },
             ));
         });
 }
@@ -197,9 +181,6 @@ pub fn pause_menu(mut commands: Commands, assets: ResMut<GameAssets>) {
                     ..Default::default()
                 },
                 DrawBlinkTimer(Timer::from_seconds(0.5, TimerMode::Repeating)),
-                ForState {
-                    states: vec![AppGameState::Pause],
-                },
             ));
         });
 }
