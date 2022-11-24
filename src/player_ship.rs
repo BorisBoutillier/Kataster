@@ -1,6 +1,10 @@
+use std::time::Duration;
+
 use crate::prelude::*;
 
 pub const START_LIFE: u32 = 3;
+const INVINCIBLE_TIME: f32 = 2.0;
+const MAX_INVINCIBLE_TIME: f32 = 5.0;
 
 // Actions are divided in two enums
 // One for pure Player Ship actions, during effective gameplay, added on the player entity itself.
@@ -25,6 +29,10 @@ pub struct Ship {
     pub cannon_timer: Timer,
     /// Id of the controlling player. 1 or 2
     pub player_id: u32,
+    // Timer triggered after being hit providing short-term invincibility
+    pub invincible_timer: Timer,
+    // Total duration of invincibility, accumulating when renewed
+    pub invincible_time_secs: f32,
 }
 
 #[derive(Component, Clone, Copy)]
@@ -48,7 +56,8 @@ impl Plugin for PlayerShipPlugin {
                 SystemSet::on_update(AppState::Game)
                     .with_system(ship_input_system)
                     .with_system(ship_dampening_system)
-                    .with_system(ship_cannon_system)
+                    .with_system(ship_timers_system)
+                    .with_system(ship_invincible_color)
                     .with_system(ship_damage.after(ContactLabel)),
             );
     }
@@ -69,6 +78,10 @@ pub fn spawn_ship(mut commands: Commands, asset_server: Res<AssetServer>) {
         (KeyCode::Right, PlayerAction::RotateRight),
         (KeyCode::Space, PlayerAction::Fire),
     ]);
+    let mut invincible_timer = Timer::from_seconds(INVINCIBLE_TIME, TimerMode::Once);
+    // Straghtaway consume the timer, we don't want invincibility at creation.
+    invincible_timer.tick(Duration::from_secs_f32(INVINCIBLE_TIME));
+
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
@@ -88,6 +101,8 @@ pub fn spawn_ship(mut commands: Commands, asset_server: Res<AssetServer>) {
             life: START_LIFE,
             cannon_timer: Timer::from_seconds(0.2, TimerMode::Once),
             player_id: 1,
+            invincible_timer,
+            invincible_time_secs: 0.0,
         },
         ForState {
             states: vec![AppState::Game],
@@ -112,9 +127,10 @@ pub fn ship_dampening_system(time: Res<Time>, mut query: Query<&mut Velocity, Wi
     }
 }
 
-pub fn ship_cannon_system(time: Res<Time>, mut ship: Query<&mut Ship>) {
+pub fn ship_timers_system(time: Res<Time>, mut ship: Query<&mut Ship>) {
     for mut ship in ship.iter_mut() {
         ship.cannon_timer.tick(time.delta());
+        ship.invincible_timer.tick(time.delta());
     }
 }
 
@@ -171,21 +187,42 @@ fn ship_damage(
         let (mut ship, ship_transform) = ships
             .get_mut(event.ship)
             .expect("Ship referenced in event does not exist");
-        ship.life -= 1;
-        if ship.life == 0 {
-            explosion_spawn_events.send(SpawnExplosionEvent {
-                kind: ExplosionKind::ShipDead,
-                x: ship_transform.translation.x,
-                y: ship_transform.translation.y,
-            });
-            commands.entity(event.ship).despawn_recursive();
-            gamestate.set(AppGameState::GameOver).unwrap();
+        if ship.invincible_timer.finished() {
+            ship.invincible_time_secs = 0.0;
+            ship.life -= 1;
+            if ship.life == 0 {
+                explosion_spawn_events.send(SpawnExplosionEvent {
+                    kind: ExplosionKind::ShipDead,
+                    x: ship_transform.translation.x,
+                    y: ship_transform.translation.y,
+                });
+                commands.entity(event.ship).despawn_recursive();
+                gamestate.set(AppGameState::GameOver).unwrap();
+            } else {
+                explosion_spawn_events.send(SpawnExplosionEvent {
+                    kind: ExplosionKind::ShipContact,
+                    x: ship_transform.translation.x,
+                    y: ship_transform.translation.y,
+                });
+            }
+            ship.invincible_timer.reset();
+        } else if ship.invincible_time_secs + ship.invincible_timer.elapsed_secs()
+            < MAX_INVINCIBLE_TIME
+        {
+            // Contact while invincible, rearm the invincibility time if allowed
+            ship.invincible_time_secs += ship.invincible_timer.elapsed_secs();
+            ship.invincible_timer.reset();
+        }
+    }
+}
+
+fn ship_invincible_color(mut ships: Query<(&Ship, &mut Sprite)>) {
+    for (ship, mut ship_sprite) in ships.iter_mut() {
+        if ship.invincible_timer.finished() {
+            ship_sprite.color = Color::WHITE;
         } else {
-            explosion_spawn_events.send(SpawnExplosionEvent {
-                kind: ExplosionKind::ShipContact,
-                x: ship_transform.translation.x,
-                y: ship_transform.translation.y,
-            });
+            let alpha = (ship.invincible_timer.elapsed_secs() * 2.0) % 1.0;
+            ship_sprite.color = Color::rgba(1.0, 0.4, 0.2, alpha);
         }
     }
 }
