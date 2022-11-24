@@ -67,7 +67,7 @@ impl Plugin for PlayerShipPlugin {
 #[derive(Component)]
 pub struct ExhaustEffect;
 
-pub fn spawn_ship(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn spawn_ship(mut commands: Commands, asset_server: Res<AssetServer>) {
     // For player actions, allow both keyboard WASD and Arrows to control the ship
     let input_map = InputMap::new([
         (KeyCode::W, PlayerAction::Forward),
@@ -119,7 +119,7 @@ pub fn spawn_ship(mut commands: Commands, asset_server: Res<AssetServer>) {
     ));
 }
 
-pub fn ship_dampening_system(time: Res<Time>, mut query: Query<&mut Velocity, With<Ship>>) {
+fn ship_dampening_system(time: Res<Time>, mut query: Query<&mut Velocity, With<Ship>>) {
     for mut velocity in query.iter_mut() {
         let elapsed = time.delta_seconds();
         velocity.angvel *= 0.1f32.powf(elapsed);
@@ -127,14 +127,14 @@ pub fn ship_dampening_system(time: Res<Time>, mut query: Query<&mut Velocity, Wi
     }
 }
 
-pub fn ship_timers_system(time: Res<Time>, mut ship: Query<&mut Ship>) {
+fn ship_timers_system(time: Res<Time>, mut ship: Query<&mut Ship>) {
     for mut ship in ship.iter_mut() {
         ship.cannon_timer.tick(time.delta());
         ship.invincible_timer.tick(time.delta());
     }
 }
 
-pub fn ship_input_system(
+fn ship_input_system(
     gamestate: Res<State<AppGameState>>,
     mut laser_spawn_events: EventWriter<LaserSpawnEvent>,
     mut query: Query<(
