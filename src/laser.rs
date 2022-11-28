@@ -31,7 +31,8 @@ fn spawn_laser(
     mut commands: Commands,
     mut laser_spawn_events: EventReader<LaserSpawnEvent>,
     handles: Res<GameAssets>,
-    audio: Res<Audio>,
+    audios: Res<AudioAssets>,
+    audio_output: Res<Audio>,
 ) {
     for spawn_event in laser_spawn_events.iter() {
         let transform = spawn_event.transform;
@@ -65,7 +66,7 @@ fn spawn_laser(
             Sensor,
             ActiveEvents::COLLISION_EVENTS,
         ));
-        audio.play(handles.laser_audio.clone());
+        audio_output.play(audios.laser_trigger.clone());
     }
 }
 

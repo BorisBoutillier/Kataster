@@ -43,7 +43,7 @@ fn setup(mut commands: Commands) {
     commands.insert_resource(ActionState::<MenuAction>::default());
 }
 
-fn start_menu(mut commands: Commands, assets: ResMut<GameAssets>) {
+fn start_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
     commands
         .spawn((
             NodeBundle {
@@ -95,7 +95,7 @@ fn start_menu(mut commands: Commands, assets: ResMut<GameAssets>) {
         });
 }
 
-fn gameover_menu(mut commands: Commands, assets: ResMut<GameAssets>) {
+fn gameover_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
     commands
         .spawn((
             NodeBundle {
@@ -147,7 +147,7 @@ fn gameover_menu(mut commands: Commands, assets: ResMut<GameAssets>) {
         });
 }
 
-fn pause_menu(mut commands: Commands, assets: ResMut<GameAssets>) {
+fn pause_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
     commands
         .spawn((
             NodeBundle {

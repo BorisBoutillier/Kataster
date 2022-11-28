@@ -67,7 +67,7 @@ impl Plugin for PlayerShipPlugin {
 #[derive(Component)]
 pub struct ExhaustEffect;
 
-fn spawn_ship(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn spawn_ship(mut commands: Commands, handles: Res<GameAssets>) {
     // For player actions, allow both keyboard WASD and Arrows to control the ship
     let input_map = InputMap::new([
         (KeyCode::W, PlayerAction::Forward),
@@ -92,7 +92,7 @@ fn spawn_ship(mut commands: Commands, asset_server: Res<AssetServer>) {
                 translation: Vec3::new(0.0, 0.0, 1.0),
                 ..Default::default()
             },
-            texture: asset_server.load("playerShip2_red.png"),
+            texture: handles.player_ship.clone(),
             ..Default::default()
         },
         Ship {

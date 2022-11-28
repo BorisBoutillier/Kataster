@@ -31,28 +31,29 @@ impl Plugin for ExplosionPlugin {
 fn catch_explosion_event(
     mut commands: Commands,
     mut event_reader: EventReader<SpawnExplosionEvent>,
-    asset_server: Res<AssetServer>,
-    audio: Res<Audio>,
+    handles: Res<GameAssets>,
+    audios: Res<AudioAssets>,
+    audio_output: Res<Audio>,
 ) {
     for event in event_reader.iter() {
-        let (texture_name, sound_name, start_size, end_scale, duration) = match event.kind {
+        let (texture, sound, start_size, end_scale, duration) = match event.kind {
             ExplosionKind::ShipDead => (
-                "explosion01.png",
-                "Explosion_ship.ogg",
+                handles.ship_dead_texture.clone(),
+                audios.ship_explosion.clone(),
                 Vec2::new(42., 39.),
                 5.,
                 1.5,
             ),
             ExplosionKind::ShipContact => (
-                "explosion01.png",
-                "Explosion.ogg",
+                handles.ship_contact_texture.clone(),
+                audios.ship_contact.clone(),
                 Vec2::new(42., 39.),
                 2.,
                 0.5,
             ),
             ExplosionKind::LaserOnAsteroid => (
-                "flash00.png",
-                "Explosion.ogg",
+                handles.asteroid_dead_texture.clone(),
+                audios.asteroid_explosion.clone(),
                 Vec2::new(36., 32.),
                 1.5,
                 0.5,
@@ -68,7 +69,7 @@ fn catch_explosion_event(
                     translation: Vec3::new(event.x, event.y, 3.0),
                     ..Default::default()
                 },
-                texture: asset_server.load(texture_name),
+                texture,
                 ..Default::default()
             },
             Explosion {
@@ -80,8 +81,7 @@ fn catch_explosion_event(
                 states: vec![AppState::Game],
             },
         ));
-        let sound = asset_server.load(sound_name);
-        audio.play(sound);
+        audio_output.play(sound);
     }
 }
 

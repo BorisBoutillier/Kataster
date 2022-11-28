@@ -19,7 +19,7 @@ impl Plugin for HudPlugin {
     }
 }
 
-fn hud_spawn(mut commands: Commands, handles: ResMut<GameAssets>, asset_server: Res<AssetServer>) {
+fn hud_spawn(mut commands: Commands, assets: ResMut<UiAssets>) {
     commands
         .spawn((
             NodeBundle {
@@ -53,7 +53,7 @@ fn hud_spawn(mut commands: Commands, handles: ResMut<GameAssets>, asset_server: 
                     text: Text::from_section(
                         "0",
                         TextStyle {
-                            font: handles.font.clone(),
+                            font: assets.font.clone(),
                             font_size: 50.0,
                             color: Color::rgb_u8(0x00, 0xAA, 0xAA),
                         },
@@ -95,7 +95,7 @@ fn hud_spawn(mut commands: Commands, handles: ResMut<GameAssets>, asset_server: 
                             },
                             ..Default::default()
                         },
-                        image: asset_server.load("playerLife1_red.png").into(),
+                        image: assets.ship_life.clone(),
                         ..Default::default()
                     },
                     UiLife { min: i },
