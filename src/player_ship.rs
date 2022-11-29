@@ -67,7 +67,7 @@ impl Plugin for PlayerShipPlugin {
 #[derive(Component)]
 pub struct ExhaustEffect;
 
-fn spawn_ship(mut commands: Commands, handles: Res<GameAssets>) {
+fn spawn_ship(mut commands: Commands, handles: Res<SpriteAssets>) {
     // For player actions, allow both keyboard WASD and Arrows to control the ship
     let input_map = InputMap::new([
         (KeyCode::W, PlayerAction::Forward),

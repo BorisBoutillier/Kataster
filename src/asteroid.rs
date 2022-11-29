@@ -64,7 +64,7 @@ impl Plugin for AsteroidPlugin {
 fn spawn_asteroid_event(
     mut commands: Commands,
     mut event_reader: EventReader<AsteroidSpawnEvent>,
-    handles: Res<GameAssets>,
+    handles: Res<SpriteAssets>,
 ) {
     for event in event_reader.iter() {
         let (sprite_handle, radius) = match event.size {

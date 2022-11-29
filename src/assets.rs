@@ -1,17 +1,15 @@
 use crate::prelude::*;
 
 #[derive(Debug, Resource)]
-pub struct GameAssets {
-    pub font: Handle<Font>,
-    pub laser_texture: Handle<Image>,
+pub struct SpriteAssets {
+    pub laser: Handle<Image>,
     pub meteor_big: Handle<Image>,
     pub meteor_med: Handle<Image>,
     pub meteor_small: Handle<Image>,
-    pub ship_life: UiImage,
     pub player_ship: Handle<Image>,
-    pub ship_dead_texture: Handle<Image>,
-    pub ship_contact_texture: Handle<Image>,
-    pub asteroid_dead_texture: Handle<Image>,
+    pub ship_explosion: Handle<Image>,
+    pub ship_contact: Handle<Image>,
+    pub asteroid_explosion: Handle<Image>,
 }
 #[derive(Debug, Resource)]
 pub struct AudioAssets {
@@ -36,17 +34,15 @@ impl Plugin for AssetsPlugin {
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.insert_resource(GameAssets {
-        font: asset_server.load("kenvector_future.ttf"),
-        laser_texture: asset_server.load("laserRed07.png"),
+    commands.insert_resource(SpriteAssets {
+        laser: asset_server.load("laserRed07.png"),
         meteor_big: asset_server.load("meteorBrown_big1.png"),
         meteor_med: asset_server.load("meteorBrown_med1.png"),
         meteor_small: asset_server.load("meteorBrown_small1.png"),
-        ship_life: asset_server.load("playerLife1_red.png").into(),
         player_ship: asset_server.load("playerShip2_red.png"),
-        ship_dead_texture: asset_server.load("explosion01.png"),
-        ship_contact_texture: asset_server.load("explosion01.png"),
-        asteroid_dead_texture: asset_server.load("flash00.png"),
+        ship_explosion: asset_server.load("explosion01.png"),
+        ship_contact: asset_server.load("explosion01.png"),
+        asteroid_explosion: asset_server.load("flash00.png"),
     });
     commands.insert_resource(AudioAssets {
         laser_trigger: asset_server.load("sfx_laser1.ogg"),

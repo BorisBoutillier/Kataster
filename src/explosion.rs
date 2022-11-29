@@ -31,28 +31,28 @@ impl Plugin for ExplosionPlugin {
 fn catch_explosion_event(
     mut commands: Commands,
     mut event_reader: EventReader<SpawnExplosionEvent>,
-    handles: Res<GameAssets>,
+    handles: Res<SpriteAssets>,
     audios: Res<AudioAssets>,
     audio_output: Res<Audio>,
 ) {
     for event in event_reader.iter() {
         let (texture, sound, start_size, end_scale, duration) = match event.kind {
             ExplosionKind::ShipDead => (
-                handles.ship_dead_texture.clone(),
+                handles.ship_explosion.clone(),
                 audios.ship_explosion.clone(),
                 Vec2::new(42., 39.),
                 5.,
                 1.5,
             ),
             ExplosionKind::ShipContact => (
-                handles.ship_contact_texture.clone(),
+                handles.ship_contact.clone(),
                 audios.ship_contact.clone(),
                 Vec2::new(42., 39.),
                 2.,
                 0.5,
             ),
             ExplosionKind::LaserOnAsteroid => (
-                handles.asteroid_dead_texture.clone(),
+                handles.asteroid_explosion.clone(),
                 audios.asteroid_explosion.clone(),
                 Vec2::new(36., 32.),
                 1.5,

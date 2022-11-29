@@ -30,7 +30,7 @@ impl Plugin for LaserPlugin {
 fn spawn_laser(
     mut commands: Commands,
     mut laser_spawn_events: EventReader<LaserSpawnEvent>,
-    handles: Res<GameAssets>,
+    handles: Res<SpriteAssets>,
     audios: Res<AudioAssets>,
     audio_output: Res<Audio>,
 ) {
@@ -51,7 +51,7 @@ fn spawn_laser(
                     rotation: transform.rotation,
                     ..Default::default()
                 },
-                texture: handles.laser_texture.clone(),
+                texture: handles.laser.clone(),
                 ..Default::default()
             },
             Laser {
