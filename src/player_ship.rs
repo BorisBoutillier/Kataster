@@ -68,8 +68,8 @@ impl Plugin for PlayerShipPlugin {
 pub struct ExhaustEffect;
 
 fn spawn_ship(mut commands: Commands, handles: Res<SpriteAssets>) {
-    // For player actions, allow both keyboard WASD and Arrows to control the ship
-    let input_map = InputMap::new([
+    // For player actions, allow keyboard WASD/ Arrows/ Gamepag to control the ship
+    let mut input_map = InputMap::new([
         (KeyCode::W, PlayerAction::Forward),
         (KeyCode::Up, PlayerAction::Forward),
         (KeyCode::A, PlayerAction::RotateLeft),
@@ -78,6 +78,23 @@ fn spawn_ship(mut commands: Commands, handles: Res<SpriteAssets>) {
         (KeyCode::Right, PlayerAction::RotateRight),
         (KeyCode::Space, PlayerAction::Fire),
     ]);
+    input_map.insert(GamepadButtonType::South, PlayerAction::Fire);
+    input_map.insert(
+        SingleAxis::positive_only(GamepadAxisType::LeftStickY, 0.4),
+        PlayerAction::Forward,
+    );
+    input_map.insert(
+        SingleAxis::negative_only(GamepadAxisType::LeftStickY, -0.4),
+        PlayerAction::Forward,
+    );
+    input_map.insert(
+        SingleAxis::positive_only(GamepadAxisType::LeftStickX, 0.4),
+        PlayerAction::RotateRight,
+    );
+    input_map.insert(
+        SingleAxis::negative_only(GamepadAxisType::LeftStickX, -0.4),
+        PlayerAction::RotateLeft,
+    );
     let mut invincible_timer = Timer::from_seconds(INVINCIBLE_TIME, TimerMode::Once);
     // Straghtaway consume the timer, we don't want invincibility at creation.
     invincible_timer.tick(Duration::from_secs_f32(INVINCIBLE_TIME));

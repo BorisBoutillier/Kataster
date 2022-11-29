@@ -33,13 +33,18 @@ impl Plugin for MenuPlugin {
 }
 
 fn setup(mut commands: Commands) {
-    // Insert MenuAction resources
-    commands.insert_resource(InputMap::<MenuAction>::new([
+    let mut input_map = InputMap::<MenuAction>::new([
         (KeyCode::Return, MenuAction::Accept),
         (KeyCode::Escape, MenuAction::PauseUnpause),
         (KeyCode::Back, MenuAction::ExitToMenu),
         (KeyCode::Escape, MenuAction::Quit),
-    ]));
+    ]);
+    input_map.insert(GamepadButtonType::Select, MenuAction::ExitToMenu);
+    input_map.insert(GamepadButtonType::Start, MenuAction::PauseUnpause);
+    input_map.insert(GamepadButtonType::South, MenuAction::Accept);
+    input_map.insert(GamepadButtonType::East, MenuAction::Quit);
+    // Insert MenuAction resources
+    commands.insert_resource(input_map);
     commands.insert_resource(ActionState::<MenuAction>::default());
 }
 
