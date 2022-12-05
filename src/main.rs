@@ -46,10 +46,9 @@ fn main() {
         ..Default::default()
     }));
 
-    // These two plugins are currently not supported on the web
+    // Compute shaders are not supported on WASM.
     #[cfg(not(target_arch = "wasm32"))]
     {
-        app.add_plugin(BackgroundPlugin);
         app.add_plugin(particle_effects::ParticleEffectsPlugin);
     }
 
@@ -69,7 +68,8 @@ fn main() {
         .add_plugin(MenuPlugin)
         .add_plugin(StatesPlugin)
         .add_plugin(ContactPlugin)
-        .add_plugin(ExplosionPlugin);
+        .add_plugin(ExplosionPlugin)
+        .add_plugin(BackgroundPlugin);
 
     app.add_state(AppState::StartMenu)
         .add_state(AppGameState::Invalid);
