@@ -12,7 +12,7 @@ It showcases some other commonplace bevy plugins, _bevy_rapier_ for physics, _le
 
 ## Bevy dependencies
 
-Up to date for bevy 0.9
+Up to date for bevy 0.10
 
 
 ## References
