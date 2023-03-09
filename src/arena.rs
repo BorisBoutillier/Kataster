@@ -13,8 +13,8 @@ pub struct ArenaPlugin;
 
 impl Plugin for ArenaPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(SystemSet::on_enter(AppState::Game).with_system(spawn_arena))
-            .add_system_set(SystemSet::on_update(AppState::Game).with_system(movement));
+        app.add_system(spawn_arena.in_schedule(OnEnter(AppState::Game)))
+            .add_system(movement.in_set(OnUpdate(AppState::Game)));
     }
 }
 

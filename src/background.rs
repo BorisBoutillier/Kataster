@@ -39,9 +39,6 @@ fn spawn_background(
 struct BackgroundMaterial {}
 
 impl Material2d for BackgroundMaterial {
-    fn vertex_shader() -> ShaderRef {
-        "background.wgsl".into()
-    }
     fn fragment_shader() -> ShaderRef {
         "background.wgsl".into()
     }

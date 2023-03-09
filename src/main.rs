@@ -8,7 +8,7 @@ mod explosion;
 mod hud;
 mod laser;
 mod menu;
-mod particle_effects;
+//mod particle_effects;
 mod player_ship;
 mod state;
 
@@ -30,26 +30,29 @@ mod prelude {
     pub use rand::{thread_rng, Rng};
 }
 
+use bevy::window::WindowResolution;
+
 use crate::prelude::*;
 
 fn main() {
     let mut app = App::new();
 
+    app.add_state::<AppState>().add_state::<AppGameState>();
+
     app.insert_resource(ClearColor(Color::rgb_u8(0, 0, 0)));
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
-        window: WindowDescriptor {
+        primary_window: Some(Window {
             title: "Kataster".to_string(),
-            width: ARENA_WIDTH,
-            height: ARENA_HEIGHT,
+            resolution: WindowResolution::new(ARENA_WIDTH, ARENA_HEIGHT),
             ..Default::default()
-        },
+        }),
         ..Default::default()
     }));
 
     // Compute shaders are not supported on WASM.
     #[cfg(not(target_arch = "wasm32"))]
     {
-        app.add_plugin(particle_effects::ParticleEffectsPlugin);
+        //app.add_plugin(particle_effects::ParticleEffectsPlugin);
     }
 
     // Enable Rapier debug renders when compile in debug mode.
@@ -70,9 +73,6 @@ fn main() {
         .add_plugin(ContactPlugin)
         .add_plugin(ExplosionPlugin)
         .add_plugin(BackgroundPlugin);
-
-    app.add_state(AppState::StartMenu)
-        .add_state(AppGameState::Invalid);
 
     app.add_startup_system(setup_camera);
     app.run();

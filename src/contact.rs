@@ -1,14 +1,16 @@
 use crate::prelude::*;
 
-#[derive(SystemLabel, Clone, Hash, Debug, PartialEq, Eq)]
-pub struct ContactLabel;
+#[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
+pub struct ContactSet;
 
 pub struct ContactPlugin;
 
 impl Plugin for ContactPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
-            SystemSet::on_update(AppState::Game).with_system(contact_system.label(ContactLabel)),
+        app.add_system(
+            contact_system
+                .in_set(ContactSet)
+                .in_set(OnUpdate(AppState::Game)),
         );
     }
 }

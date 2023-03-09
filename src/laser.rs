@@ -18,12 +18,7 @@ impl Plugin for LaserPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<LaserDespawnEvent>()
             .add_event::<LaserSpawnEvent>()
-            .add_system_set(
-                SystemSet::on_update(AppState::Game)
-                    .with_system(laser_timeout_system)
-                    .with_system(spawn_laser),
-            )
-            .add_system_to_stage(CoreStage::PostUpdate, laser_timeout_system);
+            .add_systems((laser_timeout_system, spawn_laser).in_set(OnUpdate(AppState::Game)));
     }
 }
 
@@ -76,7 +71,7 @@ fn laser_timeout_system(
     gamestate: Res<State<AppGameState>>,
     mut query: Query<(Entity, &mut Laser)>,
 ) {
-    if gamestate.current() == &AppGameState::Game {
+    if gamestate.0 == AppGameState::Game {
         for (entity, mut laser) in query.iter_mut() {
             laser.despawn_timer.tick(time.delta());
             if laser.despawn_timer.finished() {

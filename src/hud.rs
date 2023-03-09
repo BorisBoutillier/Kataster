@@ -10,12 +10,8 @@ pub struct UiLife {
 pub struct HudPlugin;
 impl Plugin for HudPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
-            SystemSet::on_update(AppState::Game)
-                .with_system(hud_score_system)
-                .with_system(hud_life_system),
-        )
-        .add_system_set(SystemSet::on_enter(AppState::Game).with_system(hud_spawn));
+        app.add_systems((hud_score_system, hud_life_system).in_set(OnUpdate(AppState::Game)))
+            .add_system(hud_spawn.in_schedule(OnEnter(AppState::Game)));
     }
 }
 
@@ -111,14 +107,22 @@ fn hud_score_system(arena: Res<Arena>, mut query: Query<&mut Text, With<UiScore>
         }
     }
 }
-fn hud_life_system(ship_query: Query<&Ship>, mut uilife_query: Query<(&mut Visibility, &UiLife)>) {
+fn hud_life_system(
+    mut commands: Commands,
+    ship_query: Query<&Ship, Changed<Ship>>,
+    mut uilife_query: Query<(Entity, &UiLife)>,
+) {
     let mut life = 0;
     for ship in ship_query.iter() {
         if ship.player_id == 1 {
             life = ship.life;
         }
     }
-    for (mut visibility, uilife) in uilife_query.iter_mut() {
-        visibility.is_visible = life >= uilife.min;
+    for (entity, uilife) in uilife_query.iter_mut() {
+        commands.entity(entity).insert(if life >= uilife.min {
+            Visibility::Visible
+        } else {
+            Visibility::Hidden
+        });
     }
 }

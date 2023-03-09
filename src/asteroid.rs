@@ -52,11 +52,13 @@ impl Plugin for AsteroidPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<AsteroidSpawnEvent>()
             .add_event::<LaserAsteroidContactEvent>()
-            .add_system_set(
-                SystemSet::on_update(AppState::Game)
-                    .with_system(arena_asteroids)
-                    .with_system(spawn_asteroid_event)
-                    .with_system(asteroid_damage.after(ContactLabel)),
+            .add_systems(
+                (
+                    arena_asteroids,
+                    spawn_asteroid_event,
+                    asteroid_damage.after(ContactSet),
+                )
+                    .in_set(OnUpdate(AppState::Game)),
             );
     }
 }
@@ -105,7 +107,7 @@ fn arena_asteroids(
     mut asteroid_spawn_events: EventWriter<AsteroidSpawnEvent>,
     asteroids: Query<&Asteroid>,
 ) {
-    if gamestate.current() == &AppGameState::Game {
+    if gamestate.0 == AppGameState::Game {
         arena.asteroid_spawn_timer.tick(time.delta());
         if arena.asteroid_spawn_timer.finished() {
             arena.asteroid_spawn_timer.reset();

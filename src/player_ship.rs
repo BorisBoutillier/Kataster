@@ -51,14 +51,16 @@ impl Plugin for PlayerShipPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(InputManagerPlugin::<PlayerAction>::default());
         app.add_event::<ShipAsteroidContactEvent>()
-            .add_system_set(SystemSet::on_enter(AppState::Game).with_system(spawn_ship))
-            .add_system_set(
-                SystemSet::on_update(AppState::Game)
-                    .with_system(ship_input_system)
-                    .with_system(ship_dampening_system)
-                    .with_system(ship_timers_system)
-                    .with_system(ship_invincible_color)
-                    .with_system(ship_damage.after(ContactLabel)),
+            .add_system(spawn_ship.in_schedule(OnEnter(AppState::Game)))
+            .add_systems(
+                (
+                    ship_input_system,
+                    ship_dampening_system,
+                    ship_timers_system,
+                    ship_invincible_color,
+                    ship_damage.after(ContactSet),
+                )
+                    .in_set(OnUpdate(AppState::Game)),
             );
     }
 }
@@ -162,7 +164,7 @@ fn ship_input_system(
         &mut Ship,
     )>,
 ) {
-    if gamestate.current() == &AppGameState::Game {
+    if gamestate.0 == AppGameState::Game {
         for (action_state, mut impulse, mut velocity, transform, mut ship) in query.iter_mut() {
             let thrust = if action_state.pressed(PlayerAction::Forward) {
                 1.0
@@ -195,7 +197,7 @@ fn ship_input_system(
 
 fn ship_damage(
     mut commands: Commands,
-    mut gamestate: ResMut<State<AppGameState>>,
+    mut next_gamestate: ResMut<NextState<AppGameState>>,
     mut ship_asteroid_contact_events: EventReader<ShipAsteroidContactEvent>,
     mut explosion_spawn_events: EventWriter<SpawnExplosionEvent>,
     mut ships: Query<(&mut Ship, &Transform)>,
@@ -214,7 +216,7 @@ fn ship_damage(
                     y: ship_transform.translation.y,
                 });
                 commands.entity(event.ship).despawn_recursive();
-                gamestate.set(AppGameState::GameOver).unwrap();
+                next_gamestate.set(AppGameState::GameOver);
             } else {
                 explosion_spawn_events.send(SpawnExplosionEvent {
                     kind: ExplosionKind::ShipContact,

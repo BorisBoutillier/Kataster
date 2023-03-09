@@ -23,9 +23,9 @@ pub enum MenuAction {
 pub struct MenuPlugin;
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(SystemSet::on_enter(AppState::StartMenu).with_system(start_menu))
-            .add_system_set(SystemSet::on_enter(AppGameState::Pause).with_system(pause_menu))
-            .add_system_set(SystemSet::on_enter(AppGameState::GameOver).with_system(gameover_menu))
+        app.add_system(start_menu.in_schedule(OnEnter(AppState::StartMenu)))
+            .add_system(pause_menu.in_schedule(OnEnter(AppGameState::Pause)))
+            .add_system(gameover_menu.in_schedule(OnEnter(AppGameState::GameOver)))
             .add_system(menu_input_system)
             .add_system(menu_blink_system)
             .add_startup_system(setup);
@@ -190,53 +190,62 @@ fn pause_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
         });
 }
 
-fn menu_blink_system(time: Res<Time>, mut query: Query<(&mut DrawBlinkTimer, &mut Visibility)>) {
-    for (mut timer, mut visibility) in query.iter_mut() {
+fn menu_blink_system(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut query: Query<(Entity, &mut DrawBlinkTimer, &ComputedVisibility)>,
+) {
+    for (entity, mut timer, visibility) in query.iter_mut() {
         timer.0.tick(time.delta());
         if timer.0.finished() {
-            visibility.is_visible = !visibility.is_visible;
+            let new_visibility = if visibility.is_visible() {
+                Visibility::Hidden
+            } else {
+                Visibility::Visible
+            };
+            commands.entity(entity).insert(new_visibility);
         }
     }
 }
 
 fn menu_input_system(
-    mut state: ResMut<State<AppState>>,
-    mut gamestate: ResMut<State<AppGameState>>,
+    state: ResMut<State<AppState>>,
+    mut next_state: ResMut<NextState<AppState>>,
+    gamestate: Res<State<AppGameState>>,
+    mut next_gamestate: ResMut<NextState<AppGameState>>,
     menu_action_state: Res<ActionState<MenuAction>>,
     mut rapier_configuration: ResMut<RapierConfiguration>,
     mut app_exit_events: EventWriter<AppExit>,
 ) {
-    if state.current() != &AppState::StartMenu
-        && menu_action_state.just_pressed(MenuAction::ExitToMenu)
-    {
-        state.set(AppState::StartMenu).unwrap();
-        gamestate.set(AppGameState::Invalid).unwrap();
+    if state.0 != AppState::StartMenu && menu_action_state.just_pressed(MenuAction::ExitToMenu) {
+        next_state.set(AppState::StartMenu);
+        next_gamestate.set(AppGameState::Invalid);
         rapier_configuration.physics_pipeline_active = true;
     }
-    if state.current() == &AppState::Game {
-        if gamestate.current() == &AppGameState::Game {
+    if state.0 == AppState::Game {
+        if gamestate.0 == AppGameState::Game {
             if menu_action_state.just_pressed(MenuAction::PauseUnpause) {
-                gamestate.set(AppGameState::Pause).unwrap();
+                next_gamestate.set(AppGameState::Pause);
                 rapier_configuration.physics_pipeline_active = false;
             }
-        } else if gamestate.current() == &AppGameState::Pause {
+        } else if gamestate.0 == AppGameState::Pause {
             if menu_action_state.just_pressed(MenuAction::PauseUnpause) {
-                gamestate.set(AppGameState::Game).unwrap();
+                next_gamestate.set(AppGameState::Game);
                 rapier_configuration.physics_pipeline_active = true;
             }
-        } else if gamestate.current() == &AppGameState::GameOver {
+        } else if gamestate.0 == AppGameState::GameOver {
             if menu_action_state.just_pressed(MenuAction::Accept) {
-                state.set(AppState::StartMenu).unwrap();
-                gamestate.set(AppGameState::Invalid).unwrap();
+                next_state.set(AppState::StartMenu);
+                next_gamestate.set(AppGameState::Invalid);
             }
             if menu_action_state.just_pressed(MenuAction::Quit) {
                 app_exit_events.send(AppExit);
             }
         }
-    } else if state.current() == &AppState::StartMenu {
+    } else if state.0 == AppState::StartMenu {
         if menu_action_state.just_pressed(MenuAction::Accept) {
-            state.set(AppState::Game).unwrap();
-            gamestate.set(AppGameState::Game).unwrap();
+            next_state.set(AppState::Game);
+            next_gamestate.set(AppGameState::Game);
         }
         if menu_action_state.just_pressed(MenuAction::Quit) {
             app_exit_events.send(AppExit);
