@@ -12,7 +12,8 @@ pub struct BackgroundPlugin;
 impl Plugin for BackgroundPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(Material2dPlugin::<BackgroundMaterial>::default())
-            .add_startup_system(spawn_background);
+            .add_startup_system(spawn_background)
+            .add_system(update_background_time);
     }
 }
 
@@ -29,17 +30,32 @@ fn spawn_background(
             scale: Vec3::new(ARENA_WIDTH, ARENA_HEIGHT, 1.0),
             ..Default::default()
         },
-        material: materials.add(BackgroundMaterial {}),
+        material: materials.add(BackgroundMaterial { time: 0.0 }),
         ..Default::default()
     });
 }
 
 #[derive(AsBindGroup, Debug, Clone, TypeUuid)]
 #[uuid = "d1776d38-712a-11ec-90d6-0242ac120003"]
-struct BackgroundMaterial {}
+struct BackgroundMaterial {
+    #[uniform(0)]
+    time: f32,
+}
 
 impl Material2d for BackgroundMaterial {
     fn fragment_shader() -> ShaderRef {
         "background.wgsl".into()
+    }
+}
+
+fn update_background_time(
+    time: Res<Time>,
+    state: Res<State<AppState>>,
+    mut backgrounds: ResMut<Assets<BackgroundMaterial>>,
+) {
+    if state.0 != AppState::GamePaused {
+        for (_, background) in backgrounds.iter_mut() {
+            background.time += time.delta_seconds();
+        }
     }
 }
