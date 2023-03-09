@@ -51,7 +51,7 @@ impl Plugin for PlayerShipPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(InputManagerPlugin::<PlayerAction>::default());
         app.add_event::<ShipAsteroidContactEvent>()
-            .add_system(spawn_ship.in_schedule(OnEnter(AppState::Game)))
+            .add_system(spawn_ship.in_schedule(OnEnter(AppState::GameCreate)))
             .add_systems(
                 (
                     ship_input_system,
@@ -60,7 +60,7 @@ impl Plugin for PlayerShipPlugin {
                     ship_invincible_color,
                     ship_damage.after(ContactSet),
                 )
-                    .in_set(OnUpdate(AppState::Game)),
+                    .in_set(OnUpdate(AppState::GameRunning)),
             );
     }
 }
@@ -124,7 +124,7 @@ fn spawn_ship(mut commands: Commands, handles: Res<SpriteAssets>) {
             invincible_time_secs: 0.0,
         },
         ForState {
-            states: vec![AppState::Game],
+            states: AppState::ANY_GAME_STATE.to_vec(),
         },
         RigidBody::Dynamic,
         Collider::ball(13.5),
@@ -154,7 +154,6 @@ fn ship_timers_system(time: Res<Time>, mut ship: Query<&mut Ship>) {
 }
 
 fn ship_input_system(
-    gamestate: Res<State<AppGameState>>,
     mut laser_spawn_events: EventWriter<LaserSpawnEvent>,
     mut query: Query<(
         &ActionState<PlayerAction>,
@@ -164,40 +163,38 @@ fn ship_input_system(
         &mut Ship,
     )>,
 ) {
-    if gamestate.0 == AppGameState::Game {
-        for (action_state, mut impulse, mut velocity, transform, mut ship) in query.iter_mut() {
-            let thrust = if action_state.pressed(PlayerAction::Forward) {
-                1.0
-            } else {
-                0.0
-            };
-            let rotation = if action_state.pressed(PlayerAction::RotateLeft) {
-                1
-            } else if action_state.pressed(PlayerAction::RotateRight) {
-                -1
-            } else {
-                0
-            };
-            let fire = action_state.pressed(PlayerAction::Fire);
-            if rotation != 0 {
-                velocity.angvel = rotation as f32 * ship.rotation_speed;
-            }
-            impulse.impulse = (transform.rotation * (Vec3::Y * thrust * ship.thrust)).truncate();
+    for (action_state, mut impulse, mut velocity, transform, mut ship) in query.iter_mut() {
+        let thrust = if action_state.pressed(PlayerAction::Forward) {
+            1.0
+        } else {
+            0.0
+        };
+        let rotation = if action_state.pressed(PlayerAction::RotateLeft) {
+            1
+        } else if action_state.pressed(PlayerAction::RotateRight) {
+            -1
+        } else {
+            0
+        };
+        let fire = action_state.pressed(PlayerAction::Fire);
+        if rotation != 0 {
+            velocity.angvel = rotation as f32 * ship.rotation_speed;
+        }
+        impulse.impulse = (transform.rotation * (Vec3::Y * thrust * ship.thrust)).truncate();
 
-            if fire && ship.cannon_timer.finished() {
-                laser_spawn_events.send(LaserSpawnEvent {
-                    transform: *transform,
-                    velocity: *velocity,
-                });
-                ship.cannon_timer.reset();
-            }
+        if fire && ship.cannon_timer.finished() {
+            laser_spawn_events.send(LaserSpawnEvent {
+                transform: *transform,
+                velocity: *velocity,
+            });
+            ship.cannon_timer.reset();
         }
     }
 }
 
 fn ship_damage(
     mut commands: Commands,
-    mut next_gamestate: ResMut<NextState<AppGameState>>,
+    mut next_state: ResMut<NextState<AppState>>,
     mut ship_asteroid_contact_events: EventReader<ShipAsteroidContactEvent>,
     mut explosion_spawn_events: EventWriter<SpawnExplosionEvent>,
     mut ships: Query<(&mut Ship, &Transform)>,
@@ -216,7 +213,7 @@ fn ship_damage(
                     y: ship_transform.translation.y,
                 });
                 commands.entity(event.ship).despawn_recursive();
-                next_gamestate.set(AppGameState::GameOver);
+                next_state.set(AppState::GameOver);
             } else {
                 explosion_spawn_events.send(SpawnExplosionEvent {
                     kind: ExplosionKind::ShipContact,

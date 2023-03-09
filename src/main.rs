@@ -37,7 +37,7 @@ use crate::prelude::*;
 fn main() {
     let mut app = App::new();
 
-    app.add_state::<AppState>().add_state::<AppGameState>();
+    app.add_state::<AppState>();
 
     app.insert_resource(ClearColor(Color::rgb_u8(0, 0, 0)));
     app.add_plugins(DefaultPlugins.set(WindowPlugin {

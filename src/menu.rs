@@ -24,8 +24,8 @@ pub struct MenuPlugin;
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(start_menu.in_schedule(OnEnter(AppState::StartMenu)))
-            .add_system(pause_menu.in_schedule(OnEnter(AppGameState::Pause)))
-            .add_system(gameover_menu.in_schedule(OnEnter(AppGameState::GameOver)))
+            .add_system(pause_menu.in_schedule(OnEnter(AppState::GamePaused)))
+            .add_system(gameover_menu.in_schedule(OnEnter(AppState::GameOver)))
             .add_system(menu_input_system)
             .add_system(menu_blink_system)
             .add_startup_system(setup);
@@ -114,7 +114,7 @@ fn gameover_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
                 ..Default::default()
             },
             ForState {
-                states: vec![AppGameState::GameOver],
+                states: vec![AppState::GameOver],
             },
         ))
         .with_children(|parent| {
@@ -166,7 +166,7 @@ fn pause_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
                 ..Default::default()
             },
             ForState {
-                states: vec![AppGameState::Pause],
+                states: vec![AppState::GamePaused],
             },
         ))
         .with_children(|parent| {
@@ -211,44 +211,43 @@ fn menu_blink_system(
 fn menu_input_system(
     state: ResMut<State<AppState>>,
     mut next_state: ResMut<NextState<AppState>>,
-    gamestate: Res<State<AppGameState>>,
-    mut next_gamestate: ResMut<NextState<AppGameState>>,
     menu_action_state: Res<ActionState<MenuAction>>,
     mut rapier_configuration: ResMut<RapierConfiguration>,
     mut app_exit_events: EventWriter<AppExit>,
 ) {
     if state.0 != AppState::StartMenu && menu_action_state.just_pressed(MenuAction::ExitToMenu) {
         next_state.set(AppState::StartMenu);
-        next_gamestate.set(AppGameState::Invalid);
         rapier_configuration.physics_pipeline_active = true;
-    }
-    if state.0 == AppState::Game {
-        if gamestate.0 == AppGameState::Game {
-            if menu_action_state.just_pressed(MenuAction::PauseUnpause) {
-                next_gamestate.set(AppGameState::Pause);
-                rapier_configuration.physics_pipeline_active = false;
+    } else {
+        match state.0 {
+            AppState::StartMenu => {
+                if menu_action_state.just_pressed(MenuAction::Accept) {
+                    next_state.set(AppState::GameCreate);
+                }
+                if menu_action_state.just_pressed(MenuAction::Quit) {
+                    app_exit_events.send(AppExit);
+                }
             }
-        } else if gamestate.0 == AppGameState::Pause {
-            if menu_action_state.just_pressed(MenuAction::PauseUnpause) {
-                next_gamestate.set(AppGameState::Game);
-                rapier_configuration.physics_pipeline_active = true;
+            AppState::GameCreate => {
+                next_state.set(AppState::GameRunning);
             }
-        } else if gamestate.0 == AppGameState::GameOver {
-            if menu_action_state.just_pressed(MenuAction::Accept) {
-                next_state.set(AppState::StartMenu);
-                next_gamestate.set(AppGameState::Invalid);
+            AppState::GameRunning => {
+                if menu_action_state.just_pressed(MenuAction::PauseUnpause) {
+                    next_state.set(AppState::GamePaused);
+                    rapier_configuration.physics_pipeline_active = false;
+                }
             }
-            if menu_action_state.just_pressed(MenuAction::Quit) {
-                app_exit_events.send(AppExit);
+            AppState::GamePaused => {
+                if menu_action_state.just_pressed(MenuAction::PauseUnpause) {
+                    next_state.set(AppState::GameRunning);
+                    rapier_configuration.physics_pipeline_active = true;
+                }
             }
-        }
-    } else if state.0 == AppState::StartMenu {
-        if menu_action_state.just_pressed(MenuAction::Accept) {
-            next_state.set(AppState::Game);
-            next_gamestate.set(AppGameState::Game);
-        }
-        if menu_action_state.just_pressed(MenuAction::Quit) {
-            app_exit_events.send(AppExit);
+            AppState::GameOver => {
+                if menu_action_state.just_pressed(MenuAction::Accept) {
+                    next_state.set(AppState::StartMenu);
+                }
+            }
         }
     }
 }

@@ -11,36 +11,29 @@ pub struct ForState<T> {
 pub enum AppState {
     #[default]
     StartMenu,
-    Game,
-}
-
-// Game state enum, differianting several phase of the game
-#[derive(States, Debug, Copy, Clone, Hash, Eq, PartialEq, Default)]
-pub enum AppGameState {
-    /// Invalid used when AppState is NOT Game
-    #[default]
-    Invalid,
-    Game,
-    Pause,
+    GameCreate,
+    GameRunning,
+    GamePaused,
     GameOver,
+}
+impl AppState {
+    pub const ANY_GAME_STATE: &[AppState; 4] = &[
+        AppState::GameCreate,
+        AppState::GameRunning,
+        AppState::GamePaused,
+        AppState::GameOver,
+    ];
+    pub fn is_any_game_state(&self) -> bool {
+        AppState::ANY_GAME_STATE.contains(self)
+    }
 }
 
 pub struct StatesPlugin;
 
 impl Plugin for StatesPlugin {
     fn build(&self, app: &mut App) {
-        for state in [AppState::StartMenu, AppState::Game].into_iter() {
+        for state in AppState::variants() {
             app.add_system(state_enter_despawn::<AppState>.in_schedule(OnEnter(state)));
-        }
-        for state in [
-            AppGameState::Invalid,
-            AppGameState::Game,
-            AppGameState::Pause,
-            AppGameState::GameOver,
-        ]
-        .into_iter()
-        {
-            app.add_system(state_enter_despawn::<AppGameState>.in_schedule(OnEnter(state)));
         }
     }
 }

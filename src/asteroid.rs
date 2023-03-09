@@ -58,7 +58,7 @@ impl Plugin for AsteroidPlugin {
                     spawn_asteroid_event,
                     asteroid_damage.after(ContactSet),
                 )
-                    .in_set(OnUpdate(AppState::Game)),
+                    .in_set(OnUpdate(AppState::GameRunning)),
             );
     }
 }
@@ -87,7 +87,7 @@ fn spawn_asteroid_event(
             Asteroid { size: event.size },
             Damage { value: 1 },
             ForState {
-                states: vec![AppState::Game],
+                states: AppState::ANY_GAME_STATE.to_vec(),
             },
             RigidBody::Dynamic,
             Collider::ball(radius),
@@ -102,12 +102,12 @@ fn spawn_asteroid_event(
 
 fn arena_asteroids(
     time: Res<Time>,
-    gamestate: Res<State<AppGameState>>,
+    state: Res<State<AppState>>,
     mut arena: ResMut<Arena>,
     mut asteroid_spawn_events: EventWriter<AsteroidSpawnEvent>,
     asteroids: Query<&Asteroid>,
 ) {
-    if gamestate.0 == AppGameState::Game {
+    if state.0.is_any_game_state() {
         arena.asteroid_spawn_timer.tick(time.delta());
         if arena.asteroid_spawn_timer.finished() {
             arena.asteroid_spawn_timer.reset();

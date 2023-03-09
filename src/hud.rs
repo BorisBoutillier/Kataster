@@ -10,8 +10,10 @@ pub struct UiLife {
 pub struct HudPlugin;
 impl Plugin for HudPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems((hud_score_system, hud_life_system).in_set(OnUpdate(AppState::Game)))
-            .add_system(hud_spawn.in_schedule(OnEnter(AppState::Game)));
+        app.add_systems(
+            (hud_score_system, hud_life_system).in_set(OnUpdate(AppState::GameRunning)),
+        )
+        .add_system(hud_spawn.in_schedule(OnEnter(AppState::GameCreate)));
     }
 }
 
@@ -30,7 +32,7 @@ fn hud_spawn(mut commands: Commands, assets: ResMut<UiAssets>) {
                 ..Default::default()
             },
             ForState {
-                states: vec![AppState::Game],
+                states: AppState::ANY_GAME_STATE.to_vec(),
             },
         ))
         .with_children(|parent| {
@@ -75,7 +77,7 @@ fn hud_spawn(mut commands: Commands, assets: ResMut<UiAssets>) {
                 ..Default::default()
             },
             ForState {
-                states: vec![AppState::Game],
+                states: AppState::ANY_GAME_STATE.to_vec(),
             },
         ))
         .with_children(|parent| {

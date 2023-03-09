@@ -10,7 +10,7 @@ impl Plugin for ContactPlugin {
         app.add_system(
             contact_system
                 .in_set(ContactSet)
-                .in_set(OnUpdate(AppState::Game)),
+                .in_set(OnUpdate(AppState::GameRunning)),
         );
     }
 }

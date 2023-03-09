@@ -18,7 +18,9 @@ impl Plugin for LaserPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<LaserDespawnEvent>()
             .add_event::<LaserSpawnEvent>()
-            .add_systems((laser_timeout_system, spawn_laser).in_set(OnUpdate(AppState::Game)));
+            .add_systems(
+                (laser_timeout_system, spawn_laser).in_set(OnUpdate(AppState::GameRunning)),
+            );
     }
 }
 
@@ -53,7 +55,7 @@ fn spawn_laser(
                 despawn_timer: Timer::from_seconds(2.0, TimerMode::Once),
             },
             ForState {
-                states: vec![AppState::Game],
+                states: AppState::ANY_GAME_STATE.to_vec(),
             },
             RigidBody::Dynamic,
             Collider::cuboid(2.5, 10.0),
@@ -68,15 +70,12 @@ fn spawn_laser(
 fn laser_timeout_system(
     mut commands: Commands,
     time: Res<Time>,
-    gamestate: Res<State<AppGameState>>,
     mut query: Query<(Entity, &mut Laser)>,
 ) {
-    if gamestate.0 == AppGameState::Game {
-        for (entity, mut laser) in query.iter_mut() {
-            laser.despawn_timer.tick(time.delta());
-            if laser.despawn_timer.finished() {
-                commands.entity(entity).despawn();
-            }
+    for (entity, mut laser) in query.iter_mut() {
+        laser.despawn_timer.tick(time.delta());
+        if laser.despawn_timer.finished() {
+            commands.entity(entity).despawn();
         }
     }
 }

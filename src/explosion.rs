@@ -78,7 +78,7 @@ fn catch_explosion_event(
                 end_scale,
             },
             ForState {
-                states: vec![AppState::Game],
+                states: AppState::ANY_GAME_STATE.to_vec(),
             },
         ));
         audio_output.play(sound);
