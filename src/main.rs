@@ -8,7 +8,7 @@ mod explosion;
 mod hud;
 mod laser;
 mod menu;
-//mod particle_effects;
+mod particle_effects;
 mod player_ship;
 mod state;
 
@@ -52,7 +52,7 @@ fn main() {
     // Compute shaders are not supported on WASM.
     #[cfg(not(target_arch = "wasm32"))]
     {
-        //app.add_plugin(particle_effects::ParticleEffectsPlugin);
+        app.add_plugin(particle_effects::ParticleEffectsPlugin);
     }
 
     // Enable Rapier debug renders when compile in debug mode.

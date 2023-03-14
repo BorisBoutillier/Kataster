@@ -37,24 +37,29 @@ fn add_thrust_particles_to_ship(
                 z_layer_2d: 10.0,
                 ..Default::default()
             }
-            .init(ParticleLifetimeModifier { lifetime: 0.1 })
-            .init(PositionCone3dModifier {
+            .init(InitPositionCone3dModifier {
                 height: -5.0,
                 base_radius: 2.,
                 top_radius: 1.,
-                speed: Value::Uniform((100.0, 400.0)),
                 dimension: ShapeDimension::Volume,
+            })
+            .init(InitVelocitySphereModifier {
+                speed: Value::Uniform((100.0, 400.0)),
+                center: Vec3::new(0.0, 1.0, 0.0),
+            })
+            .init(InitLifetimeModifier {
+                lifetime: Value::Single(0.1),
             })
             .render(ColorOverLifetimeModifier { gradient })
             .render(SizeOverLifetimeModifier {
                 gradient: Gradient::constant(Vec2::splat(2.)),
             }),
         );
-        commands.entity(ship_entity).add_children(|parent| {
+        commands.entity(ship_entity).with_children(|parent| {
             parent.spawn((
                 ParticleEffectBundle {
                     effect: ParticleEffect::new(effect),
-                    transform: Transform::from_translation(Vec3::new(0.0, -3.0, 0.0)),
+                    transform: Transform::from_translation(Vec3::new(0.0, -4.0, 0.0)),
                     ..Default::default()
                 },
                 ExhaustEffect,
@@ -65,11 +70,11 @@ fn add_thrust_particles_to_ship(
 
 // Trigger a new particle spawning whenever the Ship Impulse is non-0
 fn update_thrust_particles(
-    impulse: Query<(&ExternalImpulse, &Children), Changed<ExternalImpulse>>,
+    player: Query<(&ActionState<PlayerAction>, &Children), Changed<ActionState<PlayerAction>>>,
     mut exhaust_effet: Query<&mut ParticleEffect, With<ExhaustEffect>>,
 ) {
-    for (impulse, children) in impulse.iter() {
-        if impulse.impulse.length() != 0.0 {
+    for (action_state, children) in player.iter() {
+        if action_state.pressed(PlayerAction::Forward) {
             for &child in children.iter() {
                 if let Ok(mut effect) = exhaust_effet.get_mut(child) {
                     if let Some(spawner) = effect.maybe_spawner() {
