@@ -14,5 +14,4 @@ bevy = "0.10"
 leafwing-input-manager = "0.9"
 rand = "0.8"
 bevy_rapier2d = "0.21"
-#bevy_hanabi = "0.6"
-bevy_hanabi = { git = "https://github.com/djeedai/bevy_hanabi" , rev = "ffbf91be" }
+bevy_hanabi = "0.6"
