@@ -6,7 +6,7 @@ use crate::prelude::*;
 pub struct DrawBlinkTimer(pub Timer);
 
 // List of user actions associated to menu/ui interaction
-#[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug)]
+#[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, TypePath)]
 pub enum MenuAction {
     // Starts the game when in the start screen
     // Go to the start screen when in the game over screen
@@ -23,12 +23,11 @@ pub enum MenuAction {
 pub struct MenuPlugin;
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(start_menu.in_schedule(OnEnter(AppState::StartMenu)))
-            .add_system(pause_menu.in_schedule(OnEnter(AppState::GamePaused)))
-            .add_system(gameover_menu.in_schedule(OnEnter(AppState::GameOver)))
-            .add_system(menu_input_system)
-            .add_system(menu_blink_system)
-            .add_startup_system(setup);
+        app.add_systems(OnEnter(AppState::StartMenu), start_menu)
+            .add_systems(OnEnter(AppState::GamePaused), pause_menu)
+            .add_systems(OnEnter(AppState::GameOver), gameover_menu)
+            .add_systems(Update, (menu_input_system, menu_blink_system))
+            .add_systems(Startup, setup);
     }
 }
 
@@ -53,13 +52,14 @@ fn start_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
         .spawn((
             NodeBundle {
                 style: Style {
-                    size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(100.0),
                     align_items: AlignItems::Center,
                     justify_content: JustifyContent::Center,
                     flex_direction: FlexDirection::Column,
-                    ..Default::default()
+                    ..default()
                 },
-                ..Default::default()
+                ..default()
             },
             ForState {
                 states: vec![AppState::StartMenu],
@@ -67,9 +67,7 @@ fn start_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
         ))
         .with_children(|parent| {
             parent.spawn((TextBundle {
-                style: Style {
-                    ..Default::default()
-                },
+                style: Style { ..default() },
                 text: Text::from_section(
                     "Kataster",
                     TextStyle {
@@ -78,13 +76,11 @@ fn start_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
                         color: Color::rgb_u8(0x00, 0xAA, 0xAA),
                     },
                 ),
-                ..Default::default()
+                ..default()
             },));
             parent.spawn((
                 TextBundle {
-                    style: Style {
-                        ..Default::default()
-                    },
+                    style: Style { ..default() },
                     text: Text::from_section(
                         "enter",
                         TextStyle {
@@ -93,7 +89,7 @@ fn start_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
                             color: Color::rgb_u8(0x00, 0x44, 0x44),
                         },
                     ),
-                    ..Default::default()
+                    ..default()
                 },
                 DrawBlinkTimer(Timer::from_seconds(0.5, TimerMode::Repeating)),
             ));
@@ -105,13 +101,14 @@ fn gameover_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
         .spawn((
             NodeBundle {
                 style: Style {
-                    size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(100.0),
                     align_items: AlignItems::Center,
                     justify_content: JustifyContent::Center,
                     flex_direction: FlexDirection::Column,
-                    ..Default::default()
+                    ..default()
                 },
-                ..Default::default()
+                ..default()
             },
             ForState {
                 states: vec![AppState::GameOver],
@@ -119,9 +116,7 @@ fn gameover_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
         ))
         .with_children(|parent| {
             parent.spawn((TextBundle {
-                style: Style {
-                    ..Default::default()
-                },
+                style: Style { ..default() },
                 text: Text::from_section(
                     "Game Over",
                     TextStyle {
@@ -130,13 +125,11 @@ fn gameover_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
                         color: Color::rgb_u8(0xAA, 0x22, 0x22),
                     },
                 ),
-                ..Default::default()
+                ..default()
             },));
             parent.spawn((
                 TextBundle {
-                    style: Style {
-                        ..Default::default()
-                    },
+                    style: Style { ..default() },
                     text: Text::from_section(
                         "enter",
                         TextStyle {
@@ -145,7 +138,7 @@ fn gameover_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
                             color: Color::rgb_u8(0x88, 0x22, 0x22),
                         },
                     ),
-                    ..Default::default()
+                    ..default()
                 },
                 DrawBlinkTimer(Timer::from_seconds(0.5, TimerMode::Repeating)),
             ));
@@ -158,12 +151,13 @@ fn pause_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
             NodeBundle {
                 style: Style {
                     position_type: PositionType::Absolute,
-                    size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(100.0),
                     align_items: AlignItems::Center,
                     justify_content: JustifyContent::Center,
-                    ..Default::default()
+                    ..default()
                 },
-                ..Default::default()
+                ..default()
             },
             ForState {
                 states: vec![AppState::GamePaused],
@@ -172,9 +166,7 @@ fn pause_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
         .with_children(|parent| {
             parent.spawn((
                 TextBundle {
-                    style: Style {
-                        ..Default::default()
-                    },
+                    style: Style { ..default() },
                     text: Text::from_section(
                         "pause",
                         TextStyle {
@@ -183,7 +175,7 @@ fn pause_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
                             color: Color::rgb_u8(0xF8, 0xE4, 0x73),
                         },
                     ),
-                    ..Default::default()
+                    ..default()
                 },
                 DrawBlinkTimer(Timer::from_seconds(0.5, TimerMode::Repeating)),
             ));
@@ -215,11 +207,12 @@ fn menu_input_system(
     mut rapier_configuration: ResMut<RapierConfiguration>,
     mut app_exit_events: EventWriter<AppExit>,
 ) {
-    if state.0 != AppState::StartMenu && menu_action_state.just_pressed(MenuAction::ExitToMenu) {
+    if state.get() != &AppState::StartMenu && menu_action_state.just_pressed(MenuAction::ExitToMenu)
+    {
         next_state.set(AppState::StartMenu);
         rapier_configuration.physics_pipeline_active = true;
     } else {
-        match state.0 {
+        match state.get() {
             AppState::StartMenu => {
                 if menu_action_state.just_pressed(MenuAction::Accept) {
                     next_state.set(AppState::GameCreate);

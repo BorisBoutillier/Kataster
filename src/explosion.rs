@@ -5,6 +5,7 @@ pub enum ExplosionKind {
     ShipContact,
     LaserOnAsteroid,
 }
+#[derive(Event)]
 pub struct SpawnExplosionEvent {
     pub kind: ExplosionKind,
     pub x: f32,
@@ -23,8 +24,7 @@ pub struct ExplosionPlugin;
 impl Plugin for ExplosionPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<SpawnExplosionEvent>()
-            .add_system(animate_explosion)
-            .add_system(catch_explosion_event);
+            .add_systems(Update, (animate_explosion, catch_explosion_event));
     }
 }
 
@@ -33,7 +33,6 @@ fn catch_explosion_event(
     mut event_reader: EventReader<SpawnExplosionEvent>,
     handles: Res<SpriteAssets>,
     audios: Res<AudioAssets>,
-    audio_output: Res<Audio>,
 ) {
     for event in event_reader.iter() {
         let (texture, sound, start_size, end_scale, duration) = match event.kind {
@@ -63,14 +62,14 @@ fn catch_explosion_event(
             SpriteBundle {
                 sprite: Sprite {
                     custom_size: Some(start_size),
-                    ..Default::default()
+                    ..default()
                 },
                 transform: Transform {
                     translation: Vec3::new(event.x, event.y, 3.0),
-                    ..Default::default()
+                    ..default()
                 },
                 texture,
-                ..Default::default()
+                ..default()
             },
             Explosion {
                 timer: Timer::from_seconds(duration, TimerMode::Once),
@@ -80,8 +79,11 @@ fn catch_explosion_event(
             ForState {
                 states: AppState::ANY_GAME_STATE.to_vec(),
             },
+            AudioBundle {
+                source: sound,
+                ..default()
+            },
         ));
-        audio_output.play(sound);
     }
 }
 

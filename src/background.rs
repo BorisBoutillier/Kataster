@@ -11,9 +11,9 @@ use crate::prelude::*;
 pub struct BackgroundPlugin;
 impl Plugin for BackgroundPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(Material2dPlugin::<BackgroundMaterial>::default())
-            .add_startup_system(spawn_background)
-            .add_system(update_background_time);
+        app.add_plugins(Material2dPlugin::<BackgroundMaterial>::default())
+            .add_systems(Startup, spawn_background)
+            .add_systems(Update, update_background_time);
     }
 }
 
@@ -28,14 +28,14 @@ fn spawn_background(
         transform: Transform {
             translation: Vec3::new(0.0, 0.0, 0.0),
             scale: Vec3::new(ARENA_WIDTH, ARENA_HEIGHT, 1.0),
-            ..Default::default()
+            ..default()
         },
         material: materials.add(BackgroundMaterial { time: 0.0 }),
-        ..Default::default()
+        ..default()
     });
 }
 
-#[derive(AsBindGroup, Debug, Clone, TypeUuid)]
+#[derive(AsBindGroup, Debug, Clone, TypeUuid, TypePath)]
 #[uuid = "d1776d38-712a-11ec-90d6-0242ac120003"]
 struct BackgroundMaterial {
     #[uniform(0)]
@@ -53,7 +53,7 @@ fn update_background_time(
     state: Res<State<AppState>>,
     mut backgrounds: ResMut<Assets<BackgroundMaterial>>,
 ) {
-    if state.0 != AppState::GamePaused {
+    if state.get() != &AppState::GamePaused {
         for (_, background) in backgrounds.iter_mut() {
             background.time += time.delta_seconds();
         }

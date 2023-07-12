@@ -8,9 +8,10 @@ pub struct ParticleEffectsPlugin;
 
 impl Plugin for ParticleEffectsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(HanabiPlugin)
-            .add_system(add_thrust_particles_to_ship)
-            .add_system(update_thrust_particles);
+        app.add_plugin(HanabiPlugin).add_systems(
+            Update,
+            (add_thrust_particles_to_ship, update_thrust_particles),
+        );
     }
 }
 
@@ -35,7 +36,7 @@ fn add_thrust_particles_to_ship(
                 spawner: Spawner::once(10.0.into(), false),
                 //spawner: Spawner::rate(500.0.into()),
                 z_layer_2d: 10.0,
-                ..Default::default()
+                ..default()
             }
             .init(InitPositionCone3dModifier {
                 height: -5.0,
@@ -60,7 +61,7 @@ fn add_thrust_particles_to_ship(
                 ParticleEffectBundle {
                     effect: ParticleEffect::new(effect),
                     transform: Transform::from_translation(Vec3::new(0.0, -4.0, 0.0)),
-                    ..Default::default()
+                    ..default()
                 },
                 ExhaustEffect,
             ));

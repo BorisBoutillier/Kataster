@@ -9,7 +9,7 @@ const MAX_INVINCIBLE_TIME: f32 = 5.0;
 // Actions are divided in two enums
 // One for pure Player Ship actions, during effective gameplay, added on the player entity itself.
 // One for Menu actions, added as a global resource
-#[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug)]
+#[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, TypePath)]
 pub enum PlayerAction {
     Forward,
     RotateLeft,
@@ -40,6 +40,7 @@ pub struct Damage {
     pub value: u32,
 }
 
+#[derive(Event)]
 pub struct ShipAsteroidContactEvent {
     pub ship: Entity,
     pub asteroid: Entity,
@@ -49,10 +50,11 @@ pub struct PlayerShipPlugin;
 
 impl Plugin for PlayerShipPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(InputManagerPlugin::<PlayerAction>::default());
+        app.add_plugins(InputManagerPlugin::<PlayerAction>::default());
         app.add_event::<ShipAsteroidContactEvent>()
-            .add_system(spawn_ship.in_schedule(OnEnter(AppState::GameCreate)))
+            .add_systems(OnEnter(AppState::GameCreate), spawn_ship)
             .add_systems(
+                Update,
                 (
                     ship_input_system,
                     ship_dampening_system,
@@ -60,7 +62,7 @@ impl Plugin for PlayerShipPlugin {
                     ship_invincible_color,
                     ship_damage.after(ContactSet),
                 )
-                    .in_set(OnUpdate(AppState::GameRunning)),
+                    .run_if(in_state(AppState::GameRunning)),
             );
     }
 }
@@ -105,14 +107,14 @@ fn spawn_ship(mut commands: Commands, handles: Res<SpriteAssets>) {
         SpriteBundle {
             sprite: Sprite {
                 custom_size: Some(Vec2::new(30., 20.)),
-                ..Default::default()
+                ..default()
             },
             transform: Transform {
                 translation: Vec3::new(0.0, 0.0, 1.0),
-                ..Default::default()
+                ..default()
             },
             texture: handles.player_ship.clone(),
-            ..Default::default()
+            ..default()
         },
         Ship {
             rotation_speed: 3.0,

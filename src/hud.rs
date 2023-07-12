@@ -11,9 +11,10 @@ pub struct HudPlugin;
 impl Plugin for HudPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            (hud_score_system, hud_life_system).in_set(OnUpdate(AppState::GameRunning)),
+            Update,
+            (hud_score_system, hud_life_system).run_if(in_state(AppState::GameRunning)),
         )
-        .add_system(hud_spawn.in_schedule(OnEnter(AppState::GameCreate)));
+        .add_systems(OnEnter(AppState::GameCreate), hud_spawn);
     }
 }
 
@@ -23,13 +24,14 @@ fn hud_spawn(mut commands: Commands, assets: ResMut<UiAssets>) {
             NodeBundle {
                 style: Style {
                     position_type: PositionType::Absolute,
-                    size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(100.0),
                     align_items: AlignItems::FlexStart,
                     justify_content: JustifyContent::FlexEnd,
                     flex_direction: FlexDirection::Row,
-                    ..Default::default()
+                    ..default()
                 },
-                ..Default::default()
+                ..default()
             },
             ForState {
                 states: AppState::ANY_GAME_STATE.to_vec(),
@@ -46,7 +48,7 @@ fn hud_spawn(mut commands: Commands, assets: ResMut<UiAssets>) {
                             top: Val::Px(10.0),
                             bottom: Val::Px(10.0),
                         },
-                        ..Default::default()
+                        ..default()
                     },
                     text: Text::from_section(
                         "0",
@@ -56,7 +58,7 @@ fn hud_spawn(mut commands: Commands, assets: ResMut<UiAssets>) {
                             color: Color::rgb_u8(0x00, 0xAA, 0xAA),
                         },
                     ),
-                    ..Default::default()
+                    ..default()
                 },
                 UiScore {},
             ));
@@ -68,13 +70,14 @@ fn hud_spawn(mut commands: Commands, assets: ResMut<UiAssets>) {
             NodeBundle {
                 style: Style {
                     position_type: PositionType::Absolute,
-                    size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(100.0),
                     align_items: AlignItems::FlexStart,
                     justify_content: JustifyContent::FlexStart,
                     flex_direction: FlexDirection::Row,
-                    ..Default::default()
+                    ..default()
                 },
-                ..Default::default()
+                ..default()
             },
             ForState {
                 states: AppState::ANY_GAME_STATE.to_vec(),
@@ -91,10 +94,10 @@ fn hud_spawn(mut commands: Commands, assets: ResMut<UiAssets>) {
                                 top: Val::Px(10.0),
                                 bottom: Val::Px(10.0),
                             },
-                            ..Default::default()
+                            ..default()
                         },
                         image: assets.ship_life.clone(),
-                        ..Default::default()
+                        ..default()
                     },
                     UiLife { min: i },
                 ));

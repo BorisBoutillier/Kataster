@@ -29,7 +29,7 @@ pub struct AssetsPlugin;
 
 impl Plugin for AssetsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(setup);
+        app.add_systems(Startup, setup);
     }
 }
 

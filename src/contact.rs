@@ -7,10 +7,11 @@ pub struct ContactPlugin;
 
 impl Plugin for ContactPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(
+        app.add_systems(
+            Update,
             contact_system
                 .in_set(ContactSet)
-                .in_set(OnUpdate(AppState::GameRunning)),
+                .run_if(in_state(AppState::GameRunning)),
         );
     }
 }

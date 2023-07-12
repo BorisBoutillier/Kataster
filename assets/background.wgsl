@@ -1,8 +1,7 @@
-// This shader is inspired by Start Nest by Pablo Roman Andrioli:
+// This shader is inspired by Star Nest by Pablo Roman Andrioli:
 // https://www.shadertoy.com/view/XlfGRj
 
-// The time since startup data is in the globals binding which is part of the mesh_view_bindings import
-#import bevy_sprite::mesh2d_view_bindings
+#import bevy_sprite::mesh2d_vertex_output MeshVertexOutput
 
 struct BackgroundMaterial {
     time: f32,
@@ -28,9 +27,9 @@ const saturation = 0.850;
 
 @fragment
 fn fragment(
-    #import bevy_sprite::mesh2d_vertex_output
+    in: MeshVertexOutput
 ) -> @location(0) vec4<f32> {
-    let dir = vec3<f32>(uv * zoom, 1.0);
+    let dir = vec3<f32>(in.uv * zoom, 1.0);
     let time = background.time * speed + 0.25;
     var from_ = vec3<f32>(1.0, 0.5, 0.5);
     from_ = from_ + vec3<f32>(time * 2., time, -2.);

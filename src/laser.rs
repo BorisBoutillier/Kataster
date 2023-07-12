@@ -1,6 +1,8 @@
 use crate::prelude::*;
 
+#[derive(Event)]
 pub struct LaserDespawnEvent(pub Entity);
+#[derive(Event)]
 pub struct LaserSpawnEvent {
     // The full position (translation+rotation) of the laser to spawn
     pub transform: Transform,
@@ -19,7 +21,8 @@ impl Plugin for LaserPlugin {
         app.add_event::<LaserDespawnEvent>()
             .add_event::<LaserSpawnEvent>()
             .add_systems(
-                (laser_timeout_system, spawn_laser).in_set(OnUpdate(AppState::GameRunning)),
+                Update,
+                (laser_timeout_system, spawn_laser).run_if(in_state(AppState::GameRunning)),
             );
     }
 }
@@ -29,7 +32,6 @@ fn spawn_laser(
     mut laser_spawn_events: EventReader<LaserSpawnEvent>,
     handles: Res<SpriteAssets>,
     audios: Res<AudioAssets>,
-    audio_output: Res<Audio>,
 ) {
     for spawn_event in laser_spawn_events.iter() {
         let transform = spawn_event.transform;
@@ -41,15 +43,15 @@ fn spawn_laser(
             SpriteBundle {
                 sprite: Sprite {
                     custom_size: Some(Vec2::new(5., 20.0)),
-                    ..Default::default()
+                    ..default()
                 },
                 transform: Transform {
                     translation: Vec3::new(transform.translation.x, transform.translation.y, 2.0),
                     rotation: transform.rotation,
-                    ..Default::default()
+                    ..default()
                 },
                 texture: handles.laser.clone(),
-                ..Default::default()
+                ..default()
             },
             Laser {
                 despawn_timer: Timer::from_seconds(2.0, TimerMode::Once),
@@ -62,8 +64,11 @@ fn spawn_laser(
             velocity,
             Sensor,
             ActiveEvents::COLLISION_EVENTS,
+            AudioBundle {
+                source: audios.laser_trigger.clone(),
+                ..default()
+            },
         ));
-        audio_output.play(audios.laser_trigger.clone());
     }
 }
 

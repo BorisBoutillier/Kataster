@@ -1,6 +1,7 @@
 use crate::prelude::*;
 use bevy::utils::Duration;
 
+#[derive(Event)]
 pub struct AsteroidSpawnEvent {
     pub size: AsteroidSize,
     pub x: f32,
@@ -10,6 +11,7 @@ pub struct AsteroidSpawnEvent {
     pub angvel: f32,
 }
 
+#[derive(Event)]
 pub struct LaserAsteroidContactEvent {
     pub laser: Entity,
     pub asteroid: Entity,
@@ -53,12 +55,13 @@ impl Plugin for AsteroidPlugin {
         app.add_event::<AsteroidSpawnEvent>()
             .add_event::<LaserAsteroidContactEvent>()
             .add_systems(
+                Update,
                 (
                     arena_asteroids,
                     spawn_asteroid_event,
                     asteroid_damage.after(ContactSet),
                 )
-                    .in_set(OnUpdate(AppState::GameRunning)),
+                    .run_if(in_state(AppState::GameRunning)),
             );
     }
 }
@@ -79,10 +82,10 @@ fn spawn_asteroid_event(
                 // No custom size, the sprite png, are already at our game size.
                 transform: Transform {
                     translation: Vec3::new(event.x, event.y, 1.0),
-                    ..Default::default()
+                    ..default()
                 },
                 texture: sprite_handle.clone(),
-                ..Default::default()
+                ..default()
             },
             Asteroid { size: event.size },
             Damage { value: 1 },
@@ -107,7 +110,7 @@ fn arena_asteroids(
     mut asteroid_spawn_events: EventWriter<AsteroidSpawnEvent>,
     asteroids: Query<&Asteroid>,
 ) {
-    if state.0.is_any_game_state() {
+    if state.get().is_any_game_state() {
         arena.asteroid_spawn_timer.tick(time.delta());
         if arena.asteroid_spawn_timer.finished() {
             arena.asteroid_spawn_timer.reset();

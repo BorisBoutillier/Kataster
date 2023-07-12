@@ -33,7 +33,7 @@ pub struct StatesPlugin;
 impl Plugin for StatesPlugin {
     fn build(&self, app: &mut App) {
         for state in AppState::variants() {
-            app.add_system(state_enter_despawn::<AppState>.in_schedule(OnEnter(state)));
+            app.add_systems(OnEnter(state), state_enter_despawn::<AppState>);
         }
     }
 }
@@ -44,7 +44,7 @@ fn state_enter_despawn<T: States>(
     query: Query<(Entity, &ForState<T>)>,
 ) {
     for (entity, for_state) in &mut query.iter() {
-        if !for_state.states.contains(&state.0) {
+        if !for_state.states.contains(state.get()) {
             commands.entity(entity).despawn_recursive();
         }
     }
