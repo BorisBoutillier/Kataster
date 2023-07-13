@@ -1,3 +1,5 @@
+use bevy::ecs::query::Has;
+
 use crate::prelude::*;
 
 #[derive(SystemSet, Clone, Hash, Debug, PartialEq, Eq)]
@@ -20,35 +22,31 @@ fn contact_system(
     mut collision_events: EventReader<CollisionEvent>,
     mut ship_asteroid_contact_events: EventWriter<ShipAsteroidContactEvent>,
     mut laser_asteroid_contact_events: EventWriter<LaserAsteroidContactEvent>,
-    ships: Query<&Ship>,
-    lasers: Query<&Laser>,
-    asteroids: Query<&Asteroid>,
+    query: Query<(Has<Ship>, Has<Laser>, Has<Asteroid>)>,
 ) {
     for event in collision_events.iter() {
         if let CollisionEvent::Started(e1, e2, _flags) = event {
-            if ships.get(*e1).is_ok() && asteroids.get(*e2).is_ok() {
+            let (e1_is_ship, e1_is_laser, e1_is_asteroid) = query.get(*e1).unwrap();
+            let (e2_is_ship, e2_is_laser, e2_is_asteroid) = query.get(*e2).unwrap();
+            if e1_is_ship && e2_is_asteroid {
                 ship_asteroid_contact_events.send(ShipAsteroidContactEvent {
                     ship: *e1,
                     asteroid: *e2,
                 });
             }
-            if ships.get(*e2).is_ok() && asteroids.get(*e1).is_ok() {
+            if e2_is_ship && e1_is_asteroid {
                 ship_asteroid_contact_events.send(ShipAsteroidContactEvent {
                     ship: *e2,
                     asteroid: *e1,
                 });
             }
-            if asteroids.get_component::<Asteroid>(*e1).is_ok()
-                && lasers.get_component::<Laser>(*e2).is_ok()
-            {
+            if e1_is_asteroid && e2_is_laser {
                 laser_asteroid_contact_events.send(LaserAsteroidContactEvent {
                     asteroid: *e1,
                     laser: *e2,
                 });
             }
-            if asteroids.get_component::<Asteroid>(*e2).is_ok()
-                && lasers.get_component::<Laser>(*e1).is_ok()
-            {
+            if e2_is_asteroid && e1_is_laser {
                 laser_asteroid_contact_events.send(LaserAsteroidContactEvent {
                     asteroid: *e2,
                     laser: *e1,
