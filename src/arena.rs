@@ -18,41 +18,41 @@ impl Plugin for ArenaPlugin {
     }
 }
 
-fn spawn_arena(mut commands: Commands, mut rapier_configuration: ResMut<RapierConfiguration>) {
+fn spawn_arena(mut commands: Commands) {
     commands.insert_resource(Arena {
         asteroid_spawn_timer: Timer::from_seconds(5.0, TimerMode::Once),
         score: 0,
     });
 
-    // Rapier configuration without gravity
-    rapier_configuration.gravity = Vec2::ZERO;
+    // Physics configuration without gravity
+    commands.insert_resource(Gravity::ZERO);
 }
 
-fn movement(mut query: Query<(&Velocity, &mut Transform)>) {
-    for (velocity, mut transform) in query.iter_mut() {
-        let mut x = transform.translation.x;
-        let mut y = transform.translation.y;
+fn movement(mut query: Query<(&LinearVelocity, &mut Position)>) {
+    for (linvel, mut position) in query.iter_mut() {
+        let mut x = position.x;
+        let mut y = position.y;
         let mut updated = false;
         // Wrap around screen edges
         let half_width = ARENA_WIDTH / 2.0;
         let half_height = ARENA_HEIGHT / 2.0;
-        if x < -half_width && velocity.linvel.x < 0.0 {
+        if x < -half_width && linvel.x < 0.0 {
             x = half_width;
             updated = true;
-        } else if x > half_width && velocity.linvel.x > 0.0 {
+        } else if x > half_width && linvel.x > 0.0 {
             x = -half_width;
             updated = true;
         }
-        if y < -half_height && velocity.linvel.y < 0.0 {
+        if y < -half_height && linvel.y < 0.0 {
             y = half_height;
             updated = true;
-        } else if y > half_height && velocity.linvel.y > 0.0 {
+        } else if y > half_height && linvel.y > 0.0 {
             y = -half_height;
             updated = true;
         }
         if updated {
-            transform.translation.x = x;
-            transform.translation.y = y;
+            position.x = x;
+            position.y = y;
         }
     }
 }

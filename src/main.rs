@@ -26,12 +26,13 @@ mod prelude {
     pub use crate::state::*;
     pub use bevy::prelude::*;
     pub use bevy::reflect::TypePath;
-    pub use bevy_rapier2d::prelude::*;
+    pub use bevy_xpbd_2d::prelude::*;
     pub use leafwing_input_manager::prelude::*;
     pub use rand::{thread_rng, Rng};
 }
 
 use bevy::window::WindowResolution;
+use bevy_xpbd_2d::prelude::PhysicsPlugins;
 
 use crate::prelude::*;
 
@@ -56,12 +57,8 @@ fn main() {
         app.add_plugins(particle_effects::ParticleEffectsPlugin);
     }
 
-    // Enable Rapier debug renders when compile in debug mode.
-    #[cfg(debug_assertions)]
-    app.add_plugins(RapierDebugRenderPlugin::default());
-
     app.add_plugins((
-        RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(10.0),
+        PhysicsPlugins::default(),
         InputManagerPlugin::<MenuAction>::default(),
     ));
 

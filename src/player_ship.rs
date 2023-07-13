@@ -103,48 +103,54 @@ fn spawn_ship(mut commands: Commands, handles: Res<SpriteAssets>) {
     // Straghtaway consume the timer, we don't want invincibility at creation.
     invincible_timer.tick(Duration::from_secs_f32(INVINCIBLE_TIME));
 
-    commands.spawn((
-        SpriteBundle {
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(30., 20.)),
+    let id = commands
+        .spawn((
+            SpriteBundle {
+                sprite: Sprite {
+                    custom_size: Some(Vec2::new(30., 20.)),
+                    ..default()
+                },
+                transform: Transform {
+                    translation: Vec3::new(0.0, 0.0, 1.0),
+                    ..default()
+                },
+                texture: handles.player_ship.clone(),
                 ..default()
             },
-            transform: Transform {
-                translation: Vec3::new(0.0, 0.0, 1.0),
-                ..default()
+            Ship {
+                rotation_speed: 3.0,
+                thrust: 300000.0,
+                life: START_LIFE,
+                cannon_timer: Timer::from_seconds(0.2, TimerMode::Once),
+                player_id: 1,
+                invincible_timer,
+                invincible_time_secs: 0.0,
             },
-            texture: handles.player_ship.clone(),
-            ..default()
-        },
-        Ship {
-            rotation_speed: 3.0,
-            thrust: 60.0,
-            life: START_LIFE,
-            cannon_timer: Timer::from_seconds(0.2, TimerMode::Once),
-            player_id: 1,
-            invincible_timer,
-            invincible_time_secs: 0.0,
-        },
-        ForState {
-            states: AppState::ANY_GAME_STATE.to_vec(),
-        },
-        RigidBody::Dynamic,
-        Collider::ball(13.5),
-        ExternalImpulse::default(),
-        Velocity::linear(Vec2::ZERO),
-        ActiveEvents::COLLISION_EVENTS,
-        InputManagerBundle::<PlayerAction> {
-            action_state: ActionState::default(),
-            input_map,
-        },
-    ));
+            ForState {
+                states: AppState::ANY_GAME_STATE.to_vec(),
+            },
+            RigidBody::Dynamic,
+            Collider::ball(13.5),
+            ExternalForce::default(),
+            LinearVelocity::ZERO,
+            AngularVelocity::ZERO,
+            InputManagerBundle::<PlayerAction> {
+                action_state: ActionState::default(),
+                input_map,
+            },
+        ))
+        .id();
+    println!("PLAYER: {:?}", id);
 }
 
-fn ship_dampening_system(time: Res<Time>, mut query: Query<&mut Velocity, With<Ship>>) {
-    for mut velocity in query.iter_mut() {
+fn ship_dampening_system(
+    time: Res<Time>,
+    mut query: Query<(&mut LinearVelocity, &mut AngularVelocity), With<Ship>>,
+) {
+    for (mut linvel, mut angvel) in query.iter_mut() {
         let elapsed = time.delta_seconds();
-        velocity.angvel *= 0.1f32.powf(elapsed);
-        velocity.linvel *= 0.4f32.powf(elapsed);
+        angvel.0 *= 0.1f32.powf(elapsed);
+        linvel.0 *= 0.4f32.powf(elapsed);
     }
 }
 
@@ -159,13 +165,14 @@ fn ship_input_system(
     mut laser_spawn_events: EventWriter<LaserSpawnEvent>,
     mut query: Query<(
         &ActionState<PlayerAction>,
-        &mut ExternalImpulse,
-        &mut Velocity,
+        &mut ExternalForce,
+        &mut LinearVelocity,
+        &mut AngularVelocity,
         &Transform,
         &mut Ship,
     )>,
 ) {
-    for (action_state, mut impulse, mut velocity, transform, mut ship) in query.iter_mut() {
+    for (action_state, mut force, mut linvel, mut angvel, transform, mut ship) in query.iter_mut() {
         let thrust = if action_state.pressed(PlayerAction::Forward) {
             1.0
         } else {
@@ -180,14 +187,14 @@ fn ship_input_system(
         };
         let fire = action_state.pressed(PlayerAction::Fire);
         if rotation != 0 {
-            velocity.angvel = rotation as f32 * ship.rotation_speed;
+            angvel.0 = rotation as f32 * ship.rotation_speed;
         }
-        impulse.impulse = (transform.rotation * (Vec3::Y * thrust * ship.thrust)).truncate();
+        force.set_force((transform.rotation * (Vec3::Y * thrust * ship.thrust)).truncate());
 
         if fire && ship.cannon_timer.finished() {
             laser_spawn_events.send(LaserSpawnEvent {
                 transform: *transform,
-                velocity: *velocity,
+                linvel: *linvel,
             });
             ship.cannon_timer.reset();
         }
