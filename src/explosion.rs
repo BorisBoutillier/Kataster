@@ -41,21 +41,21 @@ fn catch_explosion_event(
                 audios.ship_explosion.clone(),
                 Vec2::new(42., 39.),
                 5.,
-                1.5,
+                2.,
             ),
             ExplosionKind::ShipContact => (
                 handles.ship_contact.clone(),
                 audios.ship_contact.clone(),
                 Vec2::new(42., 39.),
                 2.,
-                0.5,
+                1.,
             ),
             ExplosionKind::LaserOnAsteroid => (
                 handles.asteroid_explosion.clone(),
                 audios.asteroid_explosion.clone(),
                 Vec2::new(36., 32.),
                 1.5,
-                0.5,
+                1.,
             ),
         };
         commands.spawn((
