@@ -31,20 +31,22 @@ fn add_thrust_particles_to_ship(
         gradient.add_key(0.0, Vec4::new(0.5, 0.4, 0.7, 0.8));
         gradient.add_key(0.5, Vec4::new(1.0, 0.8, 0.0, 0.8));
         gradient.add_key(1.0, Vec4::ZERO);
+        let init_pos = SetPositionCone3dModifier {
+            height: writer.lit(-5.0).expr(),
+            base_radius: writer.lit(2.).expr(),
+            top_radius: writer.lit(1.).expr(),
+            dimension: ShapeDimension::Volume,
+        };
+        let init_vel = SetVelocitySphereModifier {
+            speed: writer.lit(100.0).uniform(writer.lit(400.0)).expr(),
+            center: writer.lit(Vec3::new(0.0, 1.0, 0.0)).expr(),
+        };
         let effect = effects.add(
             EffectAsset::new(16024, Spawner::once(10.0.into(), false), writer.finish())
                 .with_name("Exhaust")
-                .init(InitPositionCone3dModifier {
-                    height: -5.0,
-                    base_radius: 2.,
-                    top_radius: 1.,
-                    dimension: ShapeDimension::Volume,
-                })
-                .init(InitVelocitySphereModifier {
-                    speed: CpuValue::Uniform((100.0, 400.0)),
-                    center: Vec3::new(0.0, 1.0, 0.0),
-                })
-                .init(InitAttributeModifier::new(Attribute::LIFETIME, lifetime))
+                .init(init_pos)
+                .init(init_vel)
+                .init(SetAttributeModifier::new(Attribute::LIFETIME, lifetime))
                 .render(ColorOverLifetimeModifier { gradient })
                 .render(SizeOverLifetimeModifier {
                     gradient: Gradient::constant(Vec2::splat(2.)),
