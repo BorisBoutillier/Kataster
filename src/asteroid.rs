@@ -71,7 +71,7 @@ fn spawn_asteroid_event(
     mut event_reader: EventReader<AsteroidSpawnEvent>,
     handles: Res<SpriteAssets>,
 ) {
-    for event in event_reader.iter() {
+    for event in event_reader.read() {
         let (sprite_handle, radius) = match event.size {
             AsteroidSize::Big => (handles.meteor_big.clone(), 101. / 2.0),
             AsteroidSize::Medium => (handles.meteor_med.clone(), 43. / 2.0),
@@ -158,7 +158,7 @@ fn asteroid_damage(
     transforms: Query<&Transform>,
     asteroids: Query<(&Asteroid, &Transform, &Velocity)>,
 ) {
-    for event in laser_asteroid_contact_events.iter() {
+    for event in laser_asteroid_contact_events.read() {
         let laser_transform = transforms.get(event.laser).unwrap();
         let (asteroid, asteroid_transform, asteroid_velocity) =
             asteroids.get(event.asteroid).unwrap();

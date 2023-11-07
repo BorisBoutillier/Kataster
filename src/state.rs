@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use enum_iterator::{all, Sequence};
 
 /// Component to tag an entity as only needed in some of the states
 #[derive(Component, Debug)]
@@ -7,7 +8,7 @@ pub struct ForState<T> {
 }
 
 // Main state enum, differianting, Menu from Game 'scenes'
-#[derive(States, Debug, Copy, Clone, Hash, Eq, PartialEq, Default)]
+#[derive(States, Debug, Copy, Clone, Hash, Eq, PartialEq, Default, Sequence)]
 pub enum AppState {
     #[default]
     StartMenu,
@@ -32,7 +33,7 @@ pub struct StatesPlugin;
 
 impl Plugin for StatesPlugin {
     fn build(&self, app: &mut App) {
-        for state in AppState::variants() {
+        for state in all::<AppState>() {
             app.add_systems(OnEnter(state), state_enter_despawn::<AppState>);
         }
     }

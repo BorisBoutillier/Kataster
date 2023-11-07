@@ -33,7 +33,7 @@ fn spawn_laser(
     handles: Res<SpriteAssets>,
     audios: Res<AudioAssets>,
 ) {
-    for spawn_event in laser_spawn_events.iter() {
+    for spawn_event in laser_spawn_events.read() {
         let transform = spawn_event.transform;
         let velocity = Velocity::linear(
             (spawn_event.velocity.linvel * Vec2::Y)

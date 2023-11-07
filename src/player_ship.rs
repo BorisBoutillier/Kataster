@@ -201,7 +201,7 @@ fn ship_damage(
     mut explosion_spawn_events: EventWriter<SpawnExplosionEvent>,
     mut ships: Query<(&mut Ship, &Transform)>,
 ) {
-    for event in ship_asteroid_contact_events.iter() {
+    for event in ship_asteroid_contact_events.read() {
         let (mut ship, ship_transform) = ships
             .get_mut(event.ship)
             .expect("Ship referenced in event does not exist");

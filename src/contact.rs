@@ -24,7 +24,7 @@ fn contact_system(
     mut laser_asteroid_contact_events: EventWriter<LaserAsteroidContactEvent>,
     query: Query<(Has<Ship>, Has<Laser>, Has<Asteroid>)>,
 ) {
-    for event in collision_events.iter() {
+    for event in collision_events.read() {
         if let CollisionEvent::Started(e1, e2, _flags) = event {
             let (e1_is_ship, e1_is_laser, e1_is_asteroid) = query.get(*e1).unwrap();
             let (e2_is_ship, e2_is_laser, e2_is_asteroid) = query.get(*e2).unwrap();
