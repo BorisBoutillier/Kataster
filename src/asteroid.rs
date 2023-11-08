@@ -77,32 +77,30 @@ fn spawn_asteroid_event(
             AsteroidSize::Medium => (handles.meteor_med.clone(), 43. / 2.0),
             AsteroidSize::Small => (handles.meteor_small.clone(), 28. / 2.0),
         };
-        let id = commands
-            .spawn((
-                SpriteBundle {
-                    // No custom size, the sprite png, are already at our game size.
-                    // Transform Z is meaningfull for sprite stacking.
-                    // Transform X and Y will be computed from xpbd Position component
-                    transform: Transform {
-                        translation: Vec3::Z * 1.0,
-                        ..default()
-                    },
-                    texture: sprite_handle.clone(),
+        commands.spawn((
+            SpriteBundle {
+                // No custom size, the sprite png, are already at our game size.
+                // Transform Z is meaningfull for sprite stacking.
+                // Transform X and Y will be computed from xpbd Position component
+                transform: Transform {
+                    translation: Vec3::Z * 1.0,
                     ..default()
                 },
-                Asteroid { size: event.size },
-                Damage { value: 1 },
-                ForState {
-                    states: AppState::ANY_GAME_STATE.to_vec(),
-                },
-                RigidBody::Dynamic,
-                Collider::ball(radius),
-                Position(Vec2::new(event.x, event.y)),
-                LinearVelocity(Vec2::new(event.vx, event.vy)),
-                AngularVelocity(event.angvel),
-            ))
-            .id();
-        println!("ASTEROID: {:?} ({},{})", id, event.x, event.y);
+                texture: sprite_handle.clone(),
+                ..default()
+            },
+            Asteroid { size: event.size },
+            Damage { value: 1 },
+            ForState {
+                states: AppState::ANY_GAME_STATE.to_vec(),
+            },
+            RigidBody::Dynamic,
+            Collider::ball(radius),
+            Restitution::new(0.5),
+            Position(Vec2::new(event.x, event.y)),
+            LinearVelocity(Vec2::new(event.vx, event.vy)),
+            AngularVelocity(event.angvel),
+        ));
     }
 }
 
@@ -162,7 +160,6 @@ fn asteroid_damage(
     asteroids: Query<(&Asteroid, &Transform, &AngularVelocity)>,
 ) {
     for event in laser_asteroid_contact_events.read() {
-        println!("CONTACT");
         let laser_transform = transforms.get(event.laser).unwrap();
         let (asteroid, asteroid_transform, asteroid_angvel) =
             asteroids.get(event.asteroid).unwrap();
@@ -177,12 +174,14 @@ fn asteroid_damage(
                 let mut rng = thread_rng();
                 for i in 0..4 {
                     //rng.gen_range(1..4u8) {
-                    let x_pos = if i % 2 == 0 { 1.0 } else { -1.0 };
-                    let y_pos = if (i / 2) % 2 == 0 { 1.0 } else { -1.0 };
+                    let x_pos = if i % 2 == 0 { 1. } else { -1. };
+                    let y_pos = if (i / 2) % 2 == 0 { 1. } else { -1. };
                     let x = asteroid_transform.translation.x + x_pos * 1.5 * radius;
                     let y = asteroid_transform.translation.y + y_pos * 1.5 * radius;
-                    let vx = rng.gen_range((-ARENA_WIDTH / radius)..(ARENA_WIDTH / radius));
-                    let vy = rng.gen_range((-ARENA_HEIGHT / radius)..(ARENA_HEIGHT / radius));
+                    let vx = rng
+                        .gen_range((-ARENA_WIDTH / (radius / 4.))..(ARENA_WIDTH / (radius / 4.)));
+                    let vy = rng
+                        .gen_range((-ARENA_HEIGHT / (radius / 4.))..(ARENA_HEIGHT / (radius / 4.)));
                     asteroid_spawn_events.send(AsteroidSpawnEvent {
                         size,
                         x,

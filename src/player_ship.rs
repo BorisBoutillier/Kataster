@@ -103,44 +103,41 @@ fn spawn_ship(mut commands: Commands, handles: Res<SpriteAssets>) {
     // Straghtaway consume the timer, we don't want invincibility at creation.
     invincible_timer.tick(Duration::from_secs_f32(INVINCIBLE_TIME));
 
-    let id = commands
-        .spawn((
-            SpriteBundle {
-                sprite: Sprite {
-                    custom_size: Some(Vec2::new(30., 20.)),
-                    ..default()
-                },
-                transform: Transform {
-                    translation: Vec3::new(0.0, 0.0, 1.0),
-                    ..default()
-                },
-                texture: handles.player_ship.clone(),
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(30., 20.)),
                 ..default()
             },
-            Ship {
-                rotation_speed: 3.0,
-                thrust: 300000.0,
-                life: START_LIFE,
-                cannon_timer: Timer::from_seconds(0.2, TimerMode::Once),
-                player_id: 1,
-                invincible_timer,
-                invincible_time_secs: 0.0,
+            transform: Transform {
+                translation: Vec3::new(0.0, 0.0, 1.0),
+                ..default()
             },
-            ForState {
-                states: AppState::ANY_GAME_STATE.to_vec(),
-            },
-            RigidBody::Dynamic,
-            Collider::ball(13.5),
-            ExternalForce::default(),
-            LinearVelocity::ZERO,
-            AngularVelocity::ZERO,
-            InputManagerBundle::<PlayerAction> {
-                action_state: ActionState::default(),
-                input_map,
-            },
-        ))
-        .id();
-    println!("PLAYER: {:?}", id);
+            texture: handles.player_ship.clone(),
+            ..default()
+        },
+        Ship {
+            rotation_speed: 3.0,
+            thrust: 300000.0,
+            life: START_LIFE,
+            cannon_timer: Timer::from_seconds(0.2, TimerMode::Once),
+            player_id: 1,
+            invincible_timer,
+            invincible_time_secs: 0.0,
+        },
+        ForState {
+            states: AppState::ANY_GAME_STATE.to_vec(),
+        },
+        RigidBody::Dynamic,
+        Collider::ball(13.5),
+        ExternalForce::default(),
+        LinearVelocity::ZERO,
+        AngularVelocity::ZERO,
+        InputManagerBundle::<PlayerAction> {
+            action_state: ActionState::default(),
+            input_map,
+        },
+    ));
 }
 
 fn ship_dampening_system(
@@ -161,6 +158,7 @@ fn ship_timers_system(time: Res<Time>, mut ship: Query<&mut Ship>) {
     }
 }
 
+#[allow(clippy::type_complexity)]
 fn ship_input_system(
     mut laser_spawn_events: EventWriter<LaserSpawnEvent>,
     mut query: Query<(
@@ -172,7 +170,7 @@ fn ship_input_system(
         &mut Ship,
     )>,
 ) {
-    for (action_state, mut force, mut linvel, mut angvel, transform, mut ship) in query.iter_mut() {
+    for (action_state, mut force, linvel, mut angvel, transform, mut ship) in query.iter_mut() {
         let thrust = if action_state.pressed(PlayerAction::Forward) {
             1.0
         } else {

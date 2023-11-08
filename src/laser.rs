@@ -40,41 +40,38 @@ fn spawn_laser(
         let linvel = LinearVelocity(
             (spawn_event.linvel.0 * Vec2::Y) + (transform.rotation * Vec3::Y * 500.0).truncate(),
         );
-        let id = commands
-            .spawn((
-                SpriteBundle {
-                    sprite: Sprite {
-                        custom_size: Some(Vec2::new(5., 20.0)),
-                        ..default()
-                    },
-                    // Transform Z is meaningfull for sprite stacking.
-                    // Transform X,Y and rotation will be computed from xpbd Position and Rotation components
-                    transform: Transform {
-                        translation: Vec3::Z * 2.0,
-                        ..default()
-                    },
-                    texture: handles.laser.clone(),
+        commands.spawn((
+            SpriteBundle {
+                sprite: Sprite {
+                    custom_size: Some(Vec2::new(5., 20.0)),
                     ..default()
                 },
-                Laser {
-                    despawn_timer: Timer::from_seconds(2.0, TimerMode::Once),
-                },
-                ForState {
-                    states: AppState::ANY_GAME_STATE.to_vec(),
-                },
-                RigidBody::Dynamic,
-                Collider::cuboid(2.5, 10.0),
-                position,
-                rotation,
-                linvel,
-                Sensor,
-                AudioBundle {
-                    source: audios.laser_trigger.clone(),
+                // Transform Z is meaningfull for sprite stacking.
+                // Transform X,Y and rotation will be computed from xpbd Position and Rotation components
+                transform: Transform {
+                    translation: Vec3::Z * 2.0,
                     ..default()
                 },
-            ))
-            .id();
-        println!("LASER: {:?}", id);
+                texture: handles.laser.clone(),
+                ..default()
+            },
+            Laser {
+                despawn_timer: Timer::from_seconds(2.0, TimerMode::Once),
+            },
+            ForState {
+                states: AppState::ANY_GAME_STATE.to_vec(),
+            },
+            RigidBody::Dynamic,
+            Collider::cuboid(2.5, 10.0),
+            position,
+            rotation,
+            linvel,
+            Sensor,
+            AudioBundle {
+                source: audios.laser_trigger.clone(),
+                ..default()
+            },
+        ));
     }
 }
 

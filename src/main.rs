@@ -50,6 +50,9 @@ fn main() {
         }),
         ..default()
     }));
+    // Enable XPBD debug renders when compiled in debug mode
+    #[cfg(debug_assertions)]
+    app.add_plugins(PhysicsDebugPlugin::default());
 
     // Compute shaders are not supported on WASM.
     #[cfg(not(target_arch = "wasm32"))]
