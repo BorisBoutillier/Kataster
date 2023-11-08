@@ -5,7 +5,7 @@ This is a 'super-example' or 'micro-game' for the Bevy engine, that can be used 
 
 It includes use of game states, menu UI , HUD UI, collision detection, pause/resume, shader background, particle effects.
 
-It showcases some other commonplace bevy plugins, _bevy_rapier_ for physics, _leafwing-input-manager_ for game inputs, _bevy_hanabi_ for particle effects. 
+It showcases some other commonplace bevy plugins, _bevy_xbpd_ for physics, _leafwing-input-manager_ for game inputs, _bevy_hanabi_ for particle effects. 
 
 
 ![](media/Kataster_demo.gif)
