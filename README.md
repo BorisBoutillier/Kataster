@@ -8,7 +8,7 @@ It includes use of game states, menu UI , HUD UI, collision detection, pause/res
 It showcases some other commonplace bevy plugins, _bevy_xbpd_ for physics, _leafwing-input-manager_ for game inputs, _bevy_hanabi_ for particle effects. 
 
 
-![](media/Kataster_demo.webm)
+![](media/Kataster_demo.gif)
 
 ## Bevy dependencies
 
