@@ -37,8 +37,8 @@ impl AsteroidSize {
     // And the spawned sub-asteroid size and radius of spawning.
     pub fn split(&self) -> Option<(AsteroidSize, f32)> {
         match self {
-            AsteroidSize::Big => Some((AsteroidSize::Medium, 10.0)),
-            AsteroidSize::Medium => Some((AsteroidSize::Small, 5.0)),
+            AsteroidSize::Big => Some((AsteroidSize::Medium, 20.0)),
+            AsteroidSize::Medium => Some((AsteroidSize::Small, 10.0)),
             AsteroidSize::Small => None,
         }
     }
@@ -71,7 +71,7 @@ fn spawn_asteroid_event(
     mut event_reader: EventReader<AsteroidSpawnEvent>,
     handles: Res<SpriteAssets>,
 ) {
-    for event in event_reader.iter() {
+    for event in event_reader.read() {
         let (sprite_handle, radius) = match event.size {
             AsteroidSize::Big => (handles.meteor_big.clone(), 101. / 2.0),
             AsteroidSize::Medium => (handles.meteor_med.clone(), 43. / 2.0),
@@ -80,8 +80,10 @@ fn spawn_asteroid_event(
         commands.spawn((
             SpriteBundle {
                 // No custom size, the sprite png, are already at our game size.
+                // Transform Z is meaningfull for sprite stacking.
+                // Transform X and Y will be computed from xpbd Position component
                 transform: Transform {
-                    translation: Vec3::new(event.x, event.y, 1.0),
+                    translation: Vec3::Z * 1.0,
                     ..default()
                 },
                 texture: sprite_handle.clone(),
@@ -94,11 +96,10 @@ fn spawn_asteroid_event(
             },
             RigidBody::Dynamic,
             Collider::ball(radius),
-            ActiveEvents::COLLISION_EVENTS,
-            Velocity {
-                linvel: Vec2::new(event.vx, event.vy),
-                angvel: event.angvel,
-            },
+            Restitution::new(0.5),
+            Position(Vec2::new(event.x, event.y)),
+            LinearVelocity(Vec2::new(event.vx, event.vy)),
+            AngularVelocity(event.angvel),
         ));
     }
 }
@@ -156,11 +157,11 @@ fn asteroid_damage(
     mut explosion_spawn_events: EventWriter<SpawnExplosionEvent>,
     mut asteroid_spawn_events: EventWriter<AsteroidSpawnEvent>,
     transforms: Query<&Transform>,
-    asteroids: Query<(&Asteroid, &Transform, &Velocity)>,
+    asteroids: Query<(&Asteroid, &Transform, &AngularVelocity)>,
 ) {
-    for event in laser_asteroid_contact_events.iter() {
+    for event in laser_asteroid_contact_events.read() {
         let laser_transform = transforms.get(event.laser).unwrap();
-        let (asteroid, asteroid_transform, asteroid_velocity) =
+        let (asteroid, asteroid_transform, asteroid_angvel) =
             asteroids.get(event.asteroid).unwrap();
         arena.score += asteroid.size.score();
         {
@@ -171,18 +172,23 @@ fn asteroid_damage(
             });
             if let Some((size, radius)) = asteroid.size.split() {
                 let mut rng = thread_rng();
-                for _ in 0..rng.gen_range(1..4u8) {
-                    let x = asteroid_transform.translation.x + rng.gen_range(-radius..radius);
-                    let y = asteroid_transform.translation.y + rng.gen_range(-radius..radius);
-                    let vx = rng.gen_range((-ARENA_WIDTH / radius)..(ARENA_WIDTH / radius));
-                    let vy = rng.gen_range((-ARENA_HEIGHT / radius)..(ARENA_HEIGHT / radius));
+                for i in 0..4 {
+                    //rng.gen_range(1..4u8) {
+                    let x_pos = if i % 2 == 0 { 1. } else { -1. };
+                    let y_pos = if (i / 2) % 2 == 0 { 1. } else { -1. };
+                    let x = asteroid_transform.translation.x + x_pos * 1.5 * radius;
+                    let y = asteroid_transform.translation.y + y_pos * 1.5 * radius;
+                    let vx = rng
+                        .gen_range((-ARENA_WIDTH / (radius / 4.))..(ARENA_WIDTH / (radius / 4.)));
+                    let vy = rng
+                        .gen_range((-ARENA_HEIGHT / (radius / 4.))..(ARENA_HEIGHT / (radius / 4.)));
                     asteroid_spawn_events.send(AsteroidSpawnEvent {
                         size,
                         x,
                         y,
                         vx,
                         vy,
-                        angvel: asteroid_velocity.angvel,
+                        angvel: asteroid_angvel.0,
                     });
                 }
             }

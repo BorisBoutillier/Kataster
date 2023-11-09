@@ -34,7 +34,7 @@ fn catch_explosion_event(
     handles: Res<SpriteAssets>,
     audios: Res<AudioAssets>,
 ) {
-    for event in event_reader.iter() {
+    for event in event_reader.read() {
         let (texture, sound, start_size, end_scale, duration) = match event.kind {
             ExplosionKind::ShipDead => (
                 handles.ship_explosion.clone(),

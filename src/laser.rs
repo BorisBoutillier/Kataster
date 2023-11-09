@@ -7,7 +7,7 @@ pub struct LaserSpawnEvent {
     // The full position (translation+rotation) of the laser to spawn
     pub transform: Transform,
     // The velocity of the entity emitting the laser
-    pub velocity: Velocity,
+    pub linvel: LinearVelocity,
 }
 
 #[derive(Component)]
@@ -33,11 +33,12 @@ fn spawn_laser(
     handles: Res<SpriteAssets>,
     audios: Res<AudioAssets>,
 ) {
-    for spawn_event in laser_spawn_events.iter() {
+    for spawn_event in laser_spawn_events.read() {
         let transform = spawn_event.transform;
-        let velocity = Velocity::linear(
-            (spawn_event.velocity.linvel * Vec2::Y)
-                + (transform.rotation * Vec3::Y * 500.0).truncate(),
+        let position = Position(spawn_event.transform.translation.truncate());
+        let rotation: Rotation = transform.rotation.into();
+        let linvel = LinearVelocity(
+            (spawn_event.linvel.0 * Vec2::Y) + (transform.rotation * Vec3::Y * 500.0).truncate(),
         );
         commands.spawn((
             SpriteBundle {
@@ -45,9 +46,10 @@ fn spawn_laser(
                     custom_size: Some(Vec2::new(5., 20.0)),
                     ..default()
                 },
+                // Transform Z is meaningfull for sprite stacking.
+                // Transform X,Y and rotation will be computed from xpbd Position and Rotation components
                 transform: Transform {
-                    translation: Vec3::new(transform.translation.x, transform.translation.y, 2.0),
-                    rotation: transform.rotation,
+                    translation: Vec3::Z * 2.0,
                     ..default()
                 },
                 texture: handles.laser.clone(),
@@ -61,9 +63,10 @@ fn spawn_laser(
             },
             RigidBody::Dynamic,
             Collider::cuboid(2.5, 10.0),
-            velocity,
+            position,
+            rotation,
+            linvel,
             Sensor,
-            ActiveEvents::COLLISION_EVENTS,
             AudioBundle {
                 source: audios.laser_trigger.clone(),
                 ..default()

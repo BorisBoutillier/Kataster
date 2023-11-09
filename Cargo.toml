@@ -10,8 +10,9 @@ license = "MIT OR Apache-2.0"
 opt-level = 3
 
 [dependencies]
-bevy = "0.11"
-leafwing-input-manager = "0.10"
+bevy = "0.12"
+leafwing-input-manager = "0.11"
 rand = "0.8"
-bevy_rapier2d = "0.22"
-bevy_hanabi = "0.7"
+bevy_hanabi = "0.8"
+enum-iterator = "1.4.1"
+bevy_xpbd_2d = { version = "0.3" , features = [ "debug-plugin" ] } 

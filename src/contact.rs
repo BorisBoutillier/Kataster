@@ -19,39 +19,37 @@ impl Plugin for ContactPlugin {
 }
 
 fn contact_system(
-    mut collision_events: EventReader<CollisionEvent>,
+    mut collision_events: EventReader<CollisionStarted>,
     mut ship_asteroid_contact_events: EventWriter<ShipAsteroidContactEvent>,
     mut laser_asteroid_contact_events: EventWriter<LaserAsteroidContactEvent>,
     query: Query<(Has<Ship>, Has<Laser>, Has<Asteroid>)>,
 ) {
-    for event in collision_events.iter() {
-        if let CollisionEvent::Started(e1, e2, _flags) = event {
-            let (e1_is_ship, e1_is_laser, e1_is_asteroid) = query.get(*e1).unwrap();
-            let (e2_is_ship, e2_is_laser, e2_is_asteroid) = query.get(*e2).unwrap();
-            if e1_is_ship && e2_is_asteroid {
-                ship_asteroid_contact_events.send(ShipAsteroidContactEvent {
-                    ship: *e1,
-                    asteroid: *e2,
-                });
-            }
-            if e2_is_ship && e1_is_asteroid {
-                ship_asteroid_contact_events.send(ShipAsteroidContactEvent {
-                    ship: *e2,
-                    asteroid: *e1,
-                });
-            }
-            if e1_is_asteroid && e2_is_laser {
-                laser_asteroid_contact_events.send(LaserAsteroidContactEvent {
-                    asteroid: *e1,
-                    laser: *e2,
-                });
-            }
-            if e2_is_asteroid && e1_is_laser {
-                laser_asteroid_contact_events.send(LaserAsteroidContactEvent {
-                    asteroid: *e2,
-                    laser: *e1,
-                });
-            }
+    for CollisionStarted(e1, e2) in collision_events.read() {
+        let (e1_is_ship, e1_is_laser, e1_is_asteroid) = query.get(*e1).unwrap();
+        let (e2_is_ship, e2_is_laser, e2_is_asteroid) = query.get(*e2).unwrap();
+        if e1_is_ship && e2_is_asteroid {
+            ship_asteroid_contact_events.send(ShipAsteroidContactEvent {
+                ship: *e1,
+                asteroid: *e2,
+            });
+        }
+        if e2_is_ship && e1_is_asteroid {
+            ship_asteroid_contact_events.send(ShipAsteroidContactEvent {
+                ship: *e2,
+                asteroid: *e1,
+            });
+        }
+        if e1_is_asteroid && e2_is_laser {
+            laser_asteroid_contact_events.send(LaserAsteroidContactEvent {
+                asteroid: *e1,
+                laser: *e2,
+            });
+        }
+        if e2_is_asteroid && e1_is_laser {
+            laser_asteroid_contact_events.send(LaserAsteroidContactEvent {
+                asteroid: *e2,
+                laser: *e1,
+            });
         }
     }
 }

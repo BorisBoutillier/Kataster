@@ -185,12 +185,12 @@ fn pause_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
 fn menu_blink_system(
     mut commands: Commands,
     time: Res<Time>,
-    mut query: Query<(Entity, &mut DrawBlinkTimer, &ComputedVisibility)>,
+    mut query: Query<(Entity, &mut DrawBlinkTimer, &ViewVisibility)>,
 ) {
     for (entity, mut timer, visibility) in query.iter_mut() {
         timer.0.tick(time.delta());
         if timer.0.finished() {
-            let new_visibility = if visibility.is_visible() {
+            let new_visibility = if visibility.get() {
                 Visibility::Hidden
             } else {
                 Visibility::Visible
@@ -204,13 +204,13 @@ fn menu_input_system(
     state: ResMut<State<AppState>>,
     mut next_state: ResMut<NextState<AppState>>,
     menu_action_state: Res<ActionState<MenuAction>>,
-    mut rapier_configuration: ResMut<RapierConfiguration>,
+    mut physics_time: ResMut<Time<Physics>>,
     mut app_exit_events: EventWriter<AppExit>,
 ) {
     if state.get() != &AppState::StartMenu && menu_action_state.just_pressed(MenuAction::ExitToMenu)
     {
         next_state.set(AppState::StartMenu);
-        rapier_configuration.physics_pipeline_active = true;
+        physics_time.unpause();
     } else {
         match state.get() {
             AppState::StartMenu => {
@@ -227,13 +227,13 @@ fn menu_input_system(
             AppState::GameRunning => {
                 if menu_action_state.just_pressed(MenuAction::PauseUnpause) {
                     next_state.set(AppState::GamePaused);
-                    rapier_configuration.physics_pipeline_active = false;
+                    physics_time.pause();
                 }
             }
             AppState::GamePaused => {
                 if menu_action_state.just_pressed(MenuAction::PauseUnpause) {
                     next_state.set(AppState::GameRunning);
-                    rapier_configuration.physics_pipeline_active = true;
+                    physics_time.unpause();
                 }
             }
             AppState::GameOver => {

@@ -118,7 +118,7 @@ fn spawn_ship(mut commands: Commands, handles: Res<SpriteAssets>) {
         },
         Ship {
             rotation_speed: 3.0,
-            thrust: 60.0,
+            thrust: 300000.0,
             life: START_LIFE,
             cannon_timer: Timer::from_seconds(0.2, TimerMode::Once),
             player_id: 1,
@@ -130,9 +130,9 @@ fn spawn_ship(mut commands: Commands, handles: Res<SpriteAssets>) {
         },
         RigidBody::Dynamic,
         Collider::ball(13.5),
-        ExternalImpulse::default(),
-        Velocity::linear(Vec2::ZERO),
-        ActiveEvents::COLLISION_EVENTS,
+        ExternalForce::default(),
+        LinearVelocity::ZERO,
+        AngularVelocity::ZERO,
         InputManagerBundle::<PlayerAction> {
             action_state: ActionState::default(),
             input_map,
@@ -140,11 +140,14 @@ fn spawn_ship(mut commands: Commands, handles: Res<SpriteAssets>) {
     ));
 }
 
-fn ship_dampening_system(time: Res<Time>, mut query: Query<&mut Velocity, With<Ship>>) {
-    for mut velocity in query.iter_mut() {
+fn ship_dampening_system(
+    time: Res<Time>,
+    mut query: Query<(&mut LinearVelocity, &mut AngularVelocity), With<Ship>>,
+) {
+    for (mut linvel, mut angvel) in query.iter_mut() {
         let elapsed = time.delta_seconds();
-        velocity.angvel *= 0.1f32.powf(elapsed);
-        velocity.linvel *= 0.4f32.powf(elapsed);
+        angvel.0 *= 0.1f32.powf(elapsed);
+        linvel.0 *= 0.4f32.powf(elapsed);
     }
 }
 
@@ -155,17 +158,19 @@ fn ship_timers_system(time: Res<Time>, mut ship: Query<&mut Ship>) {
     }
 }
 
+#[allow(clippy::type_complexity)]
 fn ship_input_system(
     mut laser_spawn_events: EventWriter<LaserSpawnEvent>,
     mut query: Query<(
         &ActionState<PlayerAction>,
-        &mut ExternalImpulse,
-        &mut Velocity,
+        &mut ExternalForce,
+        &mut LinearVelocity,
+        &mut AngularVelocity,
         &Transform,
         &mut Ship,
     )>,
 ) {
-    for (action_state, mut impulse, mut velocity, transform, mut ship) in query.iter_mut() {
+    for (action_state, mut force, linvel, mut angvel, transform, mut ship) in query.iter_mut() {
         let thrust = if action_state.pressed(PlayerAction::Forward) {
             1.0
         } else {
@@ -180,14 +185,14 @@ fn ship_input_system(
         };
         let fire = action_state.pressed(PlayerAction::Fire);
         if rotation != 0 {
-            velocity.angvel = rotation as f32 * ship.rotation_speed;
+            angvel.0 = rotation as f32 * ship.rotation_speed;
         }
-        impulse.impulse = (transform.rotation * (Vec3::Y * thrust * ship.thrust)).truncate();
+        force.set_force((transform.rotation * (Vec3::Y * thrust * ship.thrust)).truncate());
 
         if fire && ship.cannon_timer.finished() {
             laser_spawn_events.send(LaserSpawnEvent {
                 transform: *transform,
-                velocity: *velocity,
+                linvel: *linvel,
             });
             ship.cannon_timer.reset();
         }
@@ -201,7 +206,7 @@ fn ship_damage(
     mut explosion_spawn_events: EventWriter<SpawnExplosionEvent>,
     mut ships: Query<(&mut Ship, &Transform)>,
 ) {
-    for event in ship_asteroid_contact_events.iter() {
+    for event in ship_asteroid_contact_events.read() {
         let (mut ship, ship_transform) = ships
             .get_mut(event.ship)
             .expect("Ship referenced in event does not exist");
