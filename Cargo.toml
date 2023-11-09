@@ -15,6 +15,5 @@ leafwing-input-manager = "0.11"
 rand = "0.8"
 #bevy_rapier2d = "0.22"
 bevy_rapier2d = { git = "https://github.com/devil-ira/bevy_rapier.git" , branch = "bevy-0.12" }
-#bevy_hanabi = "0.7"
-bevy_hanabi = { git = "https://github.com/djeedai/bevy_hanabi.git" }
+bevy_hanabi = "0.8"
 enum-iterator = "1.4.1"

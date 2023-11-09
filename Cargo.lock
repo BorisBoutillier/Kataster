@@ -606,7 +606,8 @@ dependencies = [
 [[package]]
 name = "bevy_hanabi"
 version = "0.8.0"
-source = "git+https://github.com/djeedai/bevy_hanabi.git#69b20038baa9ae8228173dda012462d49eddda1e"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dca4b0a04e401d05dc74bc829f2e41bd62afdbacc095165fadb4e93caf0ba546"
 dependencies = [
  "anyhow",
  "bevy",
@@ -1772,9 +1773,9 @@ dependencies = [
 
 [[package]]
 name = "getrandom"
-version = "0.2.10"
+version = "0.2.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be4136b2a15dd319360be1c07d9933517ccf0be8f16bf62a3bee4f0d618df427"
+checksum = "fe9006bed769170c11f845cf00c7c1e9092aeb3f268e007c3e760ac68008070f"
 dependencies = [
  "cfg-if",
  "js-sys",
