@@ -6,7 +6,7 @@ use crate::prelude::*;
 pub struct DrawBlinkTimer(pub Timer);
 
 // List of user actions associated to menu/ui interaction
-#[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, TypePath)]
+#[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, Reflect)]
 pub enum MenuAction {
     // Starts the game when in the start screen
     // Go to the start screen when in the game over screen

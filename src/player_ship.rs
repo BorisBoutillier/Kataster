@@ -9,7 +9,7 @@ const MAX_INVINCIBLE_TIME: f32 = 5.0;
 // Actions are divided in two enums
 // One for pure Player Ship actions, during effective gameplay, added on the player entity itself.
 // One for Menu actions, added as a global resource
-#[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, TypePath)]
+#[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, Reflect)]
 pub enum PlayerAction {
     Forward,
     RotateLeft,
