@@ -12,4 +12,4 @@ It showcases some other commonplace bevy plugins, _bevy_xbpd_ for physics, _leaf
 
 ## Bevy dependencies
 
-Up to date for bevy 0.12
+Up to date for bevy 0.13

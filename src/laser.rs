@@ -62,7 +62,7 @@ fn spawn_laser(
                 states: AppState::ANY_GAME_STATE.to_vec(),
             },
             RigidBody::Dynamic,
-            Collider::cuboid(2.5, 10.0),
+            Collider::rectangle(2.5, 10.0),
             position,
             rotation,
             linvel,

@@ -18,7 +18,7 @@ pub enum AppState {
     GameOver,
 }
 impl AppState {
-    pub const ANY_GAME_STATE: &[AppState; 4] = &[
+    pub const ANY_GAME_STATE: [AppState; 4] = [
         AppState::GameCreate,
         AppState::GameRunning,
         AppState::GamePaused,

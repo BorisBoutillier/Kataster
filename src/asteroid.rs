@@ -95,7 +95,7 @@ fn spawn_asteroid_event(
                 states: AppState::ANY_GAME_STATE.to_vec(),
             },
             RigidBody::Dynamic,
-            Collider::ball(radius),
+            Collider::circle(radius),
             Restitution::new(0.5),
             Position(Vec2::new(event.x, event.y)),
             LinearVelocity(Vec2::new(event.vx, event.vy)),

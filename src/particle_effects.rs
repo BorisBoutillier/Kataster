@@ -72,7 +72,7 @@ fn update_thrust_particles(
     mut exhaust_effect: Query<&mut EffectSpawner, With<ExhaustEffect>>,
 ) {
     for (action_state, children) in player.iter() {
-        if action_state.pressed(PlayerAction::Forward) {
+        if action_state.pressed(&PlayerAction::Forward) {
             for &child in children.iter() {
                 if let Ok(mut spawner) = exhaust_effect.get_mut(child) {
                     spawner.reset();

@@ -9,7 +9,7 @@ const MAX_INVINCIBLE_TIME: f32 = 5.0;
 // Actions are divided in two enums
 // One for pure Player Ship actions, during effective gameplay, added on the player entity itself.
 // One for Menu actions, added as a global resource
-#[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, TypePath)]
+#[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug, Reflect)]
 pub enum PlayerAction {
     Forward,
     RotateLeft,
@@ -74,30 +74,30 @@ pub struct ExhaustEffect;
 fn spawn_ship(mut commands: Commands, handles: Res<SpriteAssets>) {
     // For player actions, allow keyboard WASD/ Arrows/ Gamepag to control the ship
     let mut input_map = InputMap::new([
-        (KeyCode::W, PlayerAction::Forward),
-        (KeyCode::Up, PlayerAction::Forward),
-        (KeyCode::A, PlayerAction::RotateLeft),
-        (KeyCode::Left, PlayerAction::RotateLeft),
-        (KeyCode::D, PlayerAction::RotateRight),
-        (KeyCode::Right, PlayerAction::RotateRight),
-        (KeyCode::Space, PlayerAction::Fire),
+        (PlayerAction::Forward, KeyCode::KeyW),
+        (PlayerAction::Forward, KeyCode::ArrowUp),
+        (PlayerAction::RotateLeft, KeyCode::KeyA),
+        (PlayerAction::RotateLeft, KeyCode::ArrowLeft),
+        (PlayerAction::RotateRight, KeyCode::KeyD),
+        (PlayerAction::RotateRight, KeyCode::ArrowRight),
+        (PlayerAction::Fire, KeyCode::Space),
     ]);
-    input_map.insert(GamepadButtonType::South, PlayerAction::Fire);
+    input_map.insert(PlayerAction::Fire, GamepadButtonType::South);
     input_map.insert(
+        PlayerAction::Forward,
         SingleAxis::positive_only(GamepadAxisType::LeftStickY, 0.4),
-        PlayerAction::Forward,
     );
     input_map.insert(
+        PlayerAction::Forward,
         SingleAxis::negative_only(GamepadAxisType::LeftStickY, -0.4),
-        PlayerAction::Forward,
     );
     input_map.insert(
-        SingleAxis::positive_only(GamepadAxisType::LeftStickX, 0.4),
         PlayerAction::RotateRight,
+        SingleAxis::positive_only(GamepadAxisType::LeftStickX, 0.4),
     );
     input_map.insert(
-        SingleAxis::negative_only(GamepadAxisType::LeftStickX, -0.4),
         PlayerAction::RotateLeft,
+        SingleAxis::negative_only(GamepadAxisType::LeftStickX, -0.4),
     );
     let mut invincible_timer = Timer::from_seconds(INVINCIBLE_TIME, TimerMode::Once);
     // Straghtaway consume the timer, we don't want invincibility at creation.
@@ -129,7 +129,7 @@ fn spawn_ship(mut commands: Commands, handles: Res<SpriteAssets>) {
             states: AppState::ANY_GAME_STATE.to_vec(),
         },
         RigidBody::Dynamic,
-        Collider::ball(13.5),
+        Collider::circle(13.5),
         ExternalForce::default(),
         LinearVelocity::ZERO,
         AngularVelocity::ZERO,
@@ -171,19 +171,19 @@ fn ship_input_system(
     )>,
 ) {
     for (action_state, mut force, linvel, mut angvel, transform, mut ship) in query.iter_mut() {
-        let thrust = if action_state.pressed(PlayerAction::Forward) {
+        let thrust = if action_state.pressed(&PlayerAction::Forward) {
             1.0
         } else {
             0.0
         };
-        let rotation = if action_state.pressed(PlayerAction::RotateLeft) {
+        let rotation = if action_state.pressed(&PlayerAction::RotateLeft) {
             1
-        } else if action_state.pressed(PlayerAction::RotateRight) {
+        } else if action_state.pressed(&PlayerAction::RotateRight) {
             -1
         } else {
             0
         };
-        let fire = action_state.pressed(PlayerAction::Fire);
+        let fire = action_state.pressed(&PlayerAction::Fire);
         if rotation != 0 {
             angvel.0 = rotation as f32 * ship.rotation_speed;
         }
