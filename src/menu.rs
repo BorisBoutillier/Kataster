@@ -33,15 +33,15 @@ impl Plugin for MenuPlugin {
 
 fn setup(mut commands: Commands) {
     let mut input_map = InputMap::<MenuAction>::new([
-        (KeyCode::Return, MenuAction::Accept),
-        (KeyCode::Escape, MenuAction::PauseUnpause),
-        (KeyCode::Back, MenuAction::ExitToMenu),
-        (KeyCode::Escape, MenuAction::Quit),
+        (MenuAction::Accept, KeyCode::Enter),
+        (MenuAction::PauseUnpause, KeyCode::Escape),
+        (MenuAction::ExitToMenu, KeyCode::Backspace),
+        (MenuAction::Quit, KeyCode::Escape),
     ]);
-    input_map.insert(GamepadButtonType::Select, MenuAction::ExitToMenu);
-    input_map.insert(GamepadButtonType::Start, MenuAction::PauseUnpause);
-    input_map.insert(GamepadButtonType::South, MenuAction::Accept);
-    input_map.insert(GamepadButtonType::East, MenuAction::Quit);
+    input_map.insert(MenuAction::ExitToMenu, GamepadButtonType::Select);
+    input_map.insert(MenuAction::PauseUnpause, GamepadButtonType::Start);
+    input_map.insert(MenuAction::Accept, GamepadButtonType::South);
+    input_map.insert(MenuAction::Quit, GamepadButtonType::East);
     // Insert MenuAction resources
     commands.insert_resource(input_map);
     commands.insert_resource(ActionState::<MenuAction>::default());
@@ -207,17 +207,18 @@ fn menu_input_system(
     mut physics_time: ResMut<Time<Physics>>,
     mut app_exit_events: EventWriter<AppExit>,
 ) {
-    if state.get() != &AppState::StartMenu && menu_action_state.just_pressed(MenuAction::ExitToMenu)
+    if state.get() != &AppState::StartMenu
+        && menu_action_state.just_pressed(&MenuAction::ExitToMenu)
     {
         next_state.set(AppState::StartMenu);
         physics_time.unpause();
     } else {
         match state.get() {
             AppState::StartMenu => {
-                if menu_action_state.just_pressed(MenuAction::Accept) {
+                if menu_action_state.just_pressed(&MenuAction::Accept) {
                     next_state.set(AppState::GameCreate);
                 }
-                if menu_action_state.just_pressed(MenuAction::Quit) {
+                if menu_action_state.just_pressed(&MenuAction::Quit) {
                     app_exit_events.send(AppExit);
                 }
             }
@@ -225,19 +226,19 @@ fn menu_input_system(
                 next_state.set(AppState::GameRunning);
             }
             AppState::GameRunning => {
-                if menu_action_state.just_pressed(MenuAction::PauseUnpause) {
+                if menu_action_state.just_pressed(&MenuAction::PauseUnpause) {
                     next_state.set(AppState::GamePaused);
                     physics_time.pause();
                 }
             }
             AppState::GamePaused => {
-                if menu_action_state.just_pressed(MenuAction::PauseUnpause) {
+                if menu_action_state.just_pressed(&MenuAction::PauseUnpause) {
                     next_state.set(AppState::GameRunning);
                     physics_time.unpause();
                 }
             }
             AppState::GameOver => {
-                if menu_action_state.just_pressed(MenuAction::Accept) {
+                if menu_action_state.just_pressed(&MenuAction::Accept) {
                     next_state.set(AppState::StartMenu);
                 }
             }

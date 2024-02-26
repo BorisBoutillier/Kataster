@@ -1,9 +1,6 @@
 use bevy::render::render_resource::{AsBindGroup, ShaderRef};
 use bevy::sprite::Material2dPlugin;
-use bevy::{
-    reflect::TypeUuid,
-    sprite::{Material2d, MaterialMesh2dBundle},
-};
+use bevy::sprite::{Material2d, MaterialMesh2dBundle};
 
 use crate::prelude::*;
 
@@ -24,7 +21,7 @@ fn spawn_background(
     mut materials: ResMut<Assets<BackgroundMaterial>>,
 ) {
     commands.spawn(MaterialMesh2dBundle {
-        mesh: meshes.add(Mesh::from(shape::Quad::default())).into(),
+        mesh: meshes.add(Mesh::from(Rectangle::default())).into(),
         transform: Transform {
             translation: Vec3::new(0.0, 0.0, 0.0),
             scale: Vec3::new(ARENA_WIDTH, ARENA_HEIGHT, 1.0),
@@ -35,8 +32,7 @@ fn spawn_background(
     });
 }
 
-#[derive(Asset, AsBindGroup, Debug, Clone, TypeUuid, TypePath)]
-#[uuid = "d1776d38-712a-11ec-90d6-0242ac120003"]
+#[derive(Asset, AsBindGroup, Debug, Clone, TypePath)]
 struct BackgroundMaterial {
     #[uniform(0)]
     time: f32,
