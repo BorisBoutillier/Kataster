@@ -23,11 +23,11 @@ pub enum MenuAction {
 pub struct MenuPlugin;
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(AppState::StartMenu), start_menu)
+        app.add_systems(OnEnter(AppState::Setup), setup)
+            .add_systems(OnEnter(AppState::StartMenu), start_menu)
             .add_systems(OnEnter(AppState::GamePaused), pause_menu)
             .add_systems(OnEnter(AppState::GameOver), gameover_menu)
-            .add_systems(Update, (menu_input_system, menu_blink_system))
-            .add_systems(Startup, setup);
+            .add_systems(Update, (menu_input_system, menu_blink_system));
     }
 }
 
@@ -73,7 +73,7 @@ fn start_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
                     TextStyle {
                         font: assets.font.clone(),
                         font_size: 100.0,
-                        color: Color::rgb_u8(0x00, 0xAA, 0xAA),
+                        color: Color::srgb_u8(0x00, 0xAA, 0xAA),
                     },
                 ),
                 ..default()
@@ -86,7 +86,7 @@ fn start_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
                         TextStyle {
                             font: assets.font.clone(),
                             font_size: 50.0,
-                            color: Color::rgb_u8(0x00, 0x44, 0x44),
+                            color: Color::srgb_u8(0x00, 0x44, 0x44),
                         },
                     ),
                     ..default()
@@ -122,7 +122,7 @@ fn gameover_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
                     TextStyle {
                         font: assets.font.clone(),
                         font_size: 100.0,
-                        color: Color::rgb_u8(0xAA, 0x22, 0x22),
+                        color: Color::srgb_u8(0xAA, 0x22, 0x22),
                     },
                 ),
                 ..default()
@@ -135,7 +135,7 @@ fn gameover_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
                         TextStyle {
                             font: assets.font.clone(),
                             font_size: 50.0,
-                            color: Color::rgb_u8(0x88, 0x22, 0x22),
+                            color: Color::srgb_u8(0x88, 0x22, 0x22),
                         },
                     ),
                     ..default()
@@ -172,7 +172,7 @@ fn pause_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
                         TextStyle {
                             font: assets.font.clone(),
                             font_size: 100.0,
-                            color: Color::rgb_u8(0xF8, 0xE4, 0x73),
+                            color: Color::srgb_u8(0xF8, 0xE4, 0x73),
                         },
                     ),
                     ..default()
@@ -214,12 +214,13 @@ fn menu_input_system(
         physics_time.unpause();
     } else {
         match state.get() {
+            AppState::Setup => (),
             AppState::StartMenu => {
                 if menu_action_state.just_pressed(&MenuAction::Accept) {
                     next_state.set(AppState::GameCreate);
                 }
                 if menu_action_state.just_pressed(&MenuAction::Quit) {
-                    app_exit_events.send(AppExit);
+                    app_exit_events.send(AppExit::Success);
                 }
             }
             AppState::GameCreate => {

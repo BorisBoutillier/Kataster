@@ -55,7 +55,7 @@ fn hud_spawn(mut commands: Commands, assets: ResMut<UiAssets>) {
                         TextStyle {
                             font: assets.font.clone(),
                             font_size: 50.0,
-                            color: Color::rgb_u8(0x00, 0xAA, 0xAA),
+                            color: Color::srgb_u8(0x00, 0xAA, 0xAA),
                         },
                     ),
                     ..default()

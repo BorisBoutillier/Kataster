@@ -11,6 +11,7 @@ pub struct ForState<T> {
 #[derive(States, Debug, Copy, Clone, Hash, Eq, PartialEq, Default, Sequence)]
 pub enum AppState {
     #[default]
+    Setup,
     StartMenu,
     GameCreate,
     GameRunning,
@@ -36,6 +37,10 @@ impl Plugin for StatesPlugin {
         for state in all::<AppState>() {
             app.add_systems(OnEnter(state), state_enter_despawn::<AppState>);
         }
+        app.add_systems(
+            Update,
+            transition_setup_to_menu.run_if(in_state(AppState::Setup)),
+        );
     }
 }
 
@@ -49,4 +54,7 @@ fn state_enter_despawn<T: States>(
             commands.entity(entity).despawn_recursive();
         }
     }
+}
+fn transition_setup_to_menu(mut app_state: ResMut<NextState<AppState>>) {
+    app_state.set(AppState::StartMenu);
 }

@@ -9,7 +9,7 @@ pub struct BackgroundPlugin;
 impl Plugin for BackgroundPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(Material2dPlugin::<BackgroundMaterial>::default())
-            .add_systems(Startup, spawn_background)
+            .add_systems(OnEnter(AppState::Setup), spawn_background)
             .add_systems(Update, update_background_time);
     }
 }

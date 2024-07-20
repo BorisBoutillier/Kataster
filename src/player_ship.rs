@@ -245,7 +245,7 @@ fn ship_invincible_color(mut ships: Query<(&Ship, &mut Sprite)>) {
             ship_sprite.color = Color::WHITE;
         } else {
             let alpha = (ship.invincible_timer.elapsed_secs() * 2.0) % 1.0;
-            ship_sprite.color = Color::rgba(1.0, 0.4, 0.2, alpha);
+            ship_sprite.color = Color::srgba(1.0, 0.4, 0.2, alpha);
         }
     }
 }

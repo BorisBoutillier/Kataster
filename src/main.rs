@@ -39,9 +39,7 @@ use crate::prelude::*;
 fn main() {
     let mut app = App::new();
 
-    app.init_state::<AppState>();
-
-    app.insert_resource(ClearColor(Color::rgb_u8(0, 0, 0)));
+    app.insert_resource(ClearColor(Color::srgb_u8(0, 0, 0)));
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
         primary_window: Some(Window {
             title: "Kataster".to_string(),
@@ -50,6 +48,8 @@ fn main() {
         }),
         ..default()
     }));
+    app.init_state::<AppState>();
+
     // Enable XPBD debug renders when compiled in debug mode
     #[cfg(debug_assertions)]
     app.add_plugins(PhysicsDebugPlugin::default());
@@ -79,7 +79,7 @@ fn main() {
         BackgroundPlugin,
     ));
 
-    app.add_systems(Startup, setup_camera);
+    app.add_systems(OnEnter(AppState::Setup), setup_camera);
     app.run();
 }
 
