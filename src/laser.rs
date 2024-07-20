@@ -1,8 +1,6 @@
 use crate::prelude::*;
 
 #[derive(Event)]
-pub struct LaserDespawnEvent(pub Entity);
-#[derive(Event)]
 pub struct LaserSpawnEvent {
     // The full position (translation+rotation) of the laser to spawn
     pub transform: Transform,
@@ -18,12 +16,10 @@ pub struct LaserPlugin;
 
 impl Plugin for LaserPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<LaserDespawnEvent>()
-            .add_event::<LaserSpawnEvent>()
-            .add_systems(
-                Update,
-                (laser_timeout_system, spawn_laser).run_if(in_state(AppState::GameRunning)),
-            );
+        app.add_event::<LaserSpawnEvent>().add_systems(
+            Update,
+            (laser_timeout_system, spawn_laser).run_if(in_state(AppState::GameRunning)),
+        );
     }
 }
 
@@ -40,6 +36,11 @@ fn spawn_laser(
         let linvel = LinearVelocity(
             (spawn_event.linvel.0 * Vec2::Y) + (transform.rotation * Vec3::Y * 500.0).truncate(),
         );
+        let collider = Collider::rectangle(2.5, 10.0);
+        // It seems the way laser are spawned, xpbd does not create a ColliderMassProperties.
+        // So I add it explicitely to avoid a runtime warning.
+        // I did not search why the laser spawning is special.
+        let mass_properties = MassPropertiesBundle::new_computed(&collider, 1.0);
         commands.spawn((
             SpriteBundle {
                 sprite: Sprite {
@@ -62,7 +63,8 @@ fn spawn_laser(
                 states: AppState::ANY_GAME_STATE.to_vec(),
             },
             RigidBody::Dynamic,
-            Collider::rectangle(2.5, 10.0),
+            collider,
+            mass_properties,
             position,
             rotation,
             linvel,

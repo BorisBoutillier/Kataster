@@ -90,7 +90,7 @@ fn spawn_asteroid_event(
                 ..default()
             },
             Asteroid { size: event.size },
-            Damage { value: 1 },
+            Damage,
             ForState {
                 states: AppState::ANY_GAME_STATE.to_vec(),
             },

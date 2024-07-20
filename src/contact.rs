@@ -28,16 +28,10 @@ fn contact_system(
         let (e1_is_ship, e1_is_laser, e1_is_asteroid) = query.get(*e1).unwrap();
         let (e2_is_ship, e2_is_laser, e2_is_asteroid) = query.get(*e2).unwrap();
         if e1_is_ship && e2_is_asteroid {
-            ship_asteroid_contact_events.send(ShipAsteroidContactEvent {
-                ship: *e1,
-                asteroid: *e2,
-            });
+            ship_asteroid_contact_events.send(ShipAsteroidContactEvent { ship: *e1 });
         }
         if e2_is_ship && e1_is_asteroid {
-            ship_asteroid_contact_events.send(ShipAsteroidContactEvent {
-                ship: *e2,
-                asteroid: *e1,
-            });
+            ship_asteroid_contact_events.send(ShipAsteroidContactEvent { ship: *e2 });
         }
         if e1_is_asteroid && e2_is_laser {
             laser_asteroid_contact_events.send(LaserAsteroidContactEvent {

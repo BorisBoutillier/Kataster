@@ -36,14 +36,11 @@ pub struct Ship {
 }
 
 #[derive(Component, Clone, Copy)]
-pub struct Damage {
-    pub value: u32,
-}
+pub struct Damage;
 
 #[derive(Event)]
 pub struct ShipAsteroidContactEvent {
     pub ship: Entity,
-    pub asteroid: Entity,
 }
 
 pub struct PlayerShipPlugin;
