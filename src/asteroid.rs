@@ -61,7 +61,7 @@ impl Plugin for AsteroidPlugin {
                     spawn_asteroid_event,
                     asteroid_damage.after(ContactSet),
                 )
-                    .run_if(in_state(AppState::GameRunning)),
+                    .run_if(in_state(GameState::Running)),
             );
     }
 }
@@ -91,9 +91,7 @@ fn spawn_asteroid_event(
             },
             Asteroid { size: event.size },
             Damage,
-            ForState {
-                states: AppState::ANY_GAME_STATE.to_vec(),
-            },
+            StateScoped(AppState::Game),
             RigidBody::Dynamic,
             Collider::circle(radius),
             Restitution::new(0.5),

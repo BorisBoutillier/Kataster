@@ -46,10 +46,10 @@ impl Material2d for BackgroundMaterial {
 
 fn update_background_time(
     time: Res<Time>,
-    state: Res<State<AppState>>,
+    state: Option<Res<State<GameState>>>,
     mut backgrounds: ResMut<Assets<BackgroundMaterial>>,
 ) {
-    if state.get() != &AppState::GamePaused {
+    if state.is_none() || state.unwrap().get() != &GameState::Paused {
         for (_, background) in backgrounds.iter_mut() {
             background.time += time.delta_seconds();
         }

@@ -24,10 +24,14 @@ pub struct MenuPlugin;
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(AppState::Setup), setup)
-            .add_systems(OnEnter(AppState::StartMenu), start_menu)
-            .add_systems(OnEnter(AppState::GamePaused), pause_menu)
-            .add_systems(OnEnter(AppState::GameOver), gameover_menu)
-            .add_systems(Update, (menu_input_system, menu_blink_system));
+            .add_systems(OnEnter(AppState::Menu), start_menu)
+            .add_systems(OnEnter(GameState::Paused), pause_menu)
+            .add_systems(OnEnter(GameState::Over), gameover_menu)
+            .add_systems(Update, (menu_input_system, menu_blink_system))
+            .add_systems(
+                Update,
+                in_game_menu_input_system.run_if(in_state(AppState::Game)),
+            );
     }
 }
 
@@ -61,9 +65,7 @@ fn start_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
                 },
                 ..default()
             },
-            ForState {
-                states: vec![AppState::StartMenu],
-            },
+            StateScoped(AppState::Menu),
         ))
         .with_children(|parent| {
             parent.spawn((TextBundle {
@@ -110,9 +112,7 @@ fn gameover_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
                 },
                 ..default()
             },
-            ForState {
-                states: vec![AppState::GameOver],
-            },
+            StateScoped(GameState::Over),
         ))
         .with_children(|parent| {
             parent.spawn((TextBundle {
@@ -159,9 +159,7 @@ fn pause_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
                 },
                 ..default()
             },
-            ForState {
-                states: vec![AppState::GamePaused],
-            },
+            StateScoped(GameState::Paused),
         ))
         .with_children(|parent| {
             parent.spawn((
@@ -201,47 +199,52 @@ fn menu_blink_system(
 }
 
 fn menu_input_system(
-    state: ResMut<State<AppState>>,
-    mut next_state: ResMut<NextState<AppState>>,
+    app_state: ResMut<State<AppState>>,
+    mut next_app_state: ResMut<NextState<AppState>>,
     menu_action_state: Res<ActionState<MenuAction>>,
     mut physics_time: ResMut<Time<Physics>>,
     mut app_exit_events: EventWriter<AppExit>,
 ) {
-    if state.get() != &AppState::StartMenu
-        && menu_action_state.just_pressed(&MenuAction::ExitToMenu)
+    if app_state.get() != &AppState::Menu && menu_action_state.just_pressed(&MenuAction::ExitToMenu)
     {
-        next_state.set(AppState::StartMenu);
+        next_app_state.set(AppState::Menu);
         physics_time.unpause();
-    } else {
-        match state.get() {
-            AppState::Setup => (),
-            AppState::StartMenu => {
-                if menu_action_state.just_pressed(&MenuAction::Accept) {
-                    next_state.set(AppState::GameCreate);
-                }
-                if menu_action_state.just_pressed(&MenuAction::Quit) {
-                    app_exit_events.send(AppExit::Success);
-                }
+    } else if app_state.get() == &AppState::Menu {
+        if menu_action_state.just_pressed(&MenuAction::Accept) {
+            next_app_state.set(AppState::Game);
+        }
+        if menu_action_state.just_pressed(&MenuAction::Quit) {
+            app_exit_events.send(AppExit::Success);
+        }
+    }
+}
+
+fn in_game_menu_input_system(
+    game_state: ResMut<State<GameState>>,
+    mut next_app_state: ResMut<NextState<AppState>>,
+    mut next_game_state: ResMut<NextState<GameState>>,
+    menu_action_state: Res<ActionState<MenuAction>>,
+    mut physics_time: ResMut<Time<Physics>>,
+) {
+    match game_state.get() {
+        GameState::Setup => {
+            next_game_state.set(GameState::Running);
+        }
+        GameState::Running => {
+            if menu_action_state.just_pressed(&MenuAction::PauseUnpause) {
+                next_game_state.set(GameState::Paused);
+                physics_time.pause();
             }
-            AppState::GameCreate => {
-                next_state.set(AppState::GameRunning);
+        }
+        GameState::Paused => {
+            if menu_action_state.just_pressed(&MenuAction::PauseUnpause) {
+                next_game_state.set(GameState::Running);
+                physics_time.unpause();
             }
-            AppState::GameRunning => {
-                if menu_action_state.just_pressed(&MenuAction::PauseUnpause) {
-                    next_state.set(AppState::GamePaused);
-                    physics_time.pause();
-                }
-            }
-            AppState::GamePaused => {
-                if menu_action_state.just_pressed(&MenuAction::PauseUnpause) {
-                    next_state.set(AppState::GameRunning);
-                    physics_time.unpause();
-                }
-            }
-            AppState::GameOver => {
-                if menu_action_state.just_pressed(&MenuAction::Accept) {
-                    next_state.set(AppState::StartMenu);
-                }
+        }
+        GameState::Over => {
+            if menu_action_state.just_pressed(&MenuAction::Accept) {
+                next_app_state.set(AppState::Menu);
             }
         }
     }

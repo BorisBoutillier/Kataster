@@ -12,7 +12,7 @@ impl Plugin for ParticleEffectsPlugin {
             .add_systems(Update, add_thrust_particles_to_ship)
             .add_systems(
                 Update,
-                update_thrust_particles.run_if(in_state(AppState::GameRunning)),
+                update_thrust_particles.run_if(in_state(GameState::Running)),
             );
     }
 }

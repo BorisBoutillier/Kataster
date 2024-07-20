@@ -76,9 +76,7 @@ fn catch_explosion_event(
                 start_scale: 1.,
                 end_scale,
             },
-            ForState {
-                states: AppState::ANY_GAME_STATE.to_vec(),
-            },
+            StateScoped(AppState::Game),
             AudioBundle {
                 source: sound,
                 ..default()

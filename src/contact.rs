@@ -13,7 +13,7 @@ impl Plugin for ContactPlugin {
             Update,
             contact_system
                 .in_set(ContactSet)
-                .run_if(in_state(AppState::GameRunning)),
+                .run_if(in_state(GameState::Running)),
         );
     }
 }

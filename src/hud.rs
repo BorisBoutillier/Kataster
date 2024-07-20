@@ -12,9 +12,9 @@ impl Plugin for HudPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (hud_score_system, hud_life_system).run_if(in_state(AppState::GameRunning)),
+            (hud_score_system, hud_life_system).run_if(in_state(GameState::Running)),
         )
-        .add_systems(OnEnter(AppState::GameCreate), hud_spawn);
+        .add_systems(OnEnter(GameState::Setup), hud_spawn);
     }
 }
 
@@ -33,9 +33,7 @@ fn hud_spawn(mut commands: Commands, assets: ResMut<UiAssets>) {
                 },
                 ..default()
             },
-            ForState {
-                states: AppState::ANY_GAME_STATE.to_vec(),
-            },
+            StateScoped(AppState::Game),
         ))
         .with_children(|parent| {
             parent.spawn((
@@ -79,9 +77,7 @@ fn hud_spawn(mut commands: Commands, assets: ResMut<UiAssets>) {
                 },
                 ..default()
             },
-            ForState {
-                states: AppState::ANY_GAME_STATE.to_vec(),
-            },
+            StateScoped(AppState::Game),
         ))
         .with_children(|parent| {
             for i in 1..(START_LIFE + 1) {

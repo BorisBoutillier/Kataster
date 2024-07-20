@@ -49,7 +49,7 @@ impl Plugin for PlayerShipPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(InputManagerPlugin::<PlayerAction>::default());
         app.add_event::<ShipAsteroidContactEvent>()
-            .add_systems(OnEnter(AppState::GameCreate), spawn_ship)
+            .add_systems(OnEnter(GameState::Setup), spawn_ship)
             .add_systems(
                 Update,
                 (
@@ -59,7 +59,7 @@ impl Plugin for PlayerShipPlugin {
                     ship_invincible_color,
                     ship_damage.after(ContactSet),
                 )
-                    .run_if(in_state(AppState::GameRunning)),
+                    .run_if(in_state(GameState::Running)),
             );
     }
 }
@@ -122,9 +122,7 @@ fn spawn_ship(mut commands: Commands, handles: Res<SpriteAssets>) {
             invincible_timer,
             invincible_time_secs: 0.0,
         },
-        ForState {
-            states: AppState::ANY_GAME_STATE.to_vec(),
-        },
+        StateScoped(AppState::Game),
         RigidBody::Dynamic,
         Collider::circle(13.5),
         ExternalForce::default(),
@@ -198,7 +196,7 @@ fn ship_input_system(
 
 fn ship_damage(
     mut commands: Commands,
-    mut next_state: ResMut<NextState<AppState>>,
+    mut next_state: ResMut<NextState<GameState>>,
     mut ship_asteroid_contact_events: EventReader<ShipAsteroidContactEvent>,
     mut explosion_spawn_events: EventWriter<SpawnExplosionEvent>,
     mut ships: Query<(&mut Ship, &Transform)>,
@@ -217,7 +215,7 @@ fn ship_damage(
                     y: ship_transform.translation.y,
                 });
                 commands.entity(event.ship).despawn_recursive();
-                next_state.set(AppState::GameOver);
+                next_state.set(GameState::Over);
             } else {
                 explosion_spawn_events.send(SpawnExplosionEvent {
                     kind: ExplosionKind::ShipContact,

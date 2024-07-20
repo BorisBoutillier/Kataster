@@ -48,7 +48,6 @@ fn main() {
         }),
         ..default()
     }));
-    app.init_state::<AppState>();
 
     // Enable XPBD debug renders when compiled in debug mode
     #[cfg(debug_assertions)]
@@ -66,6 +65,7 @@ fn main() {
     ));
 
     app.add_plugins((
+        StatesPlugin,
         AssetsPlugin,
         ArenaPlugin,
         PlayerShipPlugin,
@@ -73,7 +73,6 @@ fn main() {
         AsteroidPlugin,
         HudPlugin,
         MenuPlugin,
-        StatesPlugin,
         ContactPlugin,
         ExplosionPlugin,
         BackgroundPlugin,

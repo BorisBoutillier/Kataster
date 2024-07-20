@@ -18,7 +18,7 @@ impl Plugin for LaserPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<LaserSpawnEvent>().add_systems(
             Update,
-            (laser_timeout_system, spawn_laser).run_if(in_state(AppState::GameRunning)),
+            (laser_timeout_system, spawn_laser).run_if(in_state(GameState::Running)),
         );
     }
 }
@@ -59,9 +59,7 @@ fn spawn_laser(
             Laser {
                 despawn_timer: Timer::from_seconds(2.0, TimerMode::Once),
             },
-            ForState {
-                states: AppState::ANY_GAME_STATE.to_vec(),
-            },
+            StateScoped(AppState::Game),
             RigidBody::Dynamic,
             collider,
             mass_properties,
