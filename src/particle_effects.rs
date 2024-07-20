@@ -8,10 +8,12 @@ pub struct ParticleEffectsPlugin;
 
 impl Plugin for ParticleEffectsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(HanabiPlugin).add_systems(
-            Update,
-            (add_thrust_particles_to_ship, update_thrust_particles),
-        );
+        app.add_plugins(HanabiPlugin)
+            .add_systems(Update, add_thrust_particles_to_ship)
+            .add_systems(
+                Update,
+                update_thrust_particles.run_if(in_state(AppState::GameRunning)),
+            );
     }
 }
 
