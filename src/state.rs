@@ -25,9 +25,6 @@ impl AppState {
         AppState::GamePaused,
         AppState::GameOver,
     ];
-    pub fn is_any_game_state(&self) -> bool {
-        AppState::ANY_GAME_STATE.contains(self)
-    }
 }
 
 pub struct StatesPlugin;
