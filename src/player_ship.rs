@@ -123,6 +123,7 @@ fn spawn_ship(mut commands: Commands, handles: Res<SpriteAssets>) {
             invincible_time_secs: 0.0,
         },
         StateScoped(AppState::Game),
+        CollisionLayers::new(GameLayer::Player, [GameLayer::Asteroid]),
         RigidBody::Dynamic,
         Collider::circle(13.5),
         ExternalForce::default(),

@@ -81,7 +81,7 @@ fn spawn_asteroid_event(
             SpriteBundle {
                 // No custom size, the sprite png, are already at our game size.
                 // Transform Z is meaningfull for sprite stacking.
-                // Transform X and Y will be computed from xpbd Position component
+                // Transform X and Y will be computed from avian2d Position component
                 transform: Transform {
                     translation: Vec3::Z * 1.0,
                     ..default()
@@ -92,6 +92,10 @@ fn spawn_asteroid_event(
             Asteroid { size: event.size },
             Damage,
             StateScoped(AppState::Game),
+            CollisionLayers::new(
+                GameLayer::Asteroid,
+                [GameLayer::Asteroid, GameLayer::Player, GameLayer::Laser],
+            ),
             RigidBody::Dynamic,
             Collider::circle(radius),
             Restitution::new(0.5),

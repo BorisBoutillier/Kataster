@@ -59,7 +59,7 @@ fn spawn_laser(
             Laser {
                 despawn_timer: Timer::from_seconds(2.0, TimerMode::Once),
             },
-            StateScoped(AppState::Game),
+            CollisionLayers::new(GameLayer::Laser, [GameLayer::Asteroid]),
             RigidBody::Dynamic,
             collider,
             mass_properties,
@@ -71,6 +71,7 @@ fn spawn_laser(
                 source: audios.laser_trigger.clone(),
                 ..default()
             },
+            StateScoped(AppState::Game),
         ));
     }
 }

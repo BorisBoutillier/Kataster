@@ -24,15 +24,15 @@ mod prelude {
     pub use crate::menu::*;
     pub use crate::player_ship::*;
     pub use crate::state::*;
+    pub use avian2d::prelude::*;
     pub use bevy::prelude::*;
     pub use bevy::reflect::TypePath;
-    pub use bevy_xpbd_2d::prelude::*;
     pub use leafwing_input_manager::prelude::*;
     pub use rand::{thread_rng, Rng};
 }
 
+use avian2d::prelude::PhysicsPlugins;
 use bevy::window::WindowResolution;
-use bevy_xpbd_2d::prelude::PhysicsPlugins;
 
 use crate::prelude::*;
 

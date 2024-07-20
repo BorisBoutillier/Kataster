@@ -9,6 +9,13 @@ pub struct Arena {
     pub score: u32,
 }
 
+#[derive(PhysicsLayer)]
+pub enum GameLayer {
+    Player,
+    Laser,
+    Asteroid,
+}
+
 pub struct ArenaPlugin;
 
 impl Plugin for ArenaPlugin {
