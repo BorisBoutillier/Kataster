@@ -1,15 +1,14 @@
 use crate::prelude::*;
-use enum_iterator::{all, Sequence};
 
 // Main state enum, differianting, Menu from Game 'scenes'
-#[derive(States, Debug, Copy, Clone, Hash, Eq, PartialEq, Default, Sequence)]
+#[derive(States, Debug, Copy, Clone, Hash, Eq, PartialEq, Default)]
 pub enum AppState {
     #[default]
     Setup,
     Menu,
     Game,
 }
-#[derive(SubStates, Debug, Copy, Clone, Hash, Eq, PartialEq, Default, Sequence)]
+#[derive(SubStates, Debug, Copy, Clone, Hash, Eq, PartialEq, Default)]
 #[source(AppState=AppState::Game)]
 pub enum GameState {
     #[default]

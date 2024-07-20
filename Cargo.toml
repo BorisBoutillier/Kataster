@@ -14,5 +14,4 @@ bevy = "0.14"
 leafwing-input-manager = "0.14"
 rand = "0.8"
 bevy_hanabi = "0.12"
-enum-iterator = "1.4.1"
 bevy_xpbd_2d = { version = "0.5" , features = [ "debug-plugin" ] } 
