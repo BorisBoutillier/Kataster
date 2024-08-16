@@ -35,21 +35,12 @@ pub struct Ship {
     pub invincible_time_secs: f32,
 }
 
-#[derive(Component, Clone, Copy)]
-pub struct Damage;
-
-#[derive(Event)]
-pub struct ShipAsteroidContactEvent {
-    pub ship: Entity,
-}
-
 pub struct PlayerShipPlugin;
 
 impl Plugin for PlayerShipPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(InputManagerPlugin::<PlayerAction>::default());
-        app.add_event::<ShipAsteroidContactEvent>()
-            .add_systems(OnEnter(GameState::Setup), spawn_ship)
+        app.add_systems(OnEnter(GameState::Setup), spawn_ship)
             .add_systems(
                 Update,
                 (
@@ -57,7 +48,6 @@ impl Plugin for PlayerShipPlugin {
                     ship_dampening_system,
                     ship_timers_system,
                     ship_invincible_color,
-                    ship_damage.after(ContactSet),
                 )
                     .run_if(in_state(GameState::Running)),
             );
@@ -100,40 +90,42 @@ fn spawn_ship(mut commands: Commands, handles: Res<SpriteAssets>) {
     // Straghtaway consume the timer, we don't want invincibility at creation.
     invincible_timer.tick(Duration::from_secs_f32(INVINCIBLE_TIME));
 
-    commands.spawn((
-        SpriteBundle {
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(30., 20.)),
+    commands
+        .spawn((
+            SpriteBundle {
+                sprite: Sprite {
+                    custom_size: Some(Vec2::new(30., 20.)),
+                    ..default()
+                },
+                transform: Transform {
+                    translation: Vec3::new(0.0, 0.0, 1.0),
+                    ..default()
+                },
+                texture: handles.player_ship.clone(),
                 ..default()
             },
-            transform: Transform {
-                translation: Vec3::new(0.0, 0.0, 1.0),
-                ..default()
+            Ship {
+                rotation_speed: 3.0,
+                thrust: 300000.0,
+                life: START_LIFE,
+                cannon_timer: Timer::from_seconds(0.2, TimerMode::Once),
+                player_id: 1,
+                invincible_timer,
+                invincible_time_secs: 0.0,
             },
-            texture: handles.player_ship.clone(),
-            ..default()
-        },
-        Ship {
-            rotation_speed: 3.0,
-            thrust: 300000.0,
-            life: START_LIFE,
-            cannon_timer: Timer::from_seconds(0.2, TimerMode::Once),
-            player_id: 1,
-            invincible_timer,
-            invincible_time_secs: 0.0,
-        },
-        StateScoped(AppState::Game),
-        CollisionLayers::new(GameLayer::Player, [GameLayer::Asteroid]),
-        RigidBody::Dynamic,
-        Collider::circle(13.5),
-        ExternalForce::default(),
-        LinearVelocity::ZERO,
-        AngularVelocity::ZERO,
-        InputManagerBundle::<PlayerAction> {
-            action_state: ActionState::default(),
-            input_map,
-        },
-    ));
+            StateScoped(AppState::Game),
+            CollisionLayers::new(GameLayer::Player, [GameLayer::Asteroid]),
+            RigidBody::Dynamic,
+            Collider::circle(13.5),
+            ExternalForce::default(),
+            LinearVelocity::ZERO,
+            AngularVelocity::ZERO,
+            InputManagerBundle::<PlayerAction> {
+                action_state: ActionState::default(),
+                input_map,
+            },
+        ))
+        .observe(on_ship_damage);
 }
 
 fn ship_dampening_system(
@@ -195,43 +187,42 @@ fn ship_input_system(
     }
 }
 
-fn ship_damage(
+fn on_ship_damage(
+    trigger: Trigger<Damage>,
     mut commands: Commands,
     mut next_state: ResMut<NextState<GameState>>,
-    mut ship_asteroid_contact_events: EventReader<ShipAsteroidContactEvent>,
     mut explosion_spawn_events: EventWriter<SpawnExplosionEvent>,
     mut ships: Query<(&mut Ship, &Transform)>,
 ) {
-    for event in ship_asteroid_contact_events.read() {
-        let (mut ship, ship_transform) = ships
-            .get_mut(event.ship)
-            .expect("Ship referenced in event does not exist");
-        if ship.invincible_timer.finished() {
-            ship.invincible_time_secs = 0.0;
-            ship.life -= 1;
-            if ship.life == 0 {
-                explosion_spawn_events.send(SpawnExplosionEvent {
-                    kind: ExplosionKind::ShipDead,
-                    x: ship_transform.translation.x,
-                    y: ship_transform.translation.y,
-                });
-                commands.entity(event.ship).despawn_recursive();
-                next_state.set(GameState::Over);
-            } else {
-                explosion_spawn_events.send(SpawnExplosionEvent {
-                    kind: ExplosionKind::ShipContact,
-                    x: ship_transform.translation.x,
-                    y: ship_transform.translation.y,
-                });
-            }
-            ship.invincible_timer.reset();
-        } else if ship.invincible_time_secs + ship.invincible_timer.elapsed_secs()
-            < MAX_INVINCIBLE_TIME
-        {
-            // Contact while invincible, rearm the invincibility time if allowed
-            ship.invincible_time_secs += ship.invincible_timer.elapsed_secs();
-            ship.invincible_timer.reset();
+    let ship_entity = trigger.entity();
+    let (mut ship, ship_transform) = ships
+        .get_mut(trigger.entity())
+        .expect("Missing Ship and Transform on damage trigger");
+    if ship.invincible_timer.finished() {
+        ship.invincible_time_secs = 0.0;
+        ship.life -= 1;
+        if ship.life == 0 {
+            explosion_spawn_events.send(SpawnExplosionEvent {
+                kind: ExplosionKind::ShipDead,
+                x: ship_transform.translation.x,
+                y: ship_transform.translation.y,
+            });
+            commands.entity(ship_entity).despawn_recursive();
+            next_state.set(GameState::Over);
+        } else {
+            explosion_spawn_events.send(SpawnExplosionEvent {
+                kind: ExplosionKind::ShipContact,
+                x: ship_transform.translation.x,
+                y: ship_transform.translation.y,
+            });
         }
+        ship.invincible_timer.reset();
+    }
+    // Damage while invincible, rearm the invincibility timer if allowed
+    else if ship.invincible_time_secs + ship.invincible_timer.elapsed_secs() < MAX_INVINCIBLE_TIME
+    {
+        ship.invincible_time_secs += ship.invincible_timer.elapsed_secs();
+        ship.invincible_timer.reset();
     }
 }
 
