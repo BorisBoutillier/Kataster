@@ -7,6 +7,7 @@ pub enum AppState {
     Setup,
     Menu,
     Game,
+    Credits,
 }
 #[derive(SubStates, Debug, Copy, Clone, Hash, Eq, PartialEq, Default)]
 #[source(AppState=AppState::Game)]

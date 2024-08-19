@@ -22,6 +22,7 @@ pub struct AudioAssets {
 #[derive(Debug, Resource)]
 pub struct UiAssets {
     pub font: Handle<Font>,
+    pub font_fira: Handle<Font>,
     pub ship_life: UiImage,
 }
 
@@ -52,6 +53,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
     commands.insert_resource(UiAssets {
         font: asset_server.load("kenvector_future.ttf"),
+        font_fira: asset_server.load("FiraSans-Bold.ttf"),
         ship_life: asset_server.load("playerLife1_red.png").into(),
     });
 }
