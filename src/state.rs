@@ -28,11 +28,17 @@ impl Plugin for StatesPlugin {
         app.enable_state_scoped_entities::<GameState>();
         app.add_systems(
             Update,
-            transition_setup_to_menu.run_if(in_state(AppState::Setup)),
+            (
+                transition_app_setup_to_menu.run_if(in_state(AppState::Setup)),
+                transition_game_setup_to_running.run_if(in_state(GameState::Setup)),
+            ),
         );
     }
 }
 
-fn transition_setup_to_menu(mut app_state: ResMut<NextState<AppState>>) {
-    app_state.set(AppState::Menu);
+fn transition_app_setup_to_menu(mut state: ResMut<NextState<AppState>>) {
+    state.set(AppState::Menu);
+}
+fn transition_game_setup_to_running(mut state: ResMut<NextState<GameState>>) {
+    state.set(GameState::Running);
 }

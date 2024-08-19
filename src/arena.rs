@@ -21,6 +21,18 @@ pub struct ArenaPlugin;
 impl Plugin for ArenaPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GameState::Setup), spawn_arena)
+            .add_systems(
+                OnEnter(GameState::Running),
+                |mut physics_time: ResMut<Time<Physics>>| {
+                    physics_time.unpause();
+                },
+            )
+            .add_systems(
+                OnEnter(GameState::Paused),
+                |mut physics_time: ResMut<Time<Physics>>| {
+                    physics_time.pause();
+                },
+            )
             .add_systems(Update, movement.run_if(in_state(GameState::Running)));
     }
 }

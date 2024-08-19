@@ -49,7 +49,7 @@ fn main() {
         ..default()
     }));
 
-    // Enable XPBD debug renders when compiled in debug mode
+    // Enable Avian2d debug renders when compiled in debug mode
     #[cfg(debug_assertions)]
     app.add_plugins(PhysicsDebugPlugin::default());
 
