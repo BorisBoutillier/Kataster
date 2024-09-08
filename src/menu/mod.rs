@@ -109,17 +109,20 @@ fn spawn_credits_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
         .entity(entity)
         .insert(StateScoped(AppState::Credits));
     commands
-        .spawn((NodeBundle {
-            style: Style {
-                width: Val::Percent(100.0),
-                height: Val::Percent(70.0),
-                align_items: AlignItems::Center,
-                justify_content: JustifyContent::Center,
-                flex_direction: FlexDirection::Column,
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(70.0),
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::Center,
+                    flex_direction: FlexDirection::Column,
+                    ..default()
+                },
                 ..default()
             },
-            ..default()
-        },))
+            StateScoped(AppState::Credits),
+        ))
         .with_children(|parent| {
             parent.spawn((TextBundle {
                 style: Style {
