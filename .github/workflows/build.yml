@@ -12,20 +12,34 @@ env:
 jobs:
   build:
     strategy:
-      fail-fast: false 
+      fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+        platform:
+          - os: ubuntu-latest
+            rust_target: x86_64-unknown-linux-gnu
+            target: linux_x86_64
+          - os: macos-latest
+            rust_target: x86_64-apple-darwin
+            target: macos_x86_64
+          - os: macos-latest
+            rust_target: aarch64-apple-darwin
+            target: macos_aarch64
+          - os: windows-latest
+            rust_target: x86_64-pc-windows-msvc
+            target: windows_x86_64
+ 
+    runs-on: ${{ matrix.platform.os }} 
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
+          target: ${{ matrix.platform.rust_target }}
       - name: Install alsa and udev
+        if: matrix.platform.os == 'ubuntu-latest'
         run: |
           sudo apt update
-          sudo apt install --no-install-recommends libasound2-dev libudev-dev
-        if: runner.os == 'linux'      
+          sudo apt install --no-install-recommends libasound2-dev libudev-dev      
       - name: fmt
         run: cargo fmt --all -- --check
       - name: Clippy
