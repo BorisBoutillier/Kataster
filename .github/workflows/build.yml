@@ -48,6 +48,7 @@ jobs:
         run: cargo build --verbose --release
       - name: Run tests
         run: cargo test --verbose
+      - run: ls target/release 
       - uses: actions/upload-artifact@v4
         with:
           name: Kataster-${{ matrix.platform.target }}.zip
