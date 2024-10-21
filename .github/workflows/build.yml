@@ -22,8 +22,10 @@ jobs:
         with:
           components: rustfmt, clippy
       - name: Install alsa and udev
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
-        if: runner.os == 'ubuntu-latest'      
+        run: |
+          sudo apt update
+          sudo apt install --no-install-recommends libasound2-dev libudev-dev
+        if: runner.os == 'linux'      
       - name: fmt
         run: cargo fmt --all -- --check
       - name: Clippy
