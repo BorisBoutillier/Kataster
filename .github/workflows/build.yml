@@ -56,7 +56,7 @@ jobs:
         run: mv target/release/kataster.exe target/release/kataster-${{ matrix.platform.target }}.exe
       - uses: actions/upload-artifact@v4
         with:
-          name: Kataster-${{ matrix.platform.target }}.zip
+          name: Kataster-${{ matrix.platform.target }}
           path: |
             target/release/kataster-*
             assets/
