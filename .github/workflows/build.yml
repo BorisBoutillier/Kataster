@@ -50,14 +50,12 @@ jobs:
         run: cargo test --verbose
       - name: rename Binaries
         if: matrix.platform.os != 'windows-latest'
-        run: mv target/release/kataster target/release/kataster-${{ matrix.platform.target }}
+        run: mv target/release/kataster assets/kataster-${{ matrix.platform.target }}
       - name: rename Binaries on Windows 
         if: matrix.platform.os == 'windows-latest'
-        run: mv target/release/kataster.exe target/release/kataster-${{ matrix.platform.target }}.exe
+        run: mv target/release/kataster.exe assets/kataster-${{ matrix.platform.target }}.exe
       - uses: actions/upload-artifact@v4
         with:
           name: Kataster-${{ matrix.platform.target }}
-          path: |
-            target/release/kataster-*
-            assets/
+          path: assets/
           if-no-files-found: error         
