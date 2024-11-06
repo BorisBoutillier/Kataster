@@ -52,11 +52,11 @@ jobs:
           mv assets output
       - name: rename Binaries
         if: matrix.platform.os != 'windows-latest'
-        run: mv target/release/kataster output/kataster
+        run: mv target/release/kataster output/kataster_${{ matrix.platform.target }} 
       - name: rename Binaries on Windows 
         if: matrix.platform.os == 'windows-latest'
-        run: mv target/release/kataster.exe output/kataster.exe
+        run: mv target/release/kataster.exe output/kataster_${{ matrix.platform.target }}.exe
       - name: Upload file
         uses: softprops/action-gh-release@v2
         with:
-          files: output/kataster*      
+          files: output/kataster_*      
