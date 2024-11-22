@@ -57,7 +57,7 @@ jobs:
         if: matrix.platform.os == 'windows-latest'
         run: mv target/release/kataster.exe output/kataster.exe
       - name: zip folder on Windows 
-        if: matrix.platform.os != 'windows-latest'
+        if: matrix.platform.os == 'windows-latest'
         run:  Compress-Archive -Path output/ -DestinationPath kataster_${{ matrix.platform.target }}.zip
       - name: zip folder on Linux and MacOs
         if: matrix.platform.os != 'windows-latest'
