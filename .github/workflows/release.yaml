@@ -61,7 +61,9 @@ jobs:
         run:  Compress-Archive -Path (Get-ChildItem -Path output/ -Recurse) -DestinationPath kataster_${{ matrix.platform.target }}.zip
       - name: zip folder on Linux and MacOs
         if: matrix.platform.os != 'windows-latest'
-        run: zip -r kataster_${{ matrix.platform.target }}.zip output/*
+        run: |
+          cd output
+          zip -r kataster_${{ matrix.platform.target }}.zip ./*
       - name: Upload file
         uses: softprops/action-gh-release@v2
         with:
