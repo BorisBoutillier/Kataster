@@ -63,7 +63,8 @@ jobs:
         if: matrix.platform.os != 'windows-latest'
         run: |
           cd output
-          zip -r kataster_${{ matrix.platform.target }}.zip ./*
+          zip -r ../kataster_${{ matrix.platform.target }}.zip ./*
+          mv 
       - name: Upload file
         uses: softprops/action-gh-release@v2
         with:
