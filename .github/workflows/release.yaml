@@ -58,9 +58,7 @@ jobs:
         run: mv target/release/kataster.exe output/kataster.exe
       - name: zip folder on Windows 
         if: matrix.platform.os == 'windows-latest'
-        run:  |
-          cd output
-          Compress-Archive -Path ./ -DestinationPath ../kataster_${{ matrix.platform.target }}.zip
+        run:  Compress-Archive -Path (Get-ChildItem -Path output) -DestinationPath kataster_${{ matrix.platform.target }}.zip
       - name: zip folder on Linux and MacOs
         if: matrix.platform.os != 'windows-latest'
         run: |
