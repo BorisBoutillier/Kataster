@@ -60,7 +60,7 @@ jobs:
         if: matrix.platform.os == 'windows-latest'
         run:  |
           cd output
-          Compress-Archive -Path ./ -DestinationPath kataster_${{ matrix.platform.target }}.zip
+          Compress-Archive -Path ./ -DestinationPath ../kataster_${{ matrix.platform.target }}.zip
       - name: zip folder on Linux and MacOs
         if: matrix.platform.os != 'windows-latest'
         run: |
