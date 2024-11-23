@@ -44,15 +44,17 @@ jobs:
         run: cargo clippy --all-targets --all-features -- -D warnings
       - name: Build
         run: cargo build --verbose --release
-#      - name: Run tests
-#        run: cargo test --verbose
+      - name: Run tests
+        run: cargo test --verbose
       - name: create output file 
         run: |
           mkdir output
           mv assets output
-      - name: rename Binaries
+      - name: rename Binaries and add permission 
         if: matrix.platform.os != 'windows-latest'
-        run: mv target/release/kataster output/kataster 
+        run: |
+          mv target/release/kataster output/kataster
+          sudo chmod +x output/kataster
       - name: rename Binaries on Windows 
         if: matrix.platform.os == 'windows-latest'
         run: mv target/release/kataster.exe output/kataster.exe
