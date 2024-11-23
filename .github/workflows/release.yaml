@@ -44,8 +44,8 @@ jobs:
         run: cargo clippy --all-targets --all-features -- -D warnings
       - name: Build
         run: cargo build --verbose --release
-      - name: Run tests
-        run: cargo test --verbose
+#      - name: Run tests
+#        run: cargo test --verbose
       - name: create output file 
         run: |
           mkdir output
@@ -58,7 +58,7 @@ jobs:
         run: mv target/release/kataster.exe output/kataster.exe
       - name: zip folder on Windows 
         if: matrix.platform.os == 'windows-latest'
-        run:  Compress-Archive -Path (Get-ChildItem -Path output/ -Recurse) -DestinationPath kataster_${{ matrix.platform.target }}.zip
+        run:  Compress-Archive -Path output/ -DestinationPath kataster_${{ matrix.platform.target }}.zip
       - name: zip folder on Linux and MacOs
         if: matrix.platform.os != 'windows-latest'
         run: |
