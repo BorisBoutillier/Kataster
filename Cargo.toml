@@ -13,5 +13,5 @@ opt-level = 3
 bevy = "0.14"
 leafwing-input-manager = "0.14"
 rand = "0.8"
-bevy_hanabi = "0.12"
+bevy_hanabi = "0.13"
 avian2d = { version = "0.1" , features = [ "debug-plugin" ] } 
