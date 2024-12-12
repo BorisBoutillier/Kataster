@@ -69,39 +69,37 @@ fn spawn_ship(mut commands: Commands, handles: Res<SpriteAssets>) {
         (PlayerAction::RotateRight, KeyCode::ArrowRight),
         (PlayerAction::Fire, KeyCode::Space),
     ]);
-    input_map.insert(PlayerAction::Fire, GamepadButtonType::South);
-    input_map.insert(
-        PlayerAction::Forward,
-        SingleAxis::positive_only(GamepadAxisType::LeftStickY, 0.4),
-    );
-    input_map.insert(
-        PlayerAction::Forward,
-        SingleAxis::negative_only(GamepadAxisType::LeftStickY, -0.4),
-    );
-    input_map.insert(
-        PlayerAction::RotateRight,
-        SingleAxis::positive_only(GamepadAxisType::LeftStickX, 0.4),
-    );
-    input_map.insert(
-        PlayerAction::RotateLeft,
-        SingleAxis::negative_only(GamepadAxisType::LeftStickX, -0.4),
-    );
+    input_map.insert(PlayerAction::Fire, GamepadButton::South);
+    // TODO: not updated:
+    //input_map.insert(
+    //    PlayerAction::Forward,
+    //    SingleAxis::positive_only(GamepadAxis::LeftStickY, 0.4),
+    //);
+    //input_map.insert(
+    //    PlayerAction::Forward,
+    //    SingleAxis::negative_only(GamepadAxis::LeftStickY, -0.4),
+    //);
+    //input_map.insert(
+    //    PlayerAction::RotateRight,
+    //    SingleAxis::positive_only(GamepadAxis::LeftStickX, 0.4),
+    //);
+    //input_map.insert(
+    //    PlayerAction::RotateLeft,
+    //    SingleAxis::negative_only(GamepadAxis::LeftStickX, -0.4),
+    //);
     let mut invincible_timer = Timer::from_seconds(INVINCIBLE_TIME, TimerMode::Once);
     // Straghtaway consume the timer, we don't want invincibility at creation.
     invincible_timer.tick(Duration::from_secs_f32(INVINCIBLE_TIME));
 
     commands
         .spawn((
-            SpriteBundle {
-                sprite: Sprite {
-                    custom_size: Some(Vec2::new(30., 20.)),
-                    ..default()
-                },
-                transform: Transform {
-                    translation: Vec3::new(0.0, 0.0, 1.0),
-                    ..default()
-                },
-                texture: handles.player_ship.clone(),
+            Sprite {
+                image: handles.player_ship.clone(),
+                custom_size: Some(Vec2::new(30., 20.)),
+                ..default()
+            },
+            Transform {
+                translation: Vec3::new(0.0, 0.0, 1.0),
                 ..default()
             },
             Ship {
@@ -133,7 +131,7 @@ fn ship_dampening_system(
     mut query: Query<(&mut LinearVelocity, &mut AngularVelocity), With<Ship>>,
 ) {
     for (mut linvel, mut angvel) in query.iter_mut() {
-        let elapsed = time.delta_seconds();
+        let elapsed = time.delta_secs();
         angvel.0 *= 0.1f32.powf(elapsed);
         linvel.0 *= 0.4f32.powf(elapsed);
     }

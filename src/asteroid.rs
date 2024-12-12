@@ -27,7 +27,7 @@ impl AsteroidSize {
         }
     }
 
-    // Defines for each if the asteroid is splitted on destruction
+    // Defines for each if the asteroid is split on destruction
     // And the spawned sub-asteroid size and radius of spawning.
     pub fn split(&self) -> Option<(AsteroidSize, f32)> {
         match self {
@@ -66,15 +66,14 @@ fn spawn_asteroid_event(
         };
         commands
             .spawn((
-                SpriteBundle {
-                    // No custom size, the sprite png, are already at our game size.
-                    // Transform Z is meaningfull for sprite stacking.
-                    // Transform X and Y will be computed from avian2d Position component
-                    transform: Transform {
-                        translation: Vec3::Z * 1.0,
-                        ..default()
-                    },
-                    texture: sprite_handle.clone(),
+                Sprite {
+                    image: sprite_handle.clone(),
+                    ..default()
+                },
+                // Transform Z is meaningful for sprite stacking.
+                // Transform X and Y will be computed from avian2d Position component
+                Transform {
+                    translation: Vec3::Z * 1.0,
                     ..default()
                 },
                 Asteroid { size: event.size },

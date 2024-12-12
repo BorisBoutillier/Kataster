@@ -38,22 +38,19 @@ fn spawn_laser(
         );
         let collider = Collider::rectangle(2.5, 10.0);
         // It seems the way laser are spawned, xpbd does not create a ColliderMassProperties.
-        // So I add it explicitely to avoid a runtime warning.
+        // So I add it explicitly to avoid a runtime warning.
         // I did not search why the laser spawning is special.
-        let mass_properties = MassPropertiesBundle::new_computed(&collider, 1.0);
+        let mass_properties = MassPropertiesBundle::from_shape(&collider, 1.0);
         commands.spawn((
-            SpriteBundle {
-                sprite: Sprite {
-                    custom_size: Some(Vec2::new(5., 20.0)),
-                    ..default()
-                },
-                // Transform Z is meaningfull for sprite stacking.
-                // Transform X,Y and rotation will be computed from xpbd Position and Rotation components
-                transform: Transform {
-                    translation: Vec3::Z * 2.0,
-                    ..default()
-                },
-                texture: handles.laser.clone(),
+            Sprite {
+                image: handles.laser.clone(),
+                custom_size: Some(Vec2::new(5., 20.0)),
+                ..default()
+            },
+            // Transform Z is meaningful for sprite stacking.
+            // Transform X,Y and rotation will be computed from xpbd Position and Rotation components
+            Transform {
+                translation: Vec3::Z * 2.0,
                 ..default()
             },
             Laser {
@@ -67,10 +64,7 @@ fn spawn_laser(
             rotation,
             linvel,
             Sensor,
-            AudioBundle {
-                source: audios.laser_trigger.clone(),
-                ..default()
-            },
+            AudioPlayer(audios.laser_trigger.clone()),
             StateScoped(AppState::Game),
         ));
     }

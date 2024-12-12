@@ -10,8 +10,9 @@ license = "MIT OR Apache-2.0"
 opt-level = 3
 
 [dependencies]
-bevy = "0.14"
-leafwing-input-manager = "0.14"
+bevy = "0.15"
+leafwing-input-manager = { git = "https://github.com/leafwing-studios/leafwing-input-manager.git" }
 rand = "0.8"
-bevy_hanabi = "0.13"
-avian2d = { version = "0.1" , features = [ "debug-plugin" ] } 
+bevy_hanabi = "0.14"
+#avian2d = { version = "0.1" , features = [ "debug-plugin" ] } 
+avian2d = { git = "https://github.com/Jondolf/avian.git" }

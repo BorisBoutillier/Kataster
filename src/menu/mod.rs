@@ -51,8 +51,8 @@ fn setup(mut commands: Commands) {
         (MenuAction::MenuDown, KeyCode::KeyS),
         (MenuAction::MenuDown, KeyCode::ArrowDown),
     ]);
-    input_map.insert(MenuAction::PauseUnpause, GamepadButtonType::Start);
-    input_map.insert(MenuAction::Accept, GamepadButtonType::South);
+    input_map.insert(MenuAction::PauseUnpause, GamepadButton::Start);
+    input_map.insert(MenuAction::Accept, GamepadButton::South);
     // Insert MenuAction resources
     commands.insert_resource(input_map);
     commands.insert_resource(ActionState::<MenuAction>::default());
@@ -110,114 +110,111 @@ fn spawn_credits_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
         .insert(StateScoped(AppState::Credits));
     commands
         .spawn((
-            NodeBundle {
-                style: Style {
-                    width: Val::Percent(100.0),
-                    height: Val::Percent(70.0),
-                    align_items: AlignItems::Center,
-                    justify_content: JustifyContent::Center,
-                    flex_direction: FlexDirection::Column,
-                    ..default()
-                },
+            Node {
+                width: Val::Percent(100.0),
+                height: Val::Percent(70.0),
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
+                flex_direction: FlexDirection::Column,
                 ..default()
             },
             StateScoped(AppState::Credits),
         ))
         .with_children(|parent| {
-            parent.spawn((TextBundle {
-                style: Style {
+            parent.spawn((
+                Text::new("Code"),
+                TextFont {
+                    font: assets.font.clone(),
+                    font_size: 50.0,
+                    ..default()
+                },
+                TextColor(Color::srgb(0.0, 0.7, 0.7)),
+                Node {
                     margin: UiRect::all(Val::Px(10.)),
                     ..default()
                 },
-                text: Text::from_section(
-                    "Code",
-                    TextStyle {
-                        font: assets.font.clone(),
-                        font_size: 50.0,
-                        color: Color::srgb(0.0, 0.7, 0.7),
+            ));
+            parent
+                .spawn((
+                    Text::default(),
+                    Node {
+                        margin: UiRect::all(Val::Px(10.)),
+                        ..default()
                     },
-                ),
-                ..default()
-            },));
-            parent.spawn((TextBundle {
-                style: Style {
-                    margin: UiRect::all(Val::Px(10.)),
-                    ..default()
-                },
-                text: Text::from_sections([
-                    TextSection::new(
-                        "Boris Boutillier ",
-                        TextStyle {
+                ))
+                .with_children(|p| {
+                    p.spawn((
+                        TextSpan::new("Boris Boutillier "),
+                        TextFont {
                             font: assets.font_fira.clone(),
                             font_size: 40.0,
-                            color: Color::WHITE,
+                            ..default()
                         },
-                    ),
-                    TextSection::new(
-                        "(github.com/BorisBoutillier)",
-                        TextStyle {
+                        TextColor(Color::WHITE),
+                    ));
+                    p.spawn((
+                        TextSpan::new("(github.com/BorisBoutillier)"),
+                        TextFont {
                             font: assets.font_fira.clone(),
                             font_size: 20.0,
-                            color: Color::srgb(0.5, 0.5, 0.5),
+                            ..default()
                         },
-                    ),
-                ]),
-                ..default()
-            },));
-            parent.spawn((TextBundle {
-                style: Style {
+                        TextColor(Color::srgb(0.5, 0.5, 0.5)),
+                    ));
+                });
+            parent.spawn((
+                Text::new("Assets"),
+                Node {
                     margin: UiRect::all(Val::Px(10.)),
                     ..default()
                 },
-                text: Text::from_section(
-                    "Assets",
-                    TextStyle {
-                        font: assets.font.clone(),
-                        font_size: 50.0,
-                        color: Color::srgb(0.0, 0.7, 0.7),
+                TextFont {
+                    font: assets.font.clone(),
+                    font_size: 50.0,
+                    ..default()
+                },
+                TextColor(Color::srgb(0.0, 0.7, 0.7)),
+            ));
+            parent
+                .spawn((
+                    Text::default(),
+                    Node {
+                        margin: UiRect::all(Val::Px(10.)),
+                        ..default()
                     },
-                ),
-                ..default()
-            },));
-            parent.spawn((TextBundle {
-                style: Style {
-                    margin: UiRect::all(Val::Px(10.)),
-                    ..default()
-                },
-                text: Text::from_sections([
-                    TextSection::new(
-                        "Kenney Vleugels ",
-                        TextStyle {
+                ))
+                .with_children(|p| {
+                    p.spawn((
+                        TextSpan::new("Kenney Vleugels "),
+                        TextFont {
                             font: assets.font_fira.clone(),
                             font_size: 35.0,
-                            color: Color::WHITE,
+                            ..default()
                         },
-                    ),
-                    TextSection::new(
-                        "(www.kenney.nl)",
-                        TextStyle {
+                        TextColor(Color::WHITE),
+                    ));
+                    p.spawn((
+                        TextSpan::new("(www.kenney.nl)"),
+                        TextFont {
                             font: assets.font_fira.clone(),
                             font_size: 20.0,
-                            color: Color::srgb(0.5, 0.5, 0.5),
+                            ..default()
                         },
-                    ),
-                ]),
-                ..default()
-            },));
-            parent.spawn((TextBundle {
-                style: Style {
+                        TextColor(Color::srgb(0.5, 0.5, 0.5)),
+                    ));
+                });
+            parent.spawn((
+                Text::new("Pablo Roman Andrioli"),
+                Node {
                     margin: UiRect::all(Val::Px(10.)),
                     ..default()
                 },
-                text: Text::from_sections([TextSection::new(
-                    "Pablo Roman Andrioli",
-                    TextStyle {
-                        font: assets.font_fira.clone(),
-                        font_size: 35.0,
-                        color: Color::WHITE,
-                    },
-                )]),
-                ..default()
-            },));
+                TextFont {
+                    font: assets.font_fira.clone(),
+                    font_size: 35.0,
+                    ..default()
+                },
+                TextColor(Color::WHITE),
+            ));
         });
 }

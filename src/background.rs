@@ -1,6 +1,6 @@
 use bevy::render::render_resource::{AsBindGroup, ShaderRef};
+use bevy::sprite::Material2d;
 use bevy::sprite::Material2dPlugin;
-use bevy::sprite::{Material2d, MaterialMesh2dBundle};
 
 use crate::prelude::*;
 
@@ -14,22 +14,21 @@ impl Plugin for BackgroundPlugin {
     }
 }
 
-// Spawn a simple stretched quad that will use of backgound shader
+// Spawn a simple stretched quad that will use of background shader
 fn spawn_background(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<BackgroundMaterial>>,
 ) {
-    commands.spawn(MaterialMesh2dBundle {
-        mesh: meshes.add(Mesh::from(Rectangle::default())).into(),
-        transform: Transform {
+    commands.spawn((
+        Mesh2d(meshes.add(Rectangle::default())),
+        Transform {
             translation: Vec3::new(0.0, 0.0, 0.0),
             scale: Vec3::new(ARENA_WIDTH, ARENA_HEIGHT, 1.0),
             ..default()
         },
-        material: materials.add(BackgroundMaterial { time: 0.0 }),
-        ..default()
-    });
+        MeshMaterial2d(materials.add(BackgroundMaterial { time: 0.0 })),
+    ));
 }
 
 #[derive(Asset, AsBindGroup, Debug, Clone, TypePath)]
@@ -51,7 +50,7 @@ fn update_background_time(
 ) {
     if state.is_none() || state.unwrap().get() != &GameState::Paused {
         for (_, background) in backgrounds.iter_mut() {
-            background.time += time.delta_seconds();
+            background.time += time.delta_secs();
         }
     }
 }

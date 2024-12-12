@@ -20,7 +20,7 @@ impl MenuHandler {
     const UNSELECTED_BORDER: Color = Color::srgb(0.2, 0.2, 0.2);
     const UNSELECTED_BG: Color = Color::srgb(0.0, 0.0, 0.0);
     pub fn spawn(self, commands: &mut Commands, font: Handle<Font>) -> Entity {
-        let button_style = Style {
+        let button_node = Node {
             width: Val::Px(150.0),
             height: Val::Px(45.0),
             border: UiRect::all(Val::Px(5.0)),
@@ -30,41 +30,32 @@ impl MenuHandler {
             ..default()
         };
         let entity = commands
-            .spawn((NodeBundle {
-                style: Style {
-                    width: Val::Percent(100.0),
-                    height: Val::Percent(100.0),
-                    align_items: AlignItems::Center,
-                    justify_content: JustifyContent::SpaceEvenly,
-                    flex_direction: FlexDirection::Column,
-                    ..default()
-                },
+            .spawn((Node {
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::SpaceEvenly,
+                flex_direction: FlexDirection::Column,
                 ..default()
             },))
             .with_children(|parent| {
                 parent
-                    .spawn((NodeBundle {
-                        style: Style {
-                            height: Val::Percent(50.0),
-                            align_items: AlignItems::Center,
-                            justify_content: JustifyContent::Center,
-                            ..default()
-                        },
+                    .spawn((Node {
+                        height: Val::Percent(50.0),
+                        align_items: AlignItems::Center,
+                        justify_content: JustifyContent::Center,
                         ..default()
                     },))
                     .with_children(|parent| {
-                        let mut text = parent.spawn((TextBundle {
-                            style: Style { ..default() },
-                            text: Text::from_section(
-                                self.main_text.clone(),
-                                TextStyle {
-                                    font: font.clone(),
-                                    font_size: 120.0,
-                                    color: self.main_text_color,
-                                },
-                            ),
-                            ..default()
-                        },));
+                        let mut text = parent.spawn((
+                            Text::new(self.main_text.clone()),
+                            TextFont {
+                                font: font.clone(),
+                                font_size: 120.0,
+                                ..default()
+                            },
+                            TextColor(self.main_text_color),
+                        ));
                         if self.main_text_blink {
                             text.insert(DrawBlinkTimer(Timer::from_seconds(
                                 0.5,
@@ -73,34 +64,30 @@ impl MenuHandler {
                         }
                     });
                 parent
-                    .spawn((NodeBundle {
-                        style: Style {
-                            align_items: AlignItems::Center,
-                            justify_content: JustifyContent::Center,
-                            flex_direction: FlexDirection::Column,
-                            ..default()
-                        },
+                    .spawn((Node {
+                        align_items: AlignItems::Center,
+                        justify_content: JustifyContent::Center,
+                        flex_direction: FlexDirection::Column,
                         ..default()
                     },))
                     .with_children(|parent| {
                         for (i, entry) in self.entries.iter().enumerate() {
                             parent
                                 .spawn((
-                                    ButtonBundle {
-                                        style: button_style.clone(),
-                                        border_radius: BorderRadius::all(Val::Px(10.0)),
-                                        ..default()
-                                    },
+                                    Button,
+                                    button_node.clone(),
+                                    BorderRadius::all(Val::Px(10.0)),
                                     ButtonId(i as i32),
                                 ))
                                 .with_children(|parent| {
-                                    parent.spawn(TextBundle::from_section(
-                                        entry,
-                                        TextStyle {
+                                    parent.spawn((
+                                        Text::new(entry),
+                                        TextFont {
                                             font: font.clone(),
                                             font_size: 25.0,
-                                            color: self.main_text_color,
+                                            ..default()
                                         },
+                                        TextColor(self.main_text_color),
                                     ));
                                 });
                         }

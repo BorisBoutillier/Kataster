@@ -59,16 +59,13 @@ fn catch_explosion_event(
             ),
         };
         commands.spawn((
-            SpriteBundle {
-                sprite: Sprite {
-                    custom_size: Some(start_size),
-                    ..default()
-                },
-                transform: Transform {
-                    translation: Vec3::new(event.x, event.y, 3.0),
-                    ..default()
-                },
-                texture,
+            Sprite {
+                image: texture,
+                custom_size: Some(start_size),
+                ..default()
+            },
+            Transform {
+                translation: Vec3::new(event.x, event.y, 3.0),
                 ..default()
             },
             Explosion {
@@ -77,10 +74,7 @@ fn catch_explosion_event(
                 end_scale,
             },
             StateScoped(AppState::Game),
-            AudioBundle {
-                source: sound,
-                ..default()
-            },
+            AudioPlayer(sound),
         ));
     }
 }

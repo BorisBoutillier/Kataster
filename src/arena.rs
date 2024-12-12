@@ -9,8 +9,9 @@ pub struct Arena {
     pub score: u32,
 }
 
-#[derive(PhysicsLayer)]
+#[derive(PhysicsLayer, Default)]
 pub enum GameLayer {
+    #[default]
     Player,
     Laser,
     Asteroid,
