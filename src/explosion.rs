@@ -83,19 +83,22 @@ fn animate_explosion(
     mut commands: Commands,
     time: Res<Time>,
     mut query: Query<(Entity, &mut Transform, &mut Explosion)>,
+    game_state: Res<State<GameState>>,
 ) {
-    let elapsed = time.delta();
-    for (entity, mut transform, mut explosion) in query.iter_mut() {
-        explosion.timer.tick(elapsed);
-        if explosion.timer.finished() {
-            commands.entity(entity).despawn();
-        } else {
-            transform.scale = Vec3::splat(
-                explosion.start_scale
-                    + (explosion.end_scale - explosion.start_scale)
-                        * (explosion.timer.elapsed_secs()
-                            / explosion.timer.duration().as_secs_f32()),
-            );
+    if game_state.get() != &GameState::Paused {
+        let elapsed = time.delta();
+        for (entity, mut transform, mut explosion) in query.iter_mut() {
+            explosion.timer.tick(elapsed);
+            if explosion.timer.finished() {
+                commands.entity(entity).despawn();
+            } else {
+                transform.scale = Vec3::splat(
+                    explosion.start_scale
+                        + (explosion.end_scale - explosion.start_scale)
+                            * (explosion.timer.elapsed_secs()
+                                / explosion.timer.duration().as_secs_f32()),
+                );
+            }
         }
     }
 }
