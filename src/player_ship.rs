@@ -98,10 +98,7 @@ fn spawn_ship(mut commands: Commands, handles: Res<SpriteAssets>) {
                 custom_size: Some(Vec2::new(30., 20.)),
                 ..default()
             },
-            Transform {
-                translation: Vec3::new(0.0, 0.0, 1.0),
-                ..default()
-            },
+            Transform::from_translation(Vec3::new(0.0, 0.0, 1.0)),
             Ship {
                 rotation_speed: 3.0,
                 thrust: 300000.0,

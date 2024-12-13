@@ -30,9 +30,9 @@ fn spawn_laser(
     audios: Res<AudioAssets>,
 ) {
     for spawn_event in laser_spawn_events.read() {
-        let transform = spawn_event.transform;
-        let position = Position(spawn_event.transform.translation.truncate());
-        let rotation: Rotation = transform.rotation.into();
+        let mut transform = spawn_event.transform;
+        // Enforce laser sprite layer
+        transform.translation.z = 2.0;
         let linvel = LinearVelocity(
             (spawn_event.linvel.0 * Vec2::Y) + (transform.rotation * Vec3::Y * 500.0).truncate(),
         );
@@ -47,12 +47,7 @@ fn spawn_laser(
                 custom_size: Some(Vec2::new(5., 20.0)),
                 ..default()
             },
-            // Transform Z is meaningful for sprite stacking.
-            // Transform X,Y and rotation will be computed from xpbd Position and Rotation components
-            Transform {
-                translation: Vec3::Z * 2.0,
-                ..default()
-            },
+            transform,
             Laser {
                 despawn_timer: Timer::from_seconds(2.0, TimerMode::Once),
             },
@@ -60,8 +55,6 @@ fn spawn_laser(
             RigidBody::Dynamic,
             collider,
             mass_properties,
-            position,
-            rotation,
             linvel,
             Sensor,
             AudioPlayer(audios.laser_trigger.clone()),

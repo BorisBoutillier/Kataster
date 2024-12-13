@@ -70,12 +70,7 @@ fn spawn_asteroid_event(
                     image: sprite_handle.clone(),
                     ..default()
                 },
-                // Transform Z is meaningful for sprite stacking.
-                // Transform X and Y will be computed from avian2d Position component
-                Transform {
-                    translation: Vec3::Z * 1.0,
-                    ..default()
-                },
+                Transform::from_translation(Vec3::new(event.x, event.y, 1.0)),
                 Asteroid { size: event.size },
                 Damage,
                 StateScoped(AppState::Game),
@@ -86,7 +81,6 @@ fn spawn_asteroid_event(
                 RigidBody::Dynamic,
                 Collider::circle(radius),
                 Restitution::new(0.5),
-                Position(Vec2::new(event.x, event.y)),
                 LinearVelocity(Vec2::new(event.vx, event.vy)),
                 AngularVelocity(event.angvel),
             ))

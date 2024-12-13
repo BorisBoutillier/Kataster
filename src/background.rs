@@ -22,11 +22,7 @@ fn spawn_background(
 ) {
     commands.spawn((
         Mesh2d(meshes.add(Rectangle::default())),
-        Transform {
-            translation: Vec3::new(0.0, 0.0, 0.0),
-            scale: Vec3::new(ARENA_WIDTH, ARENA_HEIGHT, 1.0),
-            ..default()
-        },
+        Transform::from_scale(Vec3::new(ARENA_WIDTH, ARENA_HEIGHT, 1.0)),
         MeshMaterial2d(materials.add(BackgroundMaterial { time: 0.0 })),
     ));
 }
