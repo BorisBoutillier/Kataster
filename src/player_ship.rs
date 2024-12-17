@@ -93,6 +93,7 @@ fn spawn_ship(mut commands: Commands, handles: Res<SpriteAssets>) {
 
     commands
         .spawn((
+            Name::new("PlayerShip"),
             Sprite {
                 image: handles.player_ship.clone(),
                 custom_size: Some(Vec2::new(30., 20.)),

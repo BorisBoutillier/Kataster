@@ -17,6 +17,11 @@ pub enum AsteroidSize {
     Medium,
     Small,
 }
+impl std::fmt::Display for AsteroidSize {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
 impl AsteroidSize {
     // Score marked when destroying an asteroid of this size
     pub fn score(&self) -> u32 {
@@ -66,6 +71,7 @@ fn spawn_asteroid_event(
         };
         commands
             .spawn((
+                Name::new(format!("Asteroid {}", event.size)),
                 Sprite {
                     image: sprite_handle.clone(),
                     ..default()

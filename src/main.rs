@@ -32,7 +32,10 @@ mod prelude {
 }
 
 use avian2d::prelude::PhysicsPlugins;
-use bevy::window::WindowResolution;
+use bevy::{
+    remote::{http::RemoteHttpPlugin, RemotePlugin},
+    window::WindowResolution,
+};
 
 use crate::prelude::*;
 
@@ -49,9 +52,13 @@ fn main() {
         ..default()
     }));
 
-    // Enable Avian2d debug renders when compiled in debug mode
+    // Add some plugins to help debugging only when compiled in debug mode
     #[cfg(debug_assertions)]
-    app.add_plugins(PhysicsDebugPlugin::default());
+    // Enable Avian2d debug renders
+    app.add_plugins(PhysicsDebugPlugin::default())
+        // Enable connection to external tools, like vscode inspector
+        .add_plugins(RemotePlugin::default())
+        .add_plugins(RemoteHttpPlugin::default());
 
     // Compute shaders are not supported on WASM.
     #[cfg(not(target_arch = "wasm32"))]
@@ -83,5 +90,5 @@ fn main() {
 }
 
 pub fn setup_camera(mut commands: Commands) {
-    commands.spawn(Camera2d);
+    commands.spawn((Name::new("Camera"), Camera2d));
 }

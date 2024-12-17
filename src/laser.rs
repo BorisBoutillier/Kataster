@@ -42,6 +42,7 @@ fn spawn_laser(
         // I did not search why the laser spawning is special.
         let mass_properties = MassPropertiesBundle::from_shape(&collider, 1.0);
         commands.spawn((
+            Name::new("Laser"),
             Sprite {
                 image: handles.laser.clone(),
                 custom_size: Some(Vec2::new(5., 20.0)),

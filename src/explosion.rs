@@ -26,8 +26,10 @@ pub struct ExplosionPlugin;
 
 impl Plugin for ExplosionPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<SpawnExplosionEvent>()
-            .add_systems(Update, (animate_explosion, catch_explosion_event));
+        app.add_event::<SpawnExplosionEvent>().add_systems(
+            Update,
+            (animate_explosion, catch_explosion_event).run_if(in_state(GameState::Running)),
+        );
     }
 }
 
