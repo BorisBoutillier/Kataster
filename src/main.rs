@@ -3,7 +3,6 @@ mod arena;
 mod assets;
 mod asteroid;
 mod background;
-mod contact;
 mod explosion;
 mod hud;
 mod laser;
@@ -18,7 +17,6 @@ mod prelude {
     pub use crate::assets::*;
     pub use crate::asteroid::*;
     pub use crate::background::*;
-    pub use crate::contact::*;
     pub use crate::explosion::*;
     pub use crate::hud::*;
     pub use crate::laser::*;
@@ -86,17 +84,11 @@ fn main() {
         AsteroidPlugin,
         HudPlugin,
         MenuPlugin,
-        ContactPlugin,
         ExplosionPlugin,
         BackgroundPlugin,
     ));
 
     app.add_systems(OnEnter(AppState::Setup), setup_camera);
-
-    // This allow minimum migration to Avian 0.3, reverting to 0.2 collision behaviour
-    // while waiting to update Kataster as a whole.
-    // TODO: Update to new Avian Collision workflow, probably using CollidingEntities.
-    app.register_required_components::<Collider, CollisionEventsEnabled>();
 
     // On my WSL setup, GpuPreprocessing is detected:
     //  2025-05-12T07:55:11.348347Z  INFO bevy_render::batching::gpu_preprocessing: GPU preprocessing is fully supported on this device.

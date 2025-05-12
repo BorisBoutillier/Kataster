@@ -48,6 +48,7 @@ impl Plugin for PlayerShipPlugin {
                     ship_dampening_system,
                     ship_timers_system,
                     ship_invincible_color,
+                    ship_asteroid_collision,
                 )
                     .run_if(in_state(GameState::Running)),
             );
@@ -60,7 +61,7 @@ pub struct ExhaustEffect;
 
 fn spawn_ship(mut commands: Commands, handles: Res<SpriteAssets>) {
     // For player actions, allow keyboard WASD/ Arrows/ Gamepag to control the ship
-    let mut input_map = InputMap::new([
+    let input_map = InputMap::new([
         (PlayerAction::Forward, KeyCode::KeyW),
         (PlayerAction::Forward, KeyCode::ArrowUp),
         (PlayerAction::RotateLeft, KeyCode::KeyA),
@@ -93,6 +94,7 @@ fn spawn_ship(mut commands: Commands, handles: Res<SpriteAssets>) {
             },
             StateScoped(AppState::Game),
             CollisionLayers::new(GameLayer::Player, [GameLayer::Asteroid]),
+            CollidingEntities::default(),
             RigidBody::Dynamic,
             Collider::circle(13.5),
             ExternalForce::default(),
@@ -162,6 +164,23 @@ fn ship_input_system(
     }
 }
 
+fn ship_asteroid_collision(
+    mut commands: Commands,
+    ship_collisions: Query<(Entity, &CollidingEntities), With<Ship>>,
+    is_asteroid: Query<(), With<Asteroid>>,
+) {
+    for (ship, targets) in ship_collisions.iter() {
+        for target in targets.iter() {
+            // Ship on Asteroid collision
+            // The asteroid is unaffected, only the ship takes damage.
+            // Possible explosion VFX is handled by the ship damage system.
+            if is_asteroid.contains(*target) {
+                commands.trigger_targets(Damage, ship);
+            }
+        }
+    }
+}
+
 fn on_ship_damage(
     trigger: Trigger<Damage>,
     mut commands: Commands,
@@ -201,6 +220,9 @@ fn on_ship_damage(
     }
 }
 
+// After contact with an asteroid the ship is invincible for some time.
+// This system make this invincibility visible by dlashing the ship red
+// For 'flashing' we just play with the alpha value of the sprite.
 fn ship_invincible_color(mut ships: Query<(&Ship, &mut Sprite)>) {
     for (ship, mut ship_sprite) in ships.iter_mut() {
         if ship.invincible_timer.finished() {

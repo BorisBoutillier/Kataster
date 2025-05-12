@@ -18,7 +18,8 @@ impl Plugin for LaserPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<LaserSpawnEvent>().add_systems(
             Update,
-            (laser_timeout_system, spawn_laser).run_if(in_state(GameState::Running)),
+            (spawn_laser, laser_asteroid_collision, laser_timeout_system)
+                .run_if(in_state(GameState::Running)),
         );
     }
 }
@@ -53,6 +54,7 @@ fn spawn_laser(
                 despawn_timer: Timer::from_seconds(2.0, TimerMode::Once),
             },
             CollisionLayers::new(GameLayer::Laser, [GameLayer::Asteroid]),
+            CollidingEntities::default(),
             RigidBody::Dynamic,
             collider,
             mass_properties,
@@ -61,6 +63,35 @@ fn spawn_laser(
             AudioPlayer(audios.laser_trigger.clone()),
             StateScoped(AppState::Game),
         ));
+    }
+}
+
+fn laser_asteroid_collision(
+    mut commands: Commands,
+    mut explosion_spawn_events: EventWriter<SpawnExplosionEvent>,
+    laser_collisions: Query<(Entity, &CollidingEntities), With<Laser>>,
+    is_asteroid: Query<(), With<Asteroid>>,
+    transforms: Query<&Transform>,
+) {
+    for (laser, targets) in laser_collisions.iter() {
+        for target in targets.iter() {
+            // Laser on Asteroid collision
+            // The asteroid is damaged and the laser despawned.
+            // A LaserOnAsteroid explosion VFX is triggered. To simplify code
+            // the VFX is triggered at the laser position and not at the exact contact position.
+            if is_asteroid.contains(*target) {
+                commands.trigger_targets(Damage, *target);
+                let laser_transform = transforms
+                    .get(laser)
+                    .expect("Missing transform for the laser");
+                explosion_spawn_events.write(SpawnExplosionEvent {
+                    kind: ExplosionKind::LaserOnAsteroid,
+                    x: laser_transform.translation.x,
+                    y: laser_transform.translation.y,
+                });
+                commands.entity(laser).despawn();
+            }
+        }
     }
 }
 

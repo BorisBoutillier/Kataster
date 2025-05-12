@@ -16,6 +16,11 @@ pub enum GameLayer {
     Laser,
     Asteroid,
 }
+//
+// An event that will be triggered whenever an entity receives damage.
+// This game is simple so there is no need for damage types, values or source types.
+#[derive(Event)]
+pub struct Damage;
 
 pub struct ArenaPlugin;
 
