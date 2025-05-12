@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use bevy::utils::Duration;
+use core::time::Duration;
 
 #[derive(Event)]
 pub struct AsteroidSpawnEvent {
@@ -78,7 +78,6 @@ fn spawn_asteroid_event(
                 },
                 Transform::from_translation(Vec3::new(event.x, event.y, 1.0)),
                 Asteroid { size: event.size },
-                Damage,
                 StateScoped(AppState::Game),
                 CollisionLayers::new(
                     GameLayer::Asteroid,
@@ -125,7 +124,7 @@ fn arena_asteroids(
             let vx = rng.gen_range((-ARENA_WIDTH / 4.0)..(ARENA_WIDTH / 4.0));
             let vy = rng.gen_range((-ARENA_HEIGHT / 4.0)..(ARENA_HEIGHT / 4.0));
             let angvel = rng.gen_range(-10.0..10.0);
-            asteroid_spawn_events.send(AsteroidSpawnEvent {
+            asteroid_spawn_events.write(AsteroidSpawnEvent {
                 size: AsteroidSize::Big,
                 x,
                 y,
@@ -144,7 +143,7 @@ fn on_asteroid_damage(
     mut asteroid_spawn_events: EventWriter<AsteroidSpawnEvent>,
     asteroids: Query<(&Asteroid, &Transform, &AngularVelocity)>,
 ) {
-    let asteroid_entity = trigger.entity();
+    let asteroid_entity = trigger.target();
     let (asteroid, asteroid_transform, asteroid_angvel) = asteroids.get(asteroid_entity).unwrap();
     arena.score += asteroid.size.score();
     {
@@ -160,7 +159,7 @@ fn on_asteroid_damage(
                     rng.gen_range((-ARENA_WIDTH / (radius / 4.))..(ARENA_WIDTH / (radius / 4.)));
                 let vy =
                     rng.gen_range((-ARENA_HEIGHT / (radius / 4.))..(ARENA_HEIGHT / (radius / 4.)));
-                asteroid_spawn_events.send(AsteroidSpawnEvent {
+                asteroid_spawn_events.write(AsteroidSpawnEvent {
                     size,
                     x,
                     y,

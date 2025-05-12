@@ -69,24 +69,6 @@ fn spawn_ship(mut commands: Commands, handles: Res<SpriteAssets>) {
         (PlayerAction::RotateRight, KeyCode::ArrowRight),
         (PlayerAction::Fire, KeyCode::Space),
     ]);
-    input_map.insert(PlayerAction::Fire, GamepadButton::South);
-    // TODO: not updated:
-    //input_map.insert(
-    //    PlayerAction::Forward,
-    //    SingleAxis::positive_only(GamepadAxis::LeftStickY, 0.4),
-    //);
-    //input_map.insert(
-    //    PlayerAction::Forward,
-    //    SingleAxis::negative_only(GamepadAxis::LeftStickY, -0.4),
-    //);
-    //input_map.insert(
-    //    PlayerAction::RotateRight,
-    //    SingleAxis::positive_only(GamepadAxis::LeftStickX, 0.4),
-    //);
-    //input_map.insert(
-    //    PlayerAction::RotateLeft,
-    //    SingleAxis::negative_only(GamepadAxis::LeftStickX, -0.4),
-    //);
     let mut invincible_timer = Timer::from_seconds(INVINCIBLE_TIME, TimerMode::Once);
     // Straghtaway consume the timer, we don't want invincibility at creation.
     invincible_timer.tick(Duration::from_secs_f32(INVINCIBLE_TIME));
@@ -116,10 +98,7 @@ fn spawn_ship(mut commands: Commands, handles: Res<SpriteAssets>) {
             ExternalForce::default(),
             LinearVelocity::ZERO,
             AngularVelocity::ZERO,
-            InputManagerBundle::<PlayerAction> {
-                action_state: ActionState::default(),
-                input_map,
-            },
+            input_map,
         ))
         .observe(on_ship_damage);
 }
@@ -174,7 +153,7 @@ fn ship_input_system(
         force.set_force((transform.rotation * (Vec3::Y * thrust * ship.thrust)).truncate());
 
         if fire && ship.cannon_timer.finished() {
-            laser_spawn_events.send(LaserSpawnEvent {
+            laser_spawn_events.write(LaserSpawnEvent {
                 transform: *transform,
                 linvel: *linvel,
             });
@@ -190,23 +169,23 @@ fn on_ship_damage(
     mut explosion_spawn_events: EventWriter<SpawnExplosionEvent>,
     mut ships: Query<(&mut Ship, &Transform)>,
 ) {
-    let ship_entity = trigger.entity();
+    let ship_entity = trigger.target();
     let (mut ship, ship_transform) = ships
-        .get_mut(trigger.entity())
+        .get_mut(ship_entity)
         .expect("Missing Ship and Transform on damage trigger");
     if ship.invincible_timer.finished() {
         ship.invincible_time_secs = 0.0;
         ship.life -= 1;
         if ship.life == 0 {
-            explosion_spawn_events.send(SpawnExplosionEvent {
+            explosion_spawn_events.write(SpawnExplosionEvent {
                 kind: ExplosionKind::ShipDead,
                 x: ship_transform.translation.x,
                 y: ship_transform.translation.y,
             });
-            commands.entity(ship_entity).despawn_recursive();
+            commands.entity(ship_entity).despawn();
             next_state.set(GameState::Over);
         } else {
-            explosion_spawn_events.send(SpawnExplosionEvent {
+            explosion_spawn_events.write(SpawnExplosionEvent {
                 kind: ExplosionKind::ShipContact,
                 x: ship_transform.translation.x,
                 y: ship_transform.translation.y,

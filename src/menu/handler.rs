@@ -121,7 +121,7 @@ pub fn menu_selection_system(
     menu_action_state: Res<ActionState<MenuAction>>,
     mut buttons: Query<(&ButtonId, &mut BorderColor, &mut BackgroundColor)>,
 ) {
-    if let Ok(mut menu) = menu.get_single_mut() {
+    if let Ok(mut menu) = menu.single_mut() {
         if menu_action_state.just_pressed(&MenuAction::MenuUp) {
             menu.selected_id = (menu.selected_id - 1).rem_euclid(menu.entries.len() as i32);
         }

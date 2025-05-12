@@ -7,7 +7,7 @@ pub fn main_menu_input_system(
     mut app_exit_events: EventWriter<AppExit>,
     menu: Query<&MenuHandler>,
 ) {
-    if let Ok(menu) = menu.get_single() {
+    if let Ok(menu) = menu.single() {
         if menu_action_state.just_pressed(&MenuAction::Accept) {
             if app_state.get() == &AppState::Menu {
                 match menu.selected_id {
@@ -18,7 +18,7 @@ pub fn main_menu_input_system(
                         next_app_state.set(AppState::Credits);
                     }
                     _ => {
-                        app_exit_events.send(AppExit::Success);
+                        app_exit_events.write(AppExit::Success);
                     }
                 }
             }
@@ -28,7 +28,7 @@ pub fn main_menu_input_system(
                         next_app_state.set(AppState::Menu);
                     }
                     _ => {
-                        app_exit_events.send(AppExit::Success);
+                        app_exit_events.write(AppExit::Success);
                     }
                 }
             }
@@ -52,7 +52,7 @@ pub fn game_menu_input_system(
             next_game_state.set(GameState::Running);
         }
     }
-    if let Ok(menu) = menu.get_single() {
+    if let Ok(menu) = menu.single() {
         if menu_action_state.just_pressed(&MenuAction::Accept) {
             if game_state.get() == &GameState::Paused {
                 match menu.selected_id {
@@ -63,7 +63,7 @@ pub fn game_menu_input_system(
                         next_app_state.set(AppState::Menu);
                     }
                     _ => {
-                        app_exit_events.send(AppExit::Success);
+                        app_exit_events.write(AppExit::Success);
                     }
                 }
             }
@@ -73,7 +73,7 @@ pub fn game_menu_input_system(
                         next_app_state.set(AppState::Menu);
                     }
                     _ => {
-                        app_exit_events.send(AppExit::Success);
+                        app_exit_events.write(AppExit::Success);
                     }
                 }
             }

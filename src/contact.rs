@@ -56,7 +56,7 @@ fn contact_system(
             let laser_transform = transforms
                 .get(*laser)
                 .expect("Missing transform for the laser");
-            explosion_spawn_events.send(SpawnExplosionEvent {
+            explosion_spawn_events.write(SpawnExplosionEvent {
                 kind: ExplosionKind::LaserOnAsteroid,
                 x: laser_transform.translation.x,
                 y: laser_transform.translation.y,

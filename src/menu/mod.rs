@@ -51,8 +51,6 @@ fn setup(mut commands: Commands) {
         (MenuAction::MenuDown, KeyCode::KeyS),
         (MenuAction::MenuDown, KeyCode::ArrowDown),
     ]);
-    input_map.insert(MenuAction::PauseUnpause, GamepadButton::Start);
-    input_map.insert(MenuAction::Accept, GamepadButton::South);
     // Insert MenuAction resources
     commands.insert_resource(input_map);
     commands.insert_resource(ActionState::<MenuAction>::default());

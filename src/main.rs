@@ -8,7 +8,8 @@ mod explosion;
 mod hud;
 mod laser;
 mod menu;
-mod particle_effects;
+// TODO: Reactivate with Bevy_hanabi uupdate
+//mod particle_effects;
 mod player_ship;
 mod state;
 
@@ -34,6 +35,10 @@ mod prelude {
 use avian2d::prelude::PhysicsPlugins;
 use bevy::{
     remote::{http::RemoteHttpPlugin, RemotePlugin},
+    render::{
+        batching::gpu_preprocessing::{GpuPreprocessingMode, GpuPreprocessingSupport},
+        RenderApp,
+    },
     window::WindowResolution,
 };
 
@@ -61,10 +66,11 @@ fn main() {
         .add_plugins(RemoteHttpPlugin::default());
 
     // Compute shaders are not supported on WASM.
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        app.add_plugins(particle_effects::ParticleEffectsPlugin);
-    }
+    // TODO: Reactivate with Bevy_hanabi uupdate
+    //#[cfg(not(target_arch = "wasm32"))]
+    //{
+    //    app.add_plugins(particle_effects::ParticleEffectsPlugin);
+    //}
 
     app.add_plugins((
         PhysicsPlugins::default(),
@@ -86,6 +92,26 @@ fn main() {
     ));
 
     app.add_systems(OnEnter(AppState::Setup), setup_camera);
+
+    // This allow minimum migration to Avian 0.3, reverting to 0.2 collision behaviour
+    // while waiting to update Kataster as a whole.
+    // TODO: Update to new Avian Collision workflow, probably using CollidingEntities.
+    app.register_required_components::<Collider, CollisionEventsEnabled>();
+
+    // On my WSL setup, GpuPreprocessing is detected:
+    //  2025-05-12T07:55:11.348347Z  INFO bevy_render::batching::gpu_preprocessing: GPU preprocessing is fully supported on this device.
+    // But it is not working:
+    // Caused by:
+    // In Device::create_compute_pipeline, label = 'downsample depth multisample first phase pipeline'
+    // Internal error: WGSL `textureLoad` from depth textures is not supported in GLSL
+    //
+    // Bevy Issue: https://github.com/bevyengine/bevy/issues/18932
+    // TODO: Check for update on the issue.
+    app.sub_app_mut(RenderApp)
+        .insert_resource(GpuPreprocessingSupport {
+            max_supported_mode: GpuPreprocessingMode::None,
+        });
+
     app.run();
 }
 
