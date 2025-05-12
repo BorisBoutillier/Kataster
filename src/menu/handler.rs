@@ -1,7 +1,12 @@
+use bevy::ecs::spawn::SpawnIter;
+
 use crate::prelude::*;
 
 #[derive(Component)]
-pub struct DrawBlinkTimer(pub Timer);
+pub struct DrawBlink {
+    pub timer: Timer,
+    pub enabled: bool,
+}
 
 #[derive(Component)]
 pub struct ButtonId(i32);
@@ -20,34 +25,55 @@ impl MenuHandler {
     const UNSELECTED_BORDER: Color = Color::srgb(0.2, 0.2, 0.2);
     const UNSELECTED_BG: Color = Color::srgb(0.0, 0.0, 0.0);
     pub fn spawn(self, commands: &mut Commands, font: Handle<Font>) -> Entity {
-        let button_node = Node {
-            width: Val::Px(150.0),
-            height: Val::Px(45.0),
-            border: UiRect::all(Val::Px(5.0)),
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
-            margin: UiRect::all(Val::Px(5.0)),
-            ..default()
-        };
-        let entity = commands
-            .spawn((Node {
-                width: Val::Percent(100.0),
-                height: Val::Percent(100.0),
-                align_items: AlignItems::Center,
-                justify_content: JustifyContent::SpaceEvenly,
-                flex_direction: FlexDirection::Column,
-                ..default()
-            },))
-            .with_children(|parent| {
-                parent
-                    .spawn((Node {
-                        height: Val::Percent(50.0),
-                        align_items: AlignItems::Center,
+        let buttons = self
+            .entries
+            .iter()
+            .enumerate()
+            .map(|(i, entry)| {
+                (
+                    Button,
+                    Node {
+                        width: Val::Px(150.0),
+                        height: Val::Px(45.0),
+                        border: UiRect::all(Val::Px(5.0)),
                         justify_content: JustifyContent::Center,
+                        align_items: AlignItems::Center,
+                        margin: UiRect::all(Val::Px(5.0)),
                         ..default()
-                    },))
-                    .with_children(|parent| {
-                        let mut text = parent.spawn((
+                    },
+                    BorderRadius::all(Val::Px(10.0)),
+                    ButtonId(i as i32),
+                    children![(
+                        Text::new(entry),
+                        TextFont {
+                            font: font.clone(),
+                            font_size: 25.0,
+                            ..default()
+                        },
+                        TextColor(self.main_text_color),
+                    )],
+                )
+            })
+            .collect::<Vec<_>>();
+        let entity = commands
+            .spawn((
+                Node {
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(100.0),
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::SpaceEvenly,
+                    flex_direction: FlexDirection::Column,
+                    ..default()
+                },
+                children![
+                    (
+                        Node {
+                            height: Val::Percent(50.0),
+                            align_items: AlignItems::Center,
+                            justify_content: JustifyContent::Center,
+                            ..default()
+                        },
+                        children![(
                             Text::new(self.main_text.clone()),
                             TextFont {
                                 font: font.clone(),
@@ -55,44 +81,23 @@ impl MenuHandler {
                                 ..default()
                             },
                             TextColor(self.main_text_color),
-                        ));
-                        if self.main_text_blink {
-                            text.insert(DrawBlinkTimer(Timer::from_seconds(
-                                0.5,
-                                TimerMode::Repeating,
-                            )));
-                        }
-                    });
-                parent
-                    .spawn((Node {
-                        align_items: AlignItems::Center,
-                        justify_content: JustifyContent::Center,
-                        flex_direction: FlexDirection::Column,
-                        ..default()
-                    },))
-                    .with_children(|parent| {
-                        for (i, entry) in self.entries.iter().enumerate() {
-                            parent
-                                .spawn((
-                                    Button,
-                                    button_node.clone(),
-                                    BorderRadius::all(Val::Px(10.0)),
-                                    ButtonId(i as i32),
-                                ))
-                                .with_children(|parent| {
-                                    parent.spawn((
-                                        Text::new(entry),
-                                        TextFont {
-                                            font: font.clone(),
-                                            font_size: 25.0,
-                                            ..default()
-                                        },
-                                        TextColor(self.main_text_color),
-                                    ));
-                                });
-                        }
-                    });
-            })
+                            DrawBlink {
+                                timer: Timer::from_seconds(0.5, TimerMode::Repeating),
+                                enabled: self.main_text_blink
+                            }
+                        )]
+                    ),
+                    (
+                        Node {
+                            align_items: AlignItems::Center,
+                            justify_content: JustifyContent::Center,
+                            flex_direction: FlexDirection::Column,
+                            ..default()
+                        },
+                        Children::spawn(SpawnIter(buttons.into_iter()))
+                    )
+                ],
+            ))
             .insert(self)
             .id();
         entity
@@ -101,17 +106,19 @@ impl MenuHandler {
 pub fn menu_blink_system(
     mut commands: Commands,
     time: Res<Time>,
-    mut query: Query<(Entity, &mut DrawBlinkTimer, &ViewVisibility)>,
+    mut query: Query<(Entity, &mut DrawBlink, &ViewVisibility)>,
 ) {
-    for (entity, mut timer, visibility) in query.iter_mut() {
-        timer.0.tick(time.delta());
-        if timer.0.finished() {
-            let new_visibility = if visibility.get() {
-                Visibility::Hidden
-            } else {
-                Visibility::Visible
-            };
-            commands.entity(entity).insert(new_visibility);
+    for (entity, mut draw_blink, visibility) in query.iter_mut() {
+        if draw_blink.enabled {
+            draw_blink.timer.tick(time.delta());
+            if draw_blink.timer.finished() {
+                let new_visibility = if visibility.get() {
+                    Visibility::Hidden
+                } else {
+                    Visibility::Visible
+                };
+                commands.entity(entity).insert(new_visibility);
+            }
         }
     }
 }

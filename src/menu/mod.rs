@@ -106,20 +106,18 @@ fn spawn_credits_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
     commands
         .entity(entity)
         .insert(StateScoped(AppState::Credits));
-    commands
-        .spawn((
-            Node {
-                width: Val::Percent(100.0),
-                height: Val::Percent(70.0),
-                align_items: AlignItems::Center,
-                justify_content: JustifyContent::Center,
-                flex_direction: FlexDirection::Column,
-                ..default()
-            },
-            StateScoped(AppState::Credits),
-        ))
-        .with_children(|parent| {
-            parent.spawn((
+    commands.spawn((
+        Node {
+            width: Val::Percent(100.0),
+            height: Val::Percent(70.0),
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            flex_direction: FlexDirection::Column,
+            ..default()
+        },
+        StateScoped(AppState::Credits),
+        children![
+            (
                 Text::new("Code"),
                 TextFont {
                     font: assets.font.clone(),
@@ -131,17 +129,15 @@ fn spawn_credits_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
                     margin: UiRect::all(Val::Px(10.)),
                     ..default()
                 },
-            ));
-            parent
-                .spawn((
-                    Text::default(),
-                    Node {
-                        margin: UiRect::all(Val::Px(10.)),
-                        ..default()
-                    },
-                ))
-                .with_children(|p| {
-                    p.spawn((
+            ),
+            (
+                Text::default(),
+                Node {
+                    margin: UiRect::all(Val::Px(10.)),
+                    ..default()
+                },
+                children![
+                    (
                         TextSpan::new("Boris Boutillier "),
                         TextFont {
                             font: assets.font_fira.clone(),
@@ -149,8 +145,8 @@ fn spawn_credits_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
                             ..default()
                         },
                         TextColor(Color::WHITE),
-                    ));
-                    p.spawn((
+                    ),
+                    (
                         TextSpan::new("(github.com/BorisBoutillier)"),
                         TextFont {
                             font: assets.font_fira.clone(),
@@ -158,9 +154,10 @@ fn spawn_credits_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
                             ..default()
                         },
                         TextColor(Color::srgb(0.5, 0.5, 0.5)),
-                    ));
-                });
-            parent.spawn((
+                    )
+                ]
+            ),
+            (
                 Text::new("Assets"),
                 Node {
                     margin: UiRect::all(Val::Px(10.)),
@@ -172,17 +169,15 @@ fn spawn_credits_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
                     ..default()
                 },
                 TextColor(Color::srgb(0.0, 0.7, 0.7)),
-            ));
-            parent
-                .spawn((
-                    Text::default(),
-                    Node {
-                        margin: UiRect::all(Val::Px(10.)),
-                        ..default()
-                    },
-                ))
-                .with_children(|p| {
-                    p.spawn((
+            ),
+            (
+                Text::default(),
+                Node {
+                    margin: UiRect::all(Val::Px(10.)),
+                    ..default()
+                },
+                children![
+                    (
                         TextSpan::new("Kenney Vleugels "),
                         TextFont {
                             font: assets.font_fira.clone(),
@@ -190,8 +185,8 @@ fn spawn_credits_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
                             ..default()
                         },
                         TextColor(Color::WHITE),
-                    ));
-                    p.spawn((
+                    ),
+                    (
                         TextSpan::new("(www.kenney.nl)"),
                         TextFont {
                             font: assets.font_fira.clone(),
@@ -199,9 +194,10 @@ fn spawn_credits_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
                             ..default()
                         },
                         TextColor(Color::srgb(0.5, 0.5, 0.5)),
-                    ));
-                });
-            parent.spawn((
+                    )
+                ]
+            ),
+            (
                 Text::new("Pablo Roman Andrioli"),
                 Node {
                     margin: UiRect::all(Val::Px(10.)),
@@ -213,6 +209,7 @@ fn spawn_credits_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
                     ..default()
                 },
                 TextColor(Color::WHITE),
-            ));
-        });
+            )
+        ],
+    ));
 }
