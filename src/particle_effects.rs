@@ -44,12 +44,16 @@ fn add_thrust_particles_to_ship(
             center: writer.lit(Vec3::new(0.0, 1.0, 0.0)).expr(),
         };
         let effect = effects.add(
-            EffectAsset::new(16024, Spawner::once(10.0.into(), false), writer.finish())
+            EffectAsset::new(16024, SpawnerSettings::once(10.0.into()), writer.finish())
                 .with_name("Exhaust")
                 .init(init_pos)
                 .init(init_vel)
                 .init(SetAttributeModifier::new(Attribute::LIFETIME, lifetime))
-                .render(ColorOverLifetimeModifier { gradient })
+                .render(ColorOverLifetimeModifier {
+                    gradient,
+                    blend: ColorBlendMode::Overwrite,
+                    mask: ColorBlendMask::RGBA,
+                })
                 .render(SizeOverLifetimeModifier {
                     gradient: Gradient::constant(Vec3::splat(2.)),
                     screen_space_size: true,
@@ -57,11 +61,8 @@ fn add_thrust_particles_to_ship(
         );
         commands.entity(ship_entity).with_children(|parent| {
             parent.spawn((
-                ParticleEffectBundle {
-                    effect: ParticleEffect::new(effect).with_z_layer_2d(Some(10.)),
-                    transform: Transform::from_translation(Vec3::new(0.0, -4.0, 0.0)),
-                    ..default()
-                },
+                ParticleEffect::new(effect),
+                Transform::from_translation(Vec3::new(0.0, -4.0, 10.0)),
                 ExhaustEffect,
             ));
         });
@@ -71,11 +72,11 @@ fn add_thrust_particles_to_ship(
 // Trigger a new particle spawning whenever the Ship Impulse is non-0
 fn update_thrust_particles(
     player: Query<(&ActionState<PlayerAction>, &Children), Changed<ActionState<PlayerAction>>>,
-    mut exhaust_effect: Query<&mut EffectInitializers, With<ExhaustEffect>>,
+    mut exhaust_effect: Query<&mut EffectSpawner, With<ExhaustEffect>>,
 ) {
     for (action_state, children) in player.iter() {
         if action_state.pressed(&PlayerAction::Forward) {
-            for &child in children.iter() {
+            for child in children.iter() {
                 if let Ok(mut initializers) = exhaust_effect.get_mut(child) {
                     initializers.reset();
                 }

@@ -7,8 +7,7 @@ mod explosion;
 mod hud;
 mod laser;
 mod menu;
-// TODO: Reactivate with Bevy_hanabi uupdate
-//mod particle_effects;
+mod particle_effects;
 mod player_ship;
 mod state;
 
@@ -64,11 +63,10 @@ fn main() {
         .add_plugins(RemoteHttpPlugin::default());
 
     // Compute shaders are not supported on WASM.
-    // TODO: Reactivate with Bevy_hanabi uupdate
-    //#[cfg(not(target_arch = "wasm32"))]
-    //{
-    //    app.add_plugins(particle_effects::ParticleEffectsPlugin);
-    //}
+    // #[cfg(not(target_arch = "wasm32"))]
+    // {
+    //     app.add_plugins(particle_effects::ParticleEffectsPlugin);
+    // }
 
     app.add_plugins((
         PhysicsPlugins::default(),

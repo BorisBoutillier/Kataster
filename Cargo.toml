@@ -10,8 +10,8 @@ license = "MIT OR Apache-2.0"
 opt-level = 3
 
 [dependencies]
-bevy = { version = "0.16.0", features = ["bevy_remote"] }
+bevy = { version = "0.16", features = ["bevy_remote"] }
 leafwing-input-manager = "0.17"
 rand = "0.8"
-#bevy_hanabi = "0.15"
+bevy_hanabi = "0.16"
 avian2d = { version = "0.3" , features = [ "debug-plugin" ] } 
