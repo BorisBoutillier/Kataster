@@ -28,7 +28,7 @@ impl Plugin for ExplosionPlugin {
     fn build(&self, app: &mut App) {
         app.add_message::<SpawnExplosionMessage>().add_systems(
             Update,
-            (animate_explosion, catch_explosion_event).run_if(in_state(GameState::Running)),
+            (animate_explosion, catch_explosion_event).run_if(in_state(AppState::Game)),
         );
     }
 }
