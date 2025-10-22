@@ -103,21 +103,12 @@ impl MenuHandler {
         entity
     }
 }
-pub fn menu_blink_system(
-    mut commands: Commands,
-    time: Res<Time>,
-    mut query: Query<(Entity, &mut DrawBlink, &ViewVisibility)>,
-) {
-    for (entity, mut draw_blink, visibility) in query.iter_mut() {
+pub fn menu_blink_system(time: Res<Time>, mut query: Query<(&mut DrawBlink, &mut Visibility)>) {
+    for (mut draw_blink, mut visibility) in query.iter_mut() {
         if draw_blink.enabled {
             draw_blink.timer.tick(time.delta());
             if draw_blink.timer.is_finished() {
-                let new_visibility = if visibility.get() {
-                    Visibility::Hidden
-                } else {
-                    Visibility::Visible
-                };
-                commands.entity(entity).insert(new_visibility);
+                visibility.toggle_inherited_hidden();
             }
         }
     }
