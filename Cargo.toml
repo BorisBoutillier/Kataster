@@ -1,6 +1,6 @@
 [package]
 name = "kataster"
-version = "0.16.0"
+version = "0.17.0"
 authors = ["Boris Boutillier <boris.boutillier@gmail.com>"]
 edition = "2024"
 repository = "https://github.com/Bobox214/Kataster"
@@ -10,8 +10,8 @@ license = "MIT OR Apache-2.0"
 opt-level = 3
 
 [dependencies]
-bevy = { version = "0.16", features = ["bevy_remote"] }
-leafwing-input-manager = "0.17"
+bevy = { version = "0.17", features = ["bevy_remote"] }
+leafwing-input-manager = "0.18"
 rand = "0.8"
-bevy_hanabi = "0.16"
-avian2d = { version = "0.3" , features = [ "debug-plugin" ] } 
+bevy_hanabi = "0.17"
+avian2d = { version = "0.4" , features = [ "debug-plugin" ] } 

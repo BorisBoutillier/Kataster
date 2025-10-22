@@ -19,8 +19,10 @@ pub enum GameLayer {
 //
 // An event that will be triggered whenever an entity receives damage.
 // This game is simple so there is no need for damage types, values or source types.
-#[derive(Event)]
-pub struct Damage;
+#[derive(EntityEvent)]
+pub struct Damage {
+    pub entity: Entity,
+}
 
 pub struct ArenaPlugin;
 

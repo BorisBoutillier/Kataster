@@ -26,14 +26,11 @@ mod prelude {
     pub use bevy::prelude::*;
     pub use bevy::reflect::TypePath;
     pub use leafwing_input_manager::prelude::*;
-    pub use rand::{thread_rng, Rng};
+    pub use rand::{Rng, thread_rng};
 }
 
 use avian2d::prelude::PhysicsPlugins;
-use bevy::{
-    remote::{http::RemoteHttpPlugin, RemotePlugin},
-    window::WindowResolution,
-};
+use bevy::remote::{RemotePlugin, http::RemoteHttpPlugin};
 
 use crate::prelude::*;
 
@@ -44,7 +41,7 @@ fn main() {
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
         primary_window: Some(Window {
             title: "Kataster".to_string(),
-            resolution: WindowResolution::new(ARENA_WIDTH, ARENA_HEIGHT),
+            resolution: (ARENA_WIDTH as u32, ARENA_HEIGHT as u32).into(),
             ..default()
         }),
         ..default()

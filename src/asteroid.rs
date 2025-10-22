@@ -1,8 +1,8 @@
 use crate::prelude::*;
 use core::time::Duration;
 
-#[derive(Event)]
-pub struct AsteroidSpawnEvent {
+#[derive(Message)]
+pub struct AsteroidSpawnMessage {
     pub size: AsteroidSize,
     pub x: f32,
     pub y: f32,
@@ -51,7 +51,7 @@ pub struct AsteroidPlugin;
 
 impl Plugin for AsteroidPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<AsteroidSpawnEvent>().add_systems(
+        app.add_message::<AsteroidSpawnMessage>().add_systems(
             Update,
             (arena_asteroids, spawn_asteroid_event).run_if(in_state(GameState::Running)),
         );
@@ -60,7 +60,7 @@ impl Plugin for AsteroidPlugin {
 
 fn spawn_asteroid_event(
     mut commands: Commands,
-    mut event_reader: EventReader<AsteroidSpawnEvent>,
+    mut event_reader: MessageReader<AsteroidSpawnMessage>,
     handles: Res<SpriteAssets>,
 ) {
     for event in event_reader.read() {
@@ -78,7 +78,7 @@ fn spawn_asteroid_event(
                 },
                 Transform::from_translation(Vec3::new(event.x, event.y, 1.0)),
                 Asteroid { size: event.size },
-                StateScoped(AppState::Game),
+                DespawnOnExit(AppState::Game),
                 CollisionLayers::new(
                     GameLayer::Asteroid,
                     [GameLayer::Asteroid, GameLayer::Player, GameLayer::Laser],
@@ -96,11 +96,11 @@ fn spawn_asteroid_event(
 fn arena_asteroids(
     time: Res<Time>,
     mut arena: ResMut<Arena>,
-    mut asteroid_spawn_events: EventWriter<AsteroidSpawnEvent>,
+    mut asteroid_spawn_events: MessageWriter<AsteroidSpawnMessage>,
     asteroids: Query<&Asteroid>,
 ) {
     arena.asteroid_spawn_timer.tick(time.delta());
-    if arena.asteroid_spawn_timer.finished() {
+    if arena.asteroid_spawn_timer.is_finished() {
         arena.asteroid_spawn_timer.reset();
         let n_asteroid = asteroids.iter().count();
         if n_asteroid < 20 {
@@ -124,7 +124,7 @@ fn arena_asteroids(
             let vx = rng.gen_range((-ARENA_WIDTH / 4.0)..(ARENA_WIDTH / 4.0));
             let vy = rng.gen_range((-ARENA_HEIGHT / 4.0)..(ARENA_HEIGHT / 4.0));
             let angvel = rng.gen_range(-10.0..10.0);
-            asteroid_spawn_events.write(AsteroidSpawnEvent {
+            asteroid_spawn_events.write(AsteroidSpawnMessage {
                 size: AsteroidSize::Big,
                 x,
                 y,
@@ -137,13 +137,13 @@ fn arena_asteroids(
 }
 
 fn on_asteroid_damage(
-    trigger: Trigger<Damage>,
+    damage: On<Damage>,
     mut commands: Commands,
     mut arena: ResMut<Arena>,
-    mut asteroid_spawn_events: EventWriter<AsteroidSpawnEvent>,
+    mut asteroid_spawn_events: MessageWriter<AsteroidSpawnMessage>,
     asteroids: Query<(&Asteroid, &Transform, &AngularVelocity)>,
 ) {
-    let asteroid_entity = trigger.target();
+    let asteroid_entity = damage.entity;
     let (asteroid, asteroid_transform, asteroid_angvel) = asteroids.get(asteroid_entity).unwrap();
     arena.score += asteroid.size.score();
     {
@@ -159,7 +159,7 @@ fn on_asteroid_damage(
                     rng.gen_range((-ARENA_WIDTH / (radius / 4.))..(ARENA_WIDTH / (radius / 4.)));
                 let vy =
                     rng.gen_range((-ARENA_HEIGHT / (radius / 4.))..(ARENA_HEIGHT / (radius / 4.)));
-                asteroid_spawn_events.write(AsteroidSpawnEvent {
+                asteroid_spawn_events.write(AsteroidSpawnMessage {
                     size,
                     x,
                     y,

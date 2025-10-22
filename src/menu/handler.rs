@@ -111,7 +111,7 @@ pub fn menu_blink_system(
     for (entity, mut draw_blink, visibility) in query.iter_mut() {
         if draw_blink.enabled {
             draw_blink.timer.tick(time.delta());
-            if draw_blink.timer.finished() {
+            if draw_blink.timer.is_finished() {
                 let new_visibility = if visibility.get() {
                     Visibility::Hidden
                 } else {
@@ -138,10 +138,10 @@ pub fn menu_selection_system(
         if menu.is_changed() {
             for (button_id, mut border_color, mut bg_color) in buttons.iter_mut() {
                 if button_id.0 == menu.selected_id {
-                    border_color.0 = MenuHandler::SELECTED_BORDER;
+                    *border_color = BorderColor::all(MenuHandler::SELECTED_BORDER);
                     bg_color.0 = MenuHandler::SELECTED_BG;
                 } else {
-                    border_color.0 = MenuHandler::UNSELECTED_BORDER;
+                    *border_color = BorderColor::all(MenuHandler::UNSELECTED_BORDER);
                     bg_color.0 = MenuHandler::UNSELECTED_BG;
                 }
             }

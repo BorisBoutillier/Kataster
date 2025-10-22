@@ -12,4 +12,4 @@ It showcases some other commonplace bevy plugins, [avian2d](https://crates.io/cr
 
 ## Bevy dependencies
 
-Up to date for bevy 0.16
+Up to date for bevy 0.17

@@ -1,6 +1,7 @@
-use bevy::render::render_resource::{AsBindGroup, ShaderRef};
-use bevy::sprite::Material2d;
-use bevy::sprite::Material2dPlugin;
+use bevy::render::render_resource::AsBindGroup;
+use bevy::shader::ShaderRef;
+use bevy::sprite_render::Material2d;
+use bevy::sprite_render::Material2dPlugin;
 
 use crate::prelude::*;
 

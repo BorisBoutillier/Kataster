@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use bevy_hanabi::prelude::*;
+use bevy_hanabi::{Gradient, prelude::*};
 
 // Plugin that adds particle effects at different point in the game
 // All particle effects are handled in a separate plugin to be

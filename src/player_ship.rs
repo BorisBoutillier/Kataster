@@ -92,12 +92,12 @@ fn spawn_ship(mut commands: Commands, handles: Res<SpriteAssets>) {
                 invincible_timer,
                 invincible_time_secs: 0.0,
             },
-            StateScoped(AppState::Game),
+            DespawnOnExit(AppState::Game),
             CollisionLayers::new(GameLayer::Player, [GameLayer::Asteroid]),
             CollidingEntities::default(),
             RigidBody::Dynamic,
             Collider::circle(13.5),
-            ExternalForce::default(),
+            ConstantForce::default(),
             LinearVelocity::ZERO,
             AngularVelocity::ZERO,
             input_map,
@@ -125,10 +125,10 @@ fn ship_timers_system(time: Res<Time>, mut ship: Query<&mut Ship>) {
 
 #[allow(clippy::type_complexity)]
 fn ship_input_system(
-    mut laser_spawn_events: EventWriter<LaserSpawnEvent>,
+    mut laser_spawn_events: MessageWriter<LaserSpawnMessage>,
     mut query: Query<(
         &ActionState<PlayerAction>,
-        &mut ExternalForce,
+        &mut ConstantForce,
         &mut LinearVelocity,
         &mut AngularVelocity,
         &Transform,
@@ -152,10 +152,10 @@ fn ship_input_system(
         if rotation != 0 {
             angvel.0 = rotation as f32 * ship.rotation_speed;
         }
-        force.set_force((transform.rotation * (Vec3::Y * thrust * ship.thrust)).truncate());
+        force.0 = (transform.rotation * (Vec3::Y * thrust * ship.thrust)).truncate();
 
-        if fire && ship.cannon_timer.finished() {
-            laser_spawn_events.write(LaserSpawnEvent {
+        if fire && ship.cannon_timer.is_finished() {
+            laser_spawn_events.write(LaserSpawnMessage {
                 transform: *transform,
                 linvel: *linvel,
             });
@@ -175,28 +175,28 @@ fn ship_asteroid_collision(
             // The asteroid is unaffected, only the ship takes damage.
             // Possible explosion VFX is handled by the ship damage system.
             if is_asteroid.contains(*target) {
-                commands.trigger_targets(Damage, ship);
+                commands.trigger(Damage { entity: ship });
             }
         }
     }
 }
 
 fn on_ship_damage(
-    trigger: Trigger<Damage>,
+    damage: On<Damage>,
     mut commands: Commands,
     mut next_state: ResMut<NextState<GameState>>,
-    mut explosion_spawn_events: EventWriter<SpawnExplosionEvent>,
+    mut explosion_spawn_events: MessageWriter<SpawnExplosionMessage>,
     mut ships: Query<(&mut Ship, &Transform)>,
 ) {
-    let ship_entity = trigger.target();
+    let ship_entity = damage.entity;
     let (mut ship, ship_transform) = ships
         .get_mut(ship_entity)
         .expect("Missing Ship and Transform on damage trigger");
-    if ship.invincible_timer.finished() {
+    if ship.invincible_timer.is_finished() {
         ship.invincible_time_secs = 0.0;
         ship.life -= 1;
         if ship.life == 0 {
-            explosion_spawn_events.write(SpawnExplosionEvent {
+            explosion_spawn_events.write(SpawnExplosionMessage {
                 kind: ExplosionKind::ShipDead,
                 x: ship_transform.translation.x,
                 y: ship_transform.translation.y,
@@ -204,7 +204,7 @@ fn on_ship_damage(
             commands.entity(ship_entity).despawn();
             next_state.set(GameState::Over);
         } else {
-            explosion_spawn_events.write(SpawnExplosionEvent {
+            explosion_spawn_events.write(SpawnExplosionMessage {
                 kind: ExplosionKind::ShipContact,
                 x: ship_transform.translation.x,
                 y: ship_transform.translation.y,
@@ -225,7 +225,7 @@ fn on_ship_damage(
 // For 'flashing' we just play with the alpha value of the sprite.
 fn ship_invincible_color(mut ships: Query<(&Ship, &mut Sprite)>) {
     for (ship, mut ship_sprite) in ships.iter_mut() {
-        if ship.invincible_timer.finished() {
+        if ship.invincible_timer.is_finished() {
             ship_sprite.color = Color::WHITE;
         } else {
             let alpha = (ship.invincible_timer.elapsed_secs() * 2.0) % 1.0;

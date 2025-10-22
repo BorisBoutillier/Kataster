@@ -5,8 +5,8 @@ pub enum ExplosionKind {
     ShipContact,
     LaserOnAsteroid,
 }
-#[derive(Event)]
-pub struct SpawnExplosionEvent {
+#[derive(Message)]
+pub struct SpawnExplosionMessage {
     pub kind: ExplosionKind,
     pub x: f32,
     pub y: f32,
@@ -26,7 +26,7 @@ pub struct ExplosionPlugin;
 
 impl Plugin for ExplosionPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<SpawnExplosionEvent>().add_systems(
+        app.add_message::<SpawnExplosionMessage>().add_systems(
             Update,
             (animate_explosion, catch_explosion_event).run_if(in_state(GameState::Running)),
         );
@@ -35,7 +35,7 @@ impl Plugin for ExplosionPlugin {
 
 fn catch_explosion_event(
     mut commands: Commands,
-    mut event_reader: EventReader<SpawnExplosionEvent>,
+    mut event_reader: MessageReader<SpawnExplosionMessage>,
     handles: Res<SpriteAssets>,
     audios: Res<AudioAssets>,
 ) {
@@ -75,7 +75,7 @@ fn catch_explosion_event(
                 start_scale: 1.,
                 end_scale,
             },
-            StateScoped(AppState::Game),
+            DespawnOnExit(AppState::Game),
             AudioPlayer(sound),
         ));
     }
@@ -97,7 +97,7 @@ fn animate_explosion(
         let elapsed = time.delta();
         for (entity, mut transform, mut explosion) in query.iter_mut() {
             explosion.timer.tick(elapsed);
-            if explosion.timer.finished() {
+            if explosion.timer.is_finished() {
                 commands.entity(entity).despawn();
             } else {
                 transform.scale = Vec3::splat(

@@ -31,7 +31,7 @@ fn hud_spawn(mut commands: Commands, assets: ResMut<UiAssets>) {
             flex_direction: FlexDirection::Row,
             ..default()
         },
-        StateScoped(AppState::Game),
+        DespawnOnExit(AppState::Game),
         children![(
             Text::new("0"),
             TextFont {
@@ -40,7 +40,7 @@ fn hud_spawn(mut commands: Commands, assets: ResMut<UiAssets>) {
                 ..default()
             },
             TextColor(Color::srgb_u8(0x00, 0xAA, 0xAA)),
-            TextLayout::new_with_justify(JustifyText::Right),
+            TextLayout::new_with_justify(Justify::Right),
             Node {
                 margin: UiRect {
                     left: Val::Px(10.0),
@@ -66,7 +66,7 @@ fn hud_spawn(mut commands: Commands, assets: ResMut<UiAssets>) {
             flex_direction: FlexDirection::Row,
             ..default()
         },
-        StateScoped(AppState::Game),
+        DespawnOnExit(AppState::Game),
         Children::spawn(SpawnIter((1..(START_LIFE + 1)).map(move |i| {
             (
                 ImageNode::new(ship_life_image.clone()),

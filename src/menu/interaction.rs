@@ -4,7 +4,7 @@ pub fn main_menu_input_system(
     app_state: ResMut<State<AppState>>,
     mut next_app_state: ResMut<NextState<AppState>>,
     menu_action_state: Res<ActionState<MenuAction>>,
-    mut app_exit_events: EventWriter<AppExit>,
+    mut app_exit_events: MessageWriter<AppExit>,
     menu: Query<&MenuHandler>,
 ) {
     if let Ok(menu) = menu.single() {
@@ -41,7 +41,7 @@ pub fn game_menu_input_system(
     mut next_app_state: ResMut<NextState<AppState>>,
     mut next_game_state: ResMut<NextState<GameState>>,
     menu_action_state: Res<ActionState<MenuAction>>,
-    mut app_exit_events: EventWriter<AppExit>,
+    mut app_exit_events: MessageWriter<AppExit>,
     menu: Query<&MenuHandler>,
 ) {
     if menu_action_state.just_pressed(&MenuAction::PauseUnpause) {

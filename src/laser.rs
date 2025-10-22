@@ -1,7 +1,7 @@
 use crate::prelude::*;
 
-#[derive(Event)]
-pub struct LaserSpawnEvent {
+#[derive(Message)]
+pub struct LaserSpawnMessage {
     // The full position (translation+rotation) of the laser to spawn
     pub transform: Transform,
     // The velocity of the entity emitting the laser
@@ -16,7 +16,7 @@ pub struct LaserPlugin;
 
 impl Plugin for LaserPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<LaserSpawnEvent>().add_systems(
+        app.add_message::<LaserSpawnMessage>().add_systems(
             Update,
             (spawn_laser, laser_asteroid_collision, laser_timeout_system)
                 .run_if(in_state(GameState::Running)),
@@ -26,7 +26,7 @@ impl Plugin for LaserPlugin {
 
 fn spawn_laser(
     mut commands: Commands,
-    mut laser_spawn_events: EventReader<LaserSpawnEvent>,
+    mut laser_spawn_events: MessageReader<LaserSpawnMessage>,
     handles: Res<SpriteAssets>,
     audios: Res<AudioAssets>,
 ) {
@@ -61,14 +61,14 @@ fn spawn_laser(
             linvel,
             Sensor,
             AudioPlayer(audios.laser_trigger.clone()),
-            StateScoped(AppState::Game),
+            DespawnOnExit(AppState::Game),
         ));
     }
 }
 
 fn laser_asteroid_collision(
     mut commands: Commands,
-    mut explosion_spawn_events: EventWriter<SpawnExplosionEvent>,
+    mut explosion_spawn_events: MessageWriter<SpawnExplosionMessage>,
     laser_collisions: Query<(Entity, &CollidingEntities), With<Laser>>,
     is_asteroid: Query<(), With<Asteroid>>,
     transforms: Query<&Transform>,
@@ -80,11 +80,11 @@ fn laser_asteroid_collision(
             // A LaserOnAsteroid explosion VFX is triggered. To simplify code
             // the VFX is triggered at the laser position and not at the exact contact position.
             if is_asteroid.contains(*target) {
-                commands.trigger_targets(Damage, *target);
+                commands.trigger(Damage { entity: *target });
                 let laser_transform = transforms
                     .get(laser)
                     .expect("Missing transform for the laser");
-                explosion_spawn_events.write(SpawnExplosionEvent {
+                explosion_spawn_events.write(SpawnExplosionMessage {
                     kind: ExplosionKind::LaserOnAsteroid,
                     x: laser_transform.translation.x,
                     y: laser_transform.translation.y,
@@ -102,7 +102,7 @@ fn laser_timeout_system(
 ) {
     for (entity, mut laser) in query.iter_mut() {
         laser.despawn_timer.tick(time.delta());
-        if laser.despawn_timer.finished() {
+        if laser.despawn_timer.is_finished() {
             commands.entity(entity).despawn();
         }
     }

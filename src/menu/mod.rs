@@ -65,7 +65,9 @@ fn spawn_main_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
         entries: vec!["Play".into(), "Credits".into(), "Exit".into()],
     }
     .spawn(&mut commands, assets.font.clone());
-    commands.entity(entity).insert(StateScoped(AppState::Menu));
+    commands
+        .entity(entity)
+        .insert(DespawnOnExit(AppState::Menu));
 }
 
 fn spawn_gameover_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
@@ -77,7 +79,9 @@ fn spawn_gameover_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
         entries: vec!["Menu".into(), "Exit".into()],
     }
     .spawn(&mut commands, assets.font.clone());
-    commands.entity(entity).insert(StateScoped(GameState::Over));
+    commands
+        .entity(entity)
+        .insert(DespawnOnExit(GameState::Over));
 }
 
 fn spawn_pause_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
@@ -91,7 +95,7 @@ fn spawn_pause_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
     .spawn(&mut commands, assets.font.clone());
     commands
         .entity(entity)
-        .insert(StateScoped(GameState::Paused));
+        .insert(DespawnOnExit(GameState::Paused));
 }
 
 fn spawn_credits_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
@@ -105,7 +109,7 @@ fn spawn_credits_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
     .spawn(&mut commands, assets.font.clone());
     commands
         .entity(entity)
-        .insert(StateScoped(AppState::Credits));
+        .insert(DespawnOnExit(AppState::Credits));
     commands.spawn((
         Node {
             width: Val::Percent(100.0),
@@ -115,7 +119,7 @@ fn spawn_credits_menu(mut commands: Commands, assets: ResMut<UiAssets>) {
             flex_direction: FlexDirection::Column,
             ..default()
         },
-        StateScoped(AppState::Credits),
+        DespawnOnExit(AppState::Credits),
         children![
             (
                 Text::new("Code"),
